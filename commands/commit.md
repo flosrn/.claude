@@ -23,11 +23,20 @@ Creates well-formatted commits with conventional commit messages and emoji.
 
 ## Process
 
-1. Check staged files, commit only staged files if any exist
-2. Analyze diff for multiple logical changes
-3. Suggest splitting if needed
-4. Create commit with emoji conventional format
-5. Husky handles pre-commit hooks automatically
+1. **Check current branch** - If on main/master, suggest creating feature branch first
+2. Check staged files, commit only staged files if any exist
+3. Analyze diff for multiple logical changes
+4. Suggest splitting if needed
+5. Create commit with emoji conventional format
+6. Husky handles pre-commit hooks automatically
+
+## Branch Safety
+
+**CRITICAL**: Before committing, validate:
+- Not on main/master branch (unless explicitly intended)
+- Feature branch exists for new features
+- Hotfix branch for urgent fixes
+- Branch naming follows conventions (feat/, fix/, chore/, etc.)
 
 ## Commit Format
 

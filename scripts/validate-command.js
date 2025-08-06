@@ -145,6 +145,12 @@ const SECURITY_RULES = {
     // Environment variable exposure
     /env\s*\|\s*grep.*PASSWORD/i,
     /printenv.*PASSWORD/i,
+
+    // Fork safety: NEVER push to upstream
+    /git\s+push\s+upstream/i,
+    /git\s+push\s+.*upstream/i,
+    /gh\s+.*--repo\s+\w+\//i, // Dangerous repo targeting
+    /git\s+remote\s+set-url\s+origin.*upstream/i, // Switching origin to upstream
   ],
 
   // Paths that should never be written to
@@ -197,7 +203,35 @@ const SAFE_COMMANDS = [
 
 class CommandValidator {
   constructor() {
-    this.logFile = "/Users/melvynx/.claude/security.log";
+    this.logFile = "/Users/Flo/.claude/security.log";
+  }
+
+  /**
+   * Fork safety validation
+   */
+  validateForkSafety(command) {
+    const violations = [];
+    
+    // Check for upstream push attempts
+    if (/git\s+push\s+upstream/i.test(command)) {
+      violations.push("CRITICAL: Attempting to push to upstream remote");
+    }
+    
+    if (/git\s+push\s+.*upstream/i.test(command)) {
+      violations.push("CRITICAL: Attempting to push to upstream remote");
+    }
+    
+    // Check for dangerous repo targeting in gh commands
+    if (/gh\s+.*--repo\s+\w+\//i.test(command) && !/--repo\s+flosrn\//i.test(command)) {
+      violations.push("WARNING: Using --repo flag with non-fork repository");
+    }
+    
+    // Check for origin remote manipulation
+    if (/git\s+remote\s+set-url\s+origin.*upstream/i.test(command)) {
+      violations.push("CRITICAL: Attempting to change origin to upstream");
+    }
+    
+    return violations;
   }
 
   /**
@@ -210,6 +244,14 @@ class CommandValidator {
       violations: [],
       sanitizedCommand: command,
     };
+    
+    // Fork safety checks first
+    const forkViolations = this.validateForkSafety(command);
+    if (forkViolations.length > 0) {
+      result.isValid = false;
+      result.severity = "CRITICAL";
+      result.violations.push(...forkViolations);
+    }
 
     if (!command || typeof command !== "string") {
       result.isValid = false;
@@ -275,6 +317,13 @@ class CommandValidator {
         result.severity = "HIGH";
         result.violations.push(`Access to protected path: ${path}`);
       }
+    }
+
+    // Git-specific safety checks
+    if (command.includes('git push') && !command.includes('origin')) {
+      // If git push without explicit remote, warn about potential upstream push
+      result.violations.push("WARNING: git push without explicit origin remote");
+      if (result.severity === "LOW") result.severity = "MEDIUM";
     }
 
     // Additional safety checks

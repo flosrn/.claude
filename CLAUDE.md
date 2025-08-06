@@ -37,6 +37,7 @@ IMPORTANT: When producing plans or task lists :
   - Prefer `restart_process` over manual server starts
   - Use `get_process_logs` to monitor development output
   - Background process management prevents timeout issues
+  - If port conflict detected (e.g. :3000 already in use), kill existing process and restart with Rewatch
 - **Playwright**: ALWAYS use Playwright MCP for browser testing when available
   - Take screenshots to analyze UI elements and layout issues
   - Monitor console logs for frontend errors and debugging

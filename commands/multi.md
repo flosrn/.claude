@@ -5,6 +5,9 @@ allowed-tools:
     "Read(*)",
     "Glob(*)",
     "LS(*)",
+    "Bash(git:*)",
+    "Bash(gh:*)",
+    "TodoWrite(*)",
   ]
 ---
 
@@ -19,23 +22,45 @@ Universal meta-command that enables execution of multiple slash commands simulta
 /multi <command1> + <command2>               # Alternative syntax with explicit separator  
 /multi --sequential <cmd1> <cmd2>            # Execute commands in sequence (explicit)
 /multi --parallel <cmd1> <cmd2>              # Execute with parallel context loading
+/multi --list                                # Show all available commands
+/multi --help <command>                      # Show help for specific command
+```
+
+## CRITICAL: Auto-Loading Implementation
+
+**FIRST ACTION**: When `/multi` command starts, it MUST:
+1. Execute `Glob("/Users/flo/.claude/commands/*.md")` to find all commands
+2. Execute `Read()` for EACH command file mentioned in the user request
+3. Parse and understand the full capabilities of each command
+4. Only then proceed with the integrated workflow
+
+**Example for `/multi commit pr merge`:**
+```
+Step 1: Glob("/Users/flo/.claude/commands/*.md") 
+Step 2: Read("/Users/flo/.claude/commands/commit.md")
+Step 3: Read("/Users/flo/.claude/commands/pr.md") 
+Step 4: Read("/Users/flo/.claude/commands/merge.md")
+Step 5: Integrate and execute workflow
 ```
 
 ## Syntax Patterns
 
 ### Basic Multi-Command Execution
 ```
-/multi mcp-mgmt github-repo-deep-analysis https://github.com/user/repo
-→ Loads MCP management expertise + GitHub analysis capabilities
-→ Provides contextual MCP recommendations for the specific repository
+/multi commit pr merge
+→ LOADS: commit.md + pr.md + merge.md files
+→ EXECUTES: Creates commit → Creates PR → Merges when ready
+→ RESULT: Complete workflow from commit to merged PR
 
 /multi commit review
-→ Combines commit creation expertise with code review capabilities
-→ Creates well-formatted commit with intelligent review suggestions
+→ LOADS: commit.md + review.md files  
+→ EXECUTES: Creates quality commit with review insights
+→ RESULT: High-quality, reviewed commit
 
 /multi branch sync pr
-→ Branch management + repository sync + pull request workflows
-→ Complete Git workflow from branch creation to PR submission
+→ LOADS: branch.md + sync.md + pr.md files
+→ EXECUTES: Branch management + sync + PR creation
+→ RESULT: Complete Git workflow with upstream sync
 ```
 
 ### Advanced Combinations
@@ -58,10 +83,21 @@ Universal meta-command that enables execution of multiple slash commands simulta
 ### Context Consolidation
 When multiple commands are specified, I will:
 
-1. **Load All Command Contexts**: Read and internalize all specified slash command documents
-2. **Identify Synergies**: Find complementary capabilities between commands
-3. **Resolve Conflicts**: Handle overlapping functionality intelligently  
-4. **Create Unified Workflow**: Combine commands into coherent execution plan
+1. **Auto-discover Commands**: Automatically scan `/Users/flo/.claude/commands/` directory
+2. **Load All Command Contexts**: Read and internalize all specified slash command documents
+3. **Identify Synergies**: Find complementary capabilities between commands
+4. **Resolve Conflicts**: Handle overlapping functionality intelligently  
+5. **Create Unified Workflow**: Combine commands into coherent execution plan
+
+### Implementation Process
+```
+Multi-Command Execution Workflow:
+1. Use Glob tool to discover all *.md files in commands/
+2. Use Read tool to load content of each specified command
+3. Parse command capabilities, tools, and workflows
+4. Create integrated execution plan
+5. Execute workflow with combined context
+```
 
 ### Smart Integration Patterns
 
@@ -121,10 +157,24 @@ Execution Process:
 
 ### Auto-Detection of Available Commands
 The orchestrator automatically:
-- **Scans command directory**: Discovers all available slash commands
-- **Validates command existence**: Ensures specified commands exist
+- **Scans command directory**: Uses Glob to discover all *.md files in `/Users/flo/.claude/commands/`
+- **Loads command metadata**: Reads frontmatter and description from each command file
+- **Validates command existence**: Ensures specified commands exist before execution
 - **Suggests alternatives**: Recommends similar commands if typos detected
 - **Provides completion hints**: Shows available commands for combination
+
+### Active Command Discovery Process
+```bash
+# Step 1: Discover all available commands
+Glob: /Users/flo/.claude/commands/*.md
+
+# Step 2: Read each specified command file
+Read: /Users/flo/.claude/commands/commit.md
+Read: /Users/flo/.claude/commands/pr.md
+Read: /Users/flo/.claude/commands/review.md
+
+# Step 3: Parse and integrate capabilities
+```
 
 ### Command Compatibility Analysis
 ```
@@ -217,7 +267,15 @@ Intelligent Argument Parsing:
 → New team member onboarding checklist
 ```
 
-## Integration with Existing Commands
+## Implementation Strategy
+
+### Command Loading Implementation
+**CRITICAL**: Multi-command MUST actually load other commands' content:
+
+1. **First Action**: Use `Glob("/Users/flo/.claude/commands/*.md")` to discover commands
+2. **Second Action**: Use `Read()` tool for each specified command file  
+3. **Third Action**: Parse command metadata, tools, and workflow descriptions
+4. **Fourth Action**: Create integrated execution plan with full command knowledge
 
 ### Command Context Preservation
 All existing slash commands remain fully functional and unchanged:
@@ -225,6 +283,7 @@ All existing slash commands remain fully functional and unchanged:
 - **Full feature access**: Complete command capabilities preserved
 - **No interference**: Multi-command execution doesn't affect individual command behavior
 - **Backward compatibility**: Existing workflows continue to work
+- **Active loading**: Multi-command actually reads and integrates other command files
 
 ### Enhanced Capabilities
 When combined via `/multi`, commands gain:

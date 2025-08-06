@@ -1,6 +1,46 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {},
+  "feedbackSurveyState": {
+    "lastShownTime": 1754066543620
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "command": "afplay -v 0.3 /Users/flo/.claude/songs/need-human.mp3",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "/Users/flo/.bun/bin/bun /Users/flo/.claude/scripts/validate-command.js",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "afplay -v 0.3 /Users/flo/.claude/songs/finish.mp3",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ]
+  },
   "includeCoAuthoredBy": false,
+  "model": "sonnet",
   "permissions": {
     "allow": [
       "Bash(*)",
@@ -8,45 +48,7 @@
       "Write(*)",
       "Read(*)",
       "mcp_context7"
-    ]
-  },
-  "model": "sonnet",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/flo/.bun/bin/bun /Users/flo/.claude/scripts/validate-command.js"
-          }
-        ]
-      }
     ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay -v 0.3 /Users/flo/.claude/songs/finish.mp3"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay -v 0.3 /Users/flo/.claude/songs/need-human.mp3"
-          }
-        ]
-      }
-    ]
-  },
-  "feedbackSurveyState": {
-    "lastShownTime": 1754066543620
+    "deny": []
   }
 }

@@ -114,7 +114,7 @@ Cleanup Process:
 - Configures upstream remotes (READ-ONLY)
 - Handles fork-specific workflows
 - Manages multiple remotes
-- **NEVER pushes to upstream** - only to origin (your fork)
+- **NEVER pushes to upstream** - only to origin (user's fork)
 
 ### Sync Strategies
 - **Fast-forward**: When no local changes exist
@@ -222,7 +222,7 @@ Cleanup Process:
 ### Fork Protection
 - **Upstream safety**: NEVER allows push to upstream
 - **Remote validation**: Ensures operations target correct remote
-- **Origin verification**: Confirms origin is your fork
+- **Origin verification**: Confirms origin is user's fork
 - **Push destination check**: Validates push target before execution
 
 ### Pre-Operation Checks

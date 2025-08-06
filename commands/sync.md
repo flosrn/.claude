@@ -88,7 +88,7 @@ Organization Sync Process:
 ### Triangular Workflow Support
 ```
 Fork Workflow:
-origin (your fork) ←→ local repository ←→ upstream (original)
+origin (user's fork) ←→ local repository ←→ upstream (original)
 
 Sync Operations:
 1. Fetch from upstream (READ-ONLY)
@@ -235,8 +235,8 @@ upstream_naming: upstream
 
 ### Fork Protection
 - **Upstream write protection**: NEVER allows push to upstream
-- **Remote validation**: Ensures push destination is your fork
-- **Origin verification**: Confirms origin points to your repository
+- **Remote validation**: Ensures push destination is user's fork  
+- **Origin verification**: Confirms origin points to user's repository
 - **Upstream read-only**: Treats upstream as read-only source
 
 ### Backup and Recovery

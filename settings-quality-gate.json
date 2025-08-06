@@ -1,0 +1,50 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "description": "🔍 Automatic TypeScript Error Detection & Formatting",
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "intelligent-linting",
+            "command": "bash /Users/flo/.claude/scripts/detect-and-lint.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "description": "🛡️ Pre-Edit Validation - Block Invalid Operations",
+        "matcher": "Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "pre-edit-validation", 
+            "command": "bash /Users/flo/.claude/scripts/pre-edit-check.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "description": "🎯 Final Quality Gate - Comprehensive Project Validation",
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "final-quality-gate",
+            "command": "bash /Users/flo/.claude/scripts/final-quality-gate.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "environment": {
+    "NODE_OPTIONS": "--max-old-space-size=8192",
+    "CLAUDE_STRICT_MODE": "true",
+    "CLAUDE_NO_ANY": "true",
+    "CLAUDE_AUTO_FORMAT": "true",
+    "CLAUDE_AUTO_LINT": "true"
+  }
+}

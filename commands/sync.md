@@ -48,8 +48,9 @@ Strategy Selection:
 ### Upstream Management
 - Automatic upstream remote configuration
 - Multi-upstream support for complex workflows
-- Upstream branch tracking and mapping
+- Upstream branch tracking and mapping (READ-ONLY)
 - Divergence detection and reporting
+- **NEVER pushes to upstream** - upstream is read-only
 
 ## Workspace Synchronization
 
@@ -90,10 +91,12 @@ Fork Workflow:
 origin (your fork) ←→ local repository ←→ upstream (original)
 
 Sync Operations:
-1. Fetch from upstream
+1. Fetch from upstream (READ-ONLY)
 2. Merge/rebase local changes
-3. Push to origin fork
+3. Push ONLY to origin fork (NEVER to upstream)
 4. Update pull requests
+
+⚠️  CRITICAL: NEVER push to upstream remote
 ```
 
 ### Multiple Fork Management
@@ -230,6 +233,12 @@ upstream_naming: upstream
 
 ## Safety Features
 
+### Fork Protection
+- **Upstream write protection**: NEVER allows push to upstream
+- **Remote validation**: Ensures push destination is your fork
+- **Origin verification**: Confirms origin points to your repository
+- **Upstream read-only**: Treats upstream as read-only source
+
 ### Backup and Recovery
 - **Pre-sync backups**: Automatic state snapshots
 - **Rollback capabilities**: Undo sync operations
@@ -285,3 +294,9 @@ Pre-Sync Validation:
 - Provides comprehensive error reporting and recovery
 - Scales from single repositories to large organizations
 - Respects repository permissions and access controls
+
+## Attribution Rules
+
+- **NEVER add Claude Code attribution to sync commits**
+- **NEVER include Co-Authored-By: Claude in merge commits**
+- All Git operations must appear as authored solely by the human developer

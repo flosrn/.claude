@@ -287,3 +287,10 @@ Rollback Sequence:
 - Integrates with existing development workflows
 - Provides comprehensive audit trails for compliance
 - Maintains backwards compatibility with manual processes
+
+## Attribution Rules
+
+- **NEVER add Claude Code attribution to release notes**
+- **NEVER include Co-Authored-By: Claude in release commits**
+- **NEVER mention AI assistance in changelogs**
+- All releases must appear as authored solely by the human developer

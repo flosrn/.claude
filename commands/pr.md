@@ -36,6 +36,7 @@ Comprehensive pull request management with automated workflows, intelligent revi
 - **Template selection**: Chooses between feature, bugfix, hotfix, or documentation templates
 - **Intelligent targeting**: Automatically targets correct base branch (main, develop, release)
 - **Draft handling**: Creates draft PRs for WIP branches, ready PRs for complete features
+- **Fork safety**: NEVER pushes to upstream, always pushes to origin (your fork)
 
 ### Reviewer Assignment
 - **Code ownership**: Analyzes changed files and suggests reviewers based on CODEOWNERS
@@ -145,6 +146,9 @@ Minimal changes to fix the critical issue.
 - Branch name follows conventions
 - No uncommitted changes in working directory
 - Remote branch exists or will be created
+- Current repository is a fork (not upstream)
+- Origin remote points to your fork
+- NEVER push to upstream remote
 
 ### Pre-Merge Validation
 - All required reviews approved
@@ -199,3 +203,14 @@ Minimal changes to fix the critical issue.
 - Respects repository settings and branch protection rules
 - Provides rollback capabilities for all operations
 - Maintains audit trail of all PR activities
+- **CRITICAL**: NEVER pushes to upstream remote, only to origin (your fork)
+- Always validates that you're pushing to your own repository before creating PR
+- Ensures proper fork workflow: origin (your fork) → upstream (original repo)
+
+## Attribution Rules
+
+- **NEVER add Claude Code attribution to PR descriptions**
+- **NEVER include "🤖 Generated with Claude Code" footer**
+- **NEVER mention Claude or AI assistance in PR templates**
+- **NEVER add Co-Authored-By: Claude <noreply@anthropic.com> to commits**
+- All PRs must appear as created solely by the human developer

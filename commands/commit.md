@@ -68,4 +68,10 @@ Different concerns | Mixed types | File patterns | Large changes
 - Husky handles pre-commit checks
 - Only commit staged files if any exist
 - Analyze diff for splitting suggestions
+
+## Attribution Rules
+
 - **NEVER add Claude signature to commits**
+- **NEVER include Co-Authored-By: Claude <noreply@anthropic.com>**
+- **NEVER mention "Generated with Claude Code"**
+- Commits must appear as authored solely by the human developer

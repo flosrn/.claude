@@ -47,10 +47,15 @@ Step 5: Integrate and execute workflow
 
 ### Basic Multi-Command Execution
 ```
-/multi commit pr merge
-→ LOADS: commit.md + pr.md + merge.md files
-→ EXECUTES: Creates commit → Creates PR → Merges when ready
-→ RESULT: Complete workflow from commit to merged PR
+/multi work commit pr
+→ LOADS: work.md + commit.md + pr.md files  
+→ EXECUTES: Smart branch creation → Commits → Creates PR
+→ RESULT: Complete workflow for any change type (feat/fix/chore/etc)
+
+/multi branch commit pr merge  
+→ LOADS: branch.md + commit.md + pr.md + merge.md files
+→ EXECUTES: Branch creation → Commit → PR → Merge
+→ RESULT: Complete workflow from branch creation to merged PR
 
 /multi commit review
 → LOADS: commit.md + review.md files  

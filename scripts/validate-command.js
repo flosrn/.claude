@@ -149,7 +149,7 @@ const SECURITY_RULES = {
     // Fork safety: NEVER push to upstream
     /git\s+push\s+upstream/i,
     /git\s+push\s+.*upstream/i,
-    /gh\s+.*--repo\s+\w+\//i, // Dangerous repo targeting
+    /gh\s+.*--repo\s+(?!flosrn\/)\w+\//i, // Dangerous repo targeting (except flosrn/)
     /git\s+remote\s+set-url\s+origin.*upstream/i, // Switching origin to upstream
   ],
 

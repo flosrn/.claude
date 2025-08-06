@@ -5,11 +5,11 @@
 
 ## Environment
 
-- **OS**: macOS Tahoe 26
+- **OS**: macOS 26 (Tahoe)
 - **Editor**: VS Code
 - **Terminal**: Ghostty
 - **Shell**: zsh
-- **Mobile**: iPhone (iOS 26), iPad (iPadOS 26)
+- **Mobile**: iPhone (iOS 26), iPad (iPadOS 26), Apple Watch (watchOS 26)
 
 ## Code Preferences
 

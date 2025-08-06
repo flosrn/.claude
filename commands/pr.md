@@ -19,14 +19,26 @@ Comprehensive pull request management with automated workflows, intelligent revi
 ## Usage
 
 ```
-/pr                    # Create PR from current branch
-/pr create             # Create PR with interactive options
-/pr list               # List open PRs with status
-/pr review <number>    # Review specific PR
-/pr merge <number>     # Merge PR with validation
-/pr conflicts          # Check and resolve merge conflicts
-/pr draft              # Create draft PR
-/pr ready              # Mark draft PR as ready
+/pr                    # Create PR from current branch (user's fork only)
+/pr create             # Create PR with interactive options (user's fork only)
+/pr list               # List open PRs with status (user's fork only)
+/pr review <number>    # Review specific PR (user's fork only)
+/pr merge <number>     # Merge PR with validation (user's fork only)
+/pr conflicts          # Check and resolve merge conflicts (user's fork only)
+/pr draft              # Create draft PR (user's fork only)
+/pr ready              # Mark draft PR as ready (user's fork only)
+```
+
+## CRITICAL IMPLEMENTATION
+
+**EVERY `gh pr create` command MUST use:**
+```bash
+gh pr create --repo flosrn/$(basename $(git remote get-url origin) .git) --base main --head feature-branch
+```
+
+**NEVER EVER:**
+```bash
+gh pr create  # This targets upstream = FORBIDDEN
 ```
 
 ## Features
@@ -34,9 +46,9 @@ Comprehensive pull request management with automated workflows, intelligent revi
 ### Smart PR Creation
 - **Auto-detection**: Detects branch type and suggests appropriate PR template
 - **Template selection**: Chooses between feature, bugfix, hotfix, or documentation templates
-- **Intelligent targeting**: Automatically targets correct base branch (main, develop, release)
+- **FORK-ONLY TARGETING**: ALWAYS targets user's fork with `--repo flosrn/repo-name`
 - **Draft handling**: Creates draft PRs for WIP branches, ready PRs for complete features
-- **Fork safety**: NEVER pushes to upstream, always pushes to origin (your fork)
+- **NO UPSTREAM**: NEVER mentions, touches, or references upstream EVER
 
 ### Reviewer Assignment
 - **Code ownership**: Analyzes changed files and suggests reviewers based on CODEOWNERS
@@ -53,8 +65,8 @@ Comprehensive pull request management with automated workflows, intelligent revi
 ### Workflow Integration
 - **CI/CD awareness**: Waits for required checks before allowing merge
 - **Status validation**: Ensures all requirements met (reviews, tests, builds)
-- **Branch protection**: Respects repository branch protection rules
-- **Triangular workflow**: Full support for fork-to-upstream workflows
+- **Branch protection**: Respects user's repository branch protection rules
+- **SIMPLE FORK WORKFLOW**: Internal PRs within user's fork ONLY
 
 ## PR Templates
 
@@ -146,9 +158,9 @@ Minimal changes to fix the critical issue.
 - Branch name follows conventions
 - No uncommitted changes in working directory
 - Remote branch exists or will be created
-- Current repository is a fork (not upstream)
-- Origin remote points to your fork
-- NEVER push to upstream remote
+- ALWAYS use `--repo flosrn/repo-name` flag
+- Target user's fork only
+- UPSTREAM IS FORBIDDEN
 
 ### Pre-Merge Validation
 - All required reviews approved
@@ -198,14 +210,14 @@ Minimal changes to fix the critical issue.
 
 ## Notes
 
-- Supports GitHub's triangular workflow for open source contributions
+- **FORK-ONLY OPERATIONS**: ALL PRs created within user's fork
+- **UPSTREAM = FORBIDDEN**: NEVER touches, mentions, or references upstream
+- **COMMAND SYNTAX**: ALWAYS uses `gh pr create --repo flosrn/repo-name`
 - Integrates with GitHub Actions for automated workflows
-- Respects repository settings and branch protection rules
+- Respects user's repository settings and branch protection rules
 - Provides rollback capabilities for all operations
 - Maintains audit trail of all PR activities
-- **CRITICAL**: NEVER pushes to upstream remote, only to origin (your fork)
-- Always validates that you're pushing to your own repository before creating PR
-- Ensures proper fork workflow: origin (your fork) → upstream (original repo)
+- **FORK ONLY**: feature-branch → main (within user's fork)
 
 ## Attribution Rules
 

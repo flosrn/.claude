@@ -1,0 +1,48 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "description": "🔍 TypeScript Error Detection & Formatting",
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "detect-project-tools",
+            "command": "/Users/flo/.claude/scripts/detect-and-lint.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "description": "🛡️ Validate TypeScript Files Before Modification",
+        "matcher": "Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "pre-edit-validation",
+            "command": "/Users/flo/.claude/scripts/pre-edit-check.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "description": "🎯 Final Quality Gate - Comprehensive Check",
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "final-quality-check",
+            "command": "/Users/flo/.claude/scripts/final-quality-gate.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "environment": {
+    "NODE_OPTIONS": "--max-old-space-size=8192",
+    "CLAUDE_STRICT_MODE": "true",
+    "CLAUDE_NO_ANY": "true"
+  }
+}

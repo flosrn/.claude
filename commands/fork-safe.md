@@ -24,7 +24,7 @@ Fork-safe Git operations with bulletproof protection against accidentally pushin
 ## Core Principles
 
 🚫 **NEVER PUSH TO UPSTREAM**
-✅ **ALWAYS PUSH TO ORIGIN (your fork)**
+✅ **ALWAYS PUSH TO ORIGIN (user's fork)**
 🔍 **VALIDATE BEFORE EVERY OPERATION**
 
 ## Fork Safety Checks
@@ -33,7 +33,7 @@ Fork-safe Git operations with bulletproof protection against accidentally pushin
 ```
 Fork Safety Checklist:
 □ Current repo is a fork
-□ Origin points to your username
+□ Origin points to user's username
 □ Upstream points to original repo  
 □ Current branch has local commits
 □ Remote validation passed
@@ -43,7 +43,7 @@ Fork Safety Checklist:
 ### Remote Configuration Validation
 ```bash
 # Expected configuration:
-origin    git@github.com:flosrn/repo-name.git (your fork)
+origin    git@github.com:flosrn/repo-name.git (user's fork)
 upstream  git@github.com:original-owner/repo-name.git (original)
 
 # NEVER:
@@ -64,7 +64,7 @@ origin    git@github.com:original-owner/repo-name.git (dangerous!)
 PR Creation Process:
 1. Validate fork setup
 2. Ensure commits exist locally
-3. Push branch to origin (your fork)
+3. Push branch to origin (user's fork)
 4. Create PR from origin to upstream
 5. Verify PR targets correct repositories
 ```
@@ -74,7 +74,7 @@ PR Creation Process:
 Sync Process:
 1. Fetch from upstream (read-only)
 2. Merge/rebase with local commits
-3. Push result to origin (your fork)
+3. Push result to origin (user's fork)
 4. Update tracking branches
 ```
 
@@ -84,7 +84,7 @@ Sync Process:
 ```bash
 # Detects and configures:
 git remote add upstream <original-repo-url>
-git remote set-url origin <your-fork-url>
+git remote set-url origin <user-fork-url>
 git config push.default simple
 git config remote.pushdefault origin
 ```
@@ -106,10 +106,10 @@ git config remote.pushdefault origin
 ### Remote Validation
 ```
 Validation Rules:
-✅ origin = your GitHub username
+✅ origin = user's GitHub username
 ❌ origin = upstream owner
 ✅ upstream = original repository  
-❌ upstream = your fork
+❌ upstream = user's fork
 ```
 
 ### Branch Protection

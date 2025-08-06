@@ -39,7 +39,7 @@ Merge Strategy Decision Tree:
 ### Fork-Safe Merging
 - **NEVER merges from upstream directly**
 - Always validates merge source and destination
-- Ensures merges happen within your fork
+- Ensures merges happen within user's fork
 - Protects against accidental upstream modifications
 
 ## Merge Types
@@ -119,7 +119,7 @@ PR Merge Validation:
 ### Post-Merge Cleanup
 - Automatically deletes merged branch
 - Updates local branch tracking
-- Syncs fork with upstream changes
+- NEVER syncs with upstream automatically
 - Notifies relevant stakeholders
 
 ## Safety Features
@@ -127,7 +127,7 @@ PR Merge Validation:
 ### Fork Protection
 ```
 Fork Safety Rules:
-✅ Merge within your fork only
+✅ Merge within user's fork only
 ❌ Never merge from upstream directly  
 ✅ Validate source branch ownership
 ❌ Block cross-fork merges without review
@@ -191,12 +191,12 @@ When used with `/pr`:
 3. Automatically merges when ready
 4. Cleans up post-merge
 
-### Sync Integration  
-When used with `/sync`:
-1. Syncs with upstream first
-2. Rebases/merges local changes
+### Local Integration  
+When used with local commands:
+1. Works within user's fork only
+2. Merges/rebases local changes
 3. Executes merge operation
-4. Pushes results to fork
+4. Pushes results to origin (user's fork)
 
 ## Advanced Features
 
@@ -285,9 +285,9 @@ fork_safety: strict
 ## Critical Safety
 
 🚨 **FORK SAFETY FIRST**
-- NEVER merge from upstream without explicit validation
-- ALWAYS confirm source and destination branches
+- NEVER merge from upstream automatically
+- ALWAYS confirm source and destination branches are within user's fork
 - VALIDATE merge permissions before execution
 - BACKUP before any destructive operations
 
-The merge command prioritizes safety and fork protection above all else.
+The merge command works ONLY within user's fork, NEVER with upstream.

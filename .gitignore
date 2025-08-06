@@ -3,13 +3,9 @@
 /todos/
 /config/notification_states.json
 /shell-snapshots/
-/deepresearch/
 /ide/
 /projects/
 /statsig/
-
-# Audio files (hooks)
-/songs/
 
 # Logs and temporary files
 *.log

@@ -111,15 +111,17 @@ Cleanup Process:
 
 ### Fork Management
 - Automatically detects upstream repositories
-- Configures upstream remotes
+- Configures upstream remotes (READ-ONLY)
 - Handles fork-specific workflows
 - Manages multiple remotes
+- **NEVER pushes to upstream** - only to origin (your fork)
 
 ### Sync Strategies
 - **Fast-forward**: When no local changes exist
 - **Rebase**: Replays local commits on latest upstream
 - **Merge**: Creates merge commit for complex histories
 - **Interactive**: Manual conflict resolution guidance
+- **Fork-safe**: Always pushes to origin, never to upstream
 
 ### Conflict Resolution
 - Pre-sync conflict detection
@@ -217,6 +219,12 @@ Cleanup Process:
 
 ## Safety Features
 
+### Fork Protection
+- **Upstream safety**: NEVER allows push to upstream
+- **Remote validation**: Ensures operations target correct remote
+- **Origin verification**: Confirms origin is your fork
+- **Push destination check**: Validates push target before execution
+
 ### Pre-Operation Checks
 - Verify clean working directory
 - Check for uncommitted changes
@@ -242,3 +250,9 @@ Cleanup Process:
 - Respects repository-specific configurations
 - Provides educational guidance for Git best practices
 - Maintains compatibility with all Git hosting platforms
+
+## Attribution Rules
+
+- **NEVER add Claude Code attribution to branch commits**
+- **NEVER include Co-Authored-By: Claude in any Git operations**
+- All branch operations must appear as authored solely by the human developer

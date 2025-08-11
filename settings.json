@@ -20,7 +20,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay -v 0.3 /Users/flo/.claude/songs/need-human.mp3"
+            "command": "afplay -v 0.3 /Users/flo/.claude/songs/need-human.mp3",
+            "timeout": 3000
           }
         ]
       }
@@ -31,16 +32,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.bun/bin/bun /Users/flo/.claude/scripts/validate-command.js"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /Users/flo/.claude/scripts/pre-edit-check.sh"
+            "command": "/Users/flo/.bun/bin/bun /Users/flo/.claude/scripts/validate-command.js",
+            "timeout": 5000
           }
         ]
       }
@@ -51,25 +44,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/flo/.claude/scripts/detect-any-types.js"
+            "command": "node /Users/flo/.claude/scripts/detect-any-types.js",
+            "timeout": 8000
           }
         ]
       },
       {
-        "matcher": "Edit",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/flo/.claude/scripts/detect-and-lint.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /Users/flo/.claude/scripts/detect-and-lint.sh"
+            "command": "bash /Users/flo/.claude/scripts/detect-and-lint-optimized.sh",
+            "timeout": 10000
           }
         ]
       }
@@ -80,16 +66,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/flo/.claude/scripts/final-quality-gate.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay -v 0.3 /Users/flo/.claude/songs/finish.mp3"
+            "command": "afplay -v 0.3 /Users/flo/.claude/songs/finish.mp3",
+            "timeout": 3000
           }
         ]
       }

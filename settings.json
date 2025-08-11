@@ -41,6 +41,7 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
+        "condition": "$CLAUDE_FILE_PATHS ~= '\\.(ts|tsx|js|jsx|json|md)$'",
         "hooks": [
           {
             "type": "command",
@@ -51,6 +52,7 @@
       },
       {
         "matcher": "Edit|Write",
+        "condition": "$CLAUDE_FILE_PATHS ~= '\\.(ts|tsx|js|jsx|json|css|scss|md|yml|yaml)$'",
         "hooks": [
           {
             "type": "command",

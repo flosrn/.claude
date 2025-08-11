@@ -105,7 +105,7 @@ run_project_linting() {
     return 0
 }
 
-# Check for 'any' usage in TypeScript files
+# Check for 'any' usage in TypeScript files and request proper fixes
 check_any_usage() {
     local project_dir="$1"
     
@@ -116,16 +116,41 @@ check_any_usage() {
     log_info "Scanning for 'any' usage in TypeScript files"
     
     local any_files
-    any_files=$(find "$project_dir" -name "*.ts" -o -name "*.tsx" | grep -v node_modules | xargs grep -l ": any\|<any>\|any\[\]\|= any\|any |" 2>/dev/null || true)
+    any_files=$(find "$project_dir" \( -name "*.ts" -o -name "*.tsx" \) -not -path "*/node_modules/*" -not -path "*/dist/*" -not -path "*/build/*" 2>/dev/null | xargs grep -l ": any\|<any>\|any\[\]\|= any\| as any" 2>/dev/null || true)
     
     if [[ -n "$any_files" ]]; then
-        log_error "Found 'any' usage in the following files:"
+        log_error "Found 'any' usage in TypeScript files"
+        
+        echo ""
+        echo "⚠️  TYPESCRIPT 'ANY' TYPES DETECTED - MANUAL FIX REQUIRED"
+        echo ""
+        echo "The following files contain 'any' types that need proper typing:"
+        echo ""
+        
+        local total_count=0
         while IFS= read -r file; do
-            echo "  📁 $file"
-            grep -n ": any\|<any>\|any\[\]\|= any\|any |" "$file" | head -3 | while IFS= read -r line; do
-                echo "    └─ $line"
+            local count=$(grep -c ": any\|<any>\|any\[\]\|= any\| as any" "$file" 2>/dev/null || echo "0")
+            total_count=$((total_count + count))
+            echo "  📁 $file ($count occurrence(s))"
+            
+            # Show first few occurrences with line numbers
+            grep -n ": any\|<any>\|any\[\]\|= any\| as any" "$file" 2>/dev/null | head -3 | while IFS= read -r line; do
+                echo "      └─ $line"
             done
         done <<< "$any_files"
+        
+        echo ""
+        echo "Total: $total_count 'any' usage(s) found"
+        echo ""
+        echo "🔧 TO FIX: Please analyze the code context and replace 'any' with proper types:"
+        echo "   • Use specific interfaces or types based on the actual data structure"
+        echo "   • For event handlers, use proper event types (e.g., React.MouseEvent)"
+        echo "   • For API responses, create interfaces matching the response structure"
+        echo "   • Only use 'unknown' with proper type guards when type is truly unknown"
+        echo ""
+        echo "⚡ Claude Code will now fix these types properly..."
+        
+        # Return error to trigger Claude to fix the issues
         return 1
     else
         log_success "No 'any' usage detected"

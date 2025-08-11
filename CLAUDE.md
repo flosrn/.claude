@@ -14,6 +14,9 @@
 ## Code Preferences
 
 - TypeScript over JavaScript
+- **NEVER use `any` type - use proper types or `unknown`**
+- **ALWAYS import types explicitly (no missing imports)**
+- **ALWAYS fix TypeScript errors before proceeding**
 - Functional patterns preferred
 - Semantic commit messages
 - Tests required before commits
@@ -23,6 +26,29 @@
 - Package manager: pnpm (preferred), npm (fallback)
 - Build: Always run lint + typecheck before production
 - Git: Conventional commits format
+
+## Automated Quality Workflow
+
+The following quality checks are **automatically executed** via Claude Code hooks:
+
+### Pre-Edit Validation (`PreToolUse:Edit`)
+- TypeScript syntax validation
+- Project-wide TypeScript compilation check
+- Git repository status check
+
+### Post-Edit Processing (`PostToolUse:Edit|Write`)
+- **Automatic linting**: ESLint with `--fix`
+- **Automatic formatting**: Prettier
+- **TypeScript type checking**: Full compilation validation
+- **`any` usage detection**: Blocks any usage of `any` type
+- **Import validation**: Ensures all imports are resolved
+
+### Final Quality Gate (`Stop`)
+- Comprehensive TypeScript check
+- Full project linting validation
+- Build validation (if available)
+- Final `any` usage scan
+- All checks must pass before session completion
 
 # Planning guidelines
 

@@ -1,0 +1,42 @@
+[
+  {
+    "content": "0) Préparation & sauvegarde - Variables, backup, nouveau scaffold, copie .git",
+    "status": "completed",
+    "id": "prep"
+  },
+  {
+    "content": "1) Intégration validator PreToolUse (sécurité avec bun)",
+    "status": "in_progress",
+    "id": "validator"
+  },
+  {
+    "content": "2) Import sélectif centminmod/my-claude-code-setup",
+    "status": "pending",
+    "id": "centminmod"
+  },
+  {
+    "content": "3) Integration bartolli/claude-code-typescript-hooks (TS strict)",
+    "status": "pending",
+    "id": "ts-hooks"
+  },
+  {
+    "content": "4) Import scopecraft/command → create-command.md",
+    "status": "pending",
+    "id": "scopecraft"
+  },
+  {
+    "content": "5) Integration agentsea/flashbacker (mémoire/trace)",
+    "status": "pending",
+    "id": "flashbacker"
+  },
+  {
+    "content": "6) Settings finalisés (propres & robustes)",
+    "status": "pending",
+    "id": "settings"
+  },
+  {
+    "content": "7) Vérifications & documentation finale",
+    "status": "pending",
+    "id": "verification"
+  }
+]

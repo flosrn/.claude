@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Read(*)"
+    ]
+  },
+  "env": {
+    "CLAUDE_NO_ANY": "true",
+    "CLAUDE_DISABLE_PROJECT_HOOKS": "true"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "bun $HOME/.claude/scripts/validate-command.js",
+        "timeout": 3000
+      }
+    ],
+    "Stop": [
+      {
+        "command": "echo '✅ Claude session completed'",
+        "timeout": 1000,
+        "run_in_background": true
+      }
+    ]
+  }
+}

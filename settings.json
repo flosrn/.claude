@@ -1,6 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "env": {},
+  "env": {
+    "CLAUDE_NO_ANY": "true",
+    "CLAUDE_DISABLE_PROJECT_HOOKS": "true"
+  },
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
@@ -12,74 +15,28 @@
     ],
     "deny": []
   },
-  "model": "sonnet",
-  "env": {
-    "CLAUDE_MODE": "development",
-    "CLAUDE_PERFORMANCE": "optimized"
-  },
+  "model": "opusplan",
   "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay -v 0.1 /Users/flo/.claude/songs/need-human.mp3",
-            "timeout": 2000,
-            "background": true
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "condition": "$CLAUDE_PERFORMANCE != 'optimized'",
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.bun/bin/bun /Users/flo/.claude/scripts/validate-command.js",
-            "timeout": 3000,
-            "background": true
+            "command": "node /Users/flo/.claude/scripts/validate-command.js",
+            "timeout": 3000
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit",
-        "condition": "$CLAUDE_FILE_PATHS ~= '\\.(ts|tsx)$' && $CLAUDE_MODE == 'production'",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node /Users/flo/.claude/scripts/detect-any-types.js",
-            "timeout": 5000,
-            "background": true
-          }
-        ]
-      },
-      {
         "matcher": "Edit|Write",
-        "condition": "$CLAUDE_FILE_PATHS ~= '\\.(ts|tsx|js|jsx)$'",
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/flo/.claude/scripts/detect-and-lint-optimized.sh",
-            "timeout": 8000,
-            "background": true,
-            "debounce": 2000
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "condition": "$CLAUDE_FILE_PATHS ~= '\\.(json|yml|yaml|md)$'",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /Users/flo/.claude/scripts/format-only.sh",
-            "timeout": 3000,
-            "background": true
+            "command": "bash /Users/flo/.claude/scripts/simple-lint.sh",
+            "timeout": 5000
           }
         ]
       }
@@ -87,27 +44,19 @@
     "Stop": [
       {
         "matcher": "",
-        "condition": "$CLAUDE_MODE == 'production'",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /Users/flo/.claude/scripts/final-quality-gate-light.sh",
-            "timeout": 15000
-          }
-        ]
-      },
-      {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",
             "command": "afplay -v 0.1 /Users/flo/.claude/songs/finish.mp3",
-            "timeout": 2000,
-            "background": true
+            "timeout": 2000
           }
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bun x ccusage statusline"
   },
   "feedbackSurveyState": {
     "lastShownTime": 1754066543620

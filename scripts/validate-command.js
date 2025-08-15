@@ -366,9 +366,9 @@ class CommandValidator {
 
     // Check privilege escalation commands
     if (SECURITY_RULES.PRIVILEGE_COMMANDS.includes(mainCommand)) {
-      // Allow chmod for Claude scripts directory
-      if (mainCommand === "chmod" && command.includes("/.claude/scripts/")) {
-        // Allow chmod for Claude scripts
+      // Allow chmod for Claude directories (scripts and hooks)
+      if (mainCommand === "chmod" && (command.includes("/.claude/scripts/") || command.includes("/.claude/hooks/"))) {
+        // Allow chmod for Claude scripts and hooks
       } else {
         result.isValid = false;
         result.severity = "HIGH";

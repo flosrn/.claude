@@ -1,29 +1,46 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(*)",
-      "Edit(*)",
-      "Write(*)",
-      "Read(*)"
-    ]
+    "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)"]
   },
   "env": {
-    "CLAUDE_NO_ANY": "true",
-    "CLAUDE_DISABLE_PROJECT_HOOKS": "true"
+    "CLAUDE_NO_ANY": "true"
   },
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command": "bun $HOME/.claude/scripts/validate-command.js",
-        "timeout": 3000
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/scripts/validate-command.js",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun $HOME/.claude/hooks/ts/run-ts-quality.js",
+            "timeout": 15000
+          }
+        ]
       }
     ],
     "Stop": [
       {
-        "command": "echo '✅ Claude session completed'",
-        "timeout": 1000,
-        "run_in_background": true
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay -v 0.1 $HOME/.claude/songs/finish.mp3",
+            "run_in_background": true,
+            "timeout": 2000
+          }
+        ]
       }
     ]
   }

@@ -1,0 +1,30 @@
+# Sensitive files and directories
+/local/
+/todos/
+/config/notification_states.json
+/shell-snapshots/
+/ide/
+/projects/
+/statsig/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.key
+*secret*
+*token*
+
+# Settings with potentially sensitive paths
+# Note: settings.json kept but reviewed for sensitive data

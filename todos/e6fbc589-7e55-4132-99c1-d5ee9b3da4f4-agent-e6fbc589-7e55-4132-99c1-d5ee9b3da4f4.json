@@ -11,12 +11,12 @@
   },
   {
     "content": "2) Import sélectif centminmod/my-claude-code-setup",
-    "status": "in_progress",
+    "status": "completed",
     "id": "centminmod"
   },
   {
     "content": "3) Integration bartolli/claude-code-typescript-hooks (TS strict)",
-    "status": "pending",
+    "status": "in_progress",
     "id": "ts-hooks"
   },
   {

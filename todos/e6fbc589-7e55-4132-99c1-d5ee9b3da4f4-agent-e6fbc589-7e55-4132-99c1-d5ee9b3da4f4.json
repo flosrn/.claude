@@ -6,12 +6,12 @@
   },
   {
     "content": "1) Intégration validator PreToolUse (sécurité avec bun)",
-    "status": "in_progress",
+    "status": "completed",
     "id": "validator"
   },
   {
     "content": "2) Import sélectif centminmod/my-claude-code-setup",
-    "status": "pending",
+    "status": "in_progress",
     "id": "centminmod"
   },
   {

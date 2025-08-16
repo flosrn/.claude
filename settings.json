@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"/Users/flo/.claude/.claude/flashback/scripts/session-start.sh\""
+            "command": "bash \"/Users/flo/.claude/flashback/scripts/session-start.sh\""
           }
         ]
       }

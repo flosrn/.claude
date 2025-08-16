@@ -44,6 +44,12 @@
             "command": "afplay -v 0.1 $HOME/.claude/songs/finish.mp3",
             "run_in_background": true,
             "timeout": 2000
+          },
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/ccnotify/ccnotify.py Stop",
+            "run_in_background": true,
+            "timeout": 3000
           }
         ]
       }
@@ -55,6 +61,32 @@
           {
             "type": "command",
             "command": "bash \"/Users/flo/.claude/flashback/scripts/session-start.sh\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/ccnotify/ccnotify.py UserPromptSubmit",
+            "run_in_background": true,
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/ccnotify/ccnotify.py Notification",
+            "run_in_background": true,
+            "timeout": 2000
           }
         ]
       }

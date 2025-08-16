@@ -29,5 +29,9 @@ node_modules/
 # Settings with potentially sensitive paths
 # Note: settings.json kept but reviewed for sensitive data
 
+# CCNotify database and logs
+/ccnotify/*.db
+/ccnotify/*.log
+
 # Claude Code frameworks (exclude all)
 .claude/

@@ -1,1 +1,0 @@
-{"timestamp":"2025-08-16T15:39:39.408Z","sessionId":"88d3d167-b42c-41e5-8eb5-72ac7ee49b79","toolName":"Bash","command":"cd ~/.claude && git add -A && git commit -m \"feat(trace): lightweight flashbacker integration (session management + JSONL logs)\"","blocked":false,"severity":"LOW","violations":[],"source":"claude-code-hook"}

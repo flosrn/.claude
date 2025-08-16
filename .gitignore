@@ -28,3 +28,6 @@ node_modules/
 
 # Settings with potentially sensitive paths
 # Note: settings.json kept but reviewed for sensitive data
+
+# Claude Code frameworks (exclude all)
+.claude/

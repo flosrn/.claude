@@ -1,43 +1,37 @@
-# Intégration centminmod/my-claude-code-setup
+# Centminmod Commands Import
 
-## Éléments importés
+**Source**: https://github.com/centminmod/my-claude-code-setup  
+**Import Date**: 2025-08-15  
+**Selection**: Curated minimal set for Next.js/TypeScript development
 
-### Commandes utiles (namespace `core/`)
+## Imported Commands
 
-- **cleanup/cleanup-context.md** - Optimisation memory bank (15-25% réduction tokens)
-- **refactor/refactor-code.md** - Plans de refactoring sans modification de code  
-- **documentation/create-readme-section.md** - Génération sections README
+### 1. `/cleanup-context`
+- **Location**: `~/.claude/commands/core/cleanup-context.md`
+- **Purpose**: Optimize token usage by removing duplicates and consolidating documentation
+- **Usage**: Run when context becomes large or cluttered
 
-### Pattern Memory Bank
+### 2. `/refactor-code`
+- **Location**: `~/.claude/commands/core/refactor-code.md`
+- **Purpose**: Analyze code for refactoring opportunities (analysis-only, no modifications)
+- **Usage**: Use before major refactoring to get comprehensive analysis and risk assessment
 
-- Système de fichiers CLAUDE-*.md pour maintenir contexte
-- Règles d'exclusion des commits pour fichiers mémoire
-- Continuité de session via activeContext.md
+### 3. `/check-best-practices`
+- **Location**: `~/.claude/commands/core/check-best-practices.md`
+- **Purpose**: Verify TypeScript/React/Next.js best practices and conventions
+- **Usage**: Review code quality against modern standards (ES6+, strict types, React patterns)
 
-### Notifications macOS (optionnel)
+### 4. `/create-readme-section`
+- **Location**: `~/.claude/commands/core/create-readme-section.md`
+- **Purpose**: Generate professional README sections (installation, API, deployment, etc.)
+- **Usage**: Create consistent documentation for Next.js projects
 
-- Script `scripts/notify-macos.sh` 
-- Utilise terminal-notifier si disponible (brew install terminal-notifier)
-- Fallback vers afplay si fichier audio présent
+### 5. `/update-memory-bank`
+- **Location**: `~/.claude/commands/core/update-memory-bank.md`
+- **Purpose**: Update CLAUDE.md and memory bank files
+- **Usage**: Keep project knowledge up-to-date for future sessions
 
-## Non importé (par choix minimaliste)
-
-- Agents complexes (memory-bank-synchronizer, code-searcher, etc.)
-- Commandes anthropic/, security/, architecture/ (redondantes avec notre setup)
-- Configuration MCP spécifique centminmod
-- Settings complets (nous gardons notre approche minimale)
-
-## Intégration avec notre setup
-
-Les éléments importés s'intègrent parfaitement avec :
-- Notre validator de sécurité (PreToolUse)
-- Les hooks TypeScript à venir
-- Le système Flashbacker pour tracing
-- Notre approche settings.json minimale
-
-## Usage recommandé
-
-1. Utiliser `/cleanup-context` régulièrement pour optimiser la mémoire
-2. Employer `/refactor-code` pour analyses sans modification
-3. Créer sections README avec `/create-readme-section`
-4. Adopter le pattern memory bank pour projets complexes
+## Notes
+- Commands are analysis/documentation focused (non-destructive)
+- Aligned with Next.js/TypeScript workflow requirements
+- No heavy CPU usage or global watchers

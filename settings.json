@@ -19,6 +19,23 @@
             "type": "command",
             "command": "bun $HOME/.claude/scripts/validate-command.js",
             "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PreToolUse",
+            "run_in_background": true,
+            "timeout": 2000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PreToolUse",
+            "run_in_background": true,
+            "timeout": 2000
           }
         ]
       }
@@ -31,6 +48,23 @@
             "type": "command",
             "command": "bun $HOME/.claude/hooks/ts/run-ts-quality.js",
             "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PostToolUse",
+            "run_in_background": true,
+            "timeout": 2000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PostToolUse",
+            "run_in_background": true,
+            "timeout": 2000
           }
         ]
       }
@@ -50,6 +84,12 @@
             "command": "python3 $HOME/.claude/ccnotify/ccnotify.py Stop",
             "run_in_background": true,
             "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type Stop",
+            "run_in_background": true,
+            "timeout": 2000
           }
         ]
       }
@@ -74,6 +114,12 @@
             "command": "python3 $HOME/.claude/ccnotify/ccnotify.py UserPromptSubmit",
             "run_in_background": true,
             "timeout": 2000
+          },
+          {
+            "type": "command",
+            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type UserPromptSubmit",
+            "run_in_background": true,
+            "timeout": 2000
           }
         ]
       }
@@ -85,6 +131,12 @@
           {
             "type": "command",
             "command": "python3 $HOME/.claude/ccnotify/ccnotify.py Notification",
+            "run_in_background": true,
+            "timeout": 2000
+          },
+          {
+            "type": "command",
+            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type Notification",
             "run_in_background": true,
             "timeout": 2000
           }

@@ -33,5 +33,13 @@ node_modules/
 /ccnotify/*.db
 /ccnotify/*.log
 
+# Observability system
+/observability/apps/server/events.db
+/observability/apps/server/node_modules/
+/observability/apps/client/node_modules/
+/observability/apps/client/dist/
+/observability/.pids
+/observability/logs/
+
 # Claude Code frameworks (exclude all)
 .claude/

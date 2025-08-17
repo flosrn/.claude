@@ -72,18 +72,17 @@ Then describe the task when prompted.
 - **Integration with CCNotify** for progress notifications
 
 ## Security & Error Recovery
-- **Branch Protection**: ABORT if on main/master/develop branches
-- **Push Protection**: NEVER push to upstream/protected branches
+- **Remote Protection**: NEVER push to upstream remote (origin only)
 - **Step validation**: Ensure each step succeeds before proceeding
 - **Rollback options**: Ability to undo changes if issues occur
 - **Resume capability**: Pick up where left off if command fails
 - **Clear error messages**: Helpful guidance for resolving issues
 
 ## Critical Security Rules
-- **NEVER execute on protected branches** (main, master, develop, upstream)
-- **NEVER push to origin/main** or upstream remotes
-- **Always validate branch safety** before any destructive operations
-- **Abort immediately** if unsafe conditions detected
+- **NEVER push to upstream** remote (only origin allowed)
+- **Allow all local branch operations** (main, develop, feature branches)
+- **Always validate remote safety** before push operations
+- **Abort immediately** if upstream push detected
 
 ## User Confirmations
 - **Branch name approval**: Show generated name for confirmation

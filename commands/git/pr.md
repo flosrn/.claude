@@ -11,10 +11,10 @@
 5. **Link Issues**: Auto-detect and link related issues
 
 ## Implementation Steps
-1. **Security Check**: Verify we're NOT on main/master/upstream branches
-2. **Branch Validation**: Ensure current branch is a feature/fix/etc. branch
+1. **Remote Security Check**: Verify we're NOT pushing to upstream remote
+2. **Branch Validation**: Ensure current branch follows conventions (feature/, fix/, etc.)
 3. **Check Branch Status**: Verify current branch and commit status
-4. **Safe Push**: `git push -u origin current-branch` ONLY if on safe branch
+4. **Safe Push**: `git push -u origin current-branch` (origin only, never upstream)
 5. **Analyze Changes**: Review commit history and file changes since main
 6. **Generate PR Content**: Create title and description based on commits
 7. **Detect Issues**: Look for issue references in commits
@@ -81,19 +81,17 @@ gh pr view         # View current PR details
 - **Suggest appropriate emoji** based on change type
 
 ## Security Validations (CRITICAL)
-- **ABORT if on main/master/develop/upstream** branches
+- **NEVER push to UPSTREAM** remotes (only origin allowed)
 - **ABORT if branch name doesn't follow conventions** (feature/, fix/, docs/, etc.)
-- **NEVER push to protected branches**
 - Verify GitHub CLI is authenticated (`gh auth status`)
 - Check if current branch has commits ahead of main
-- Ensure branch is pushed to remote (safe branches only)
+- Ensure branch is pushed to origin remote only
 - Confirm no uncommitted changes
 
-## Protected Branches (NO PUSH ALLOWED)
-- main, master, develop
-- production, staging  
-- upstream, origin/main
-- Any branch without conventional prefix
+## Protected Remotes (NO PUSH ALLOWED)
+- upstream (NEVER push to upstream)
+- Any remote other than origin
+- Allow push to origin/main, origin/develop etc. (your fork)
 
 ## Branch Analysis
 - **Compare with main**: `git log main..HEAD --oneline`

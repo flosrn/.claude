@@ -35,16 +35,15 @@ Examples:
 Command accepts optional description: `/branch "Add dark mode toggle"`
 
 ## Safety Checks
-- **ABORT if currently on main/master/develop** - never branch from protected branches
 - Ensure working directory is clean or changes are stashed
 - Warn if branch already exists
 - Show current branch before and after creation
-- **Only allow branching from safe starting points**
+- **Verify no upstream remote push configurations**
 
-## Protected Source Branches (CHECK FIRST)
-- If on main/master/develop → Switch to safe branch first
-- Recommend: `git checkout main && git pull` then create feature branch
-- NEVER create branches directly from upstream branches
+## Remote Safety (CRITICAL)
+- **NEVER push to upstream** remote (only origin allowed)
+- Allow branching from any local branch (main, develop, feature branches)
+- Focus on preventing upstream pushes, not branch creation
 
 ## Integration
 - Compatible with CCNotify notifications

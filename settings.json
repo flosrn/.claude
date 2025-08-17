@@ -1,15 +1,10 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(*)",
-      "Edit(*)",
-      "Write(*)",
-      "Read(*)"
-    ]
+    "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)"]
   },
   "env": {
     "CLAUDE_NO_ANY": "true",
-    "CLAUDE_NO_TS_CHECK": "false"
+    "CLAUDE_NO_TS_CHECK": "true"
   },
   "hooks": {
     "PreToolUse": [

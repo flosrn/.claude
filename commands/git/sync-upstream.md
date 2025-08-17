@@ -32,9 +32,9 @@ Following Makerkit's official procedure for Next.js Supabase Turbo Starter Kit:
 
 ### Step 3: Fetch Upstream Changes
 1. **Fetch Upstream**: `git fetch upstream`
-2. **Merge Strategy**: `git pull upstream main` (merge, not rebase)
-3. **Handle Prompts**: Auto-select merge when prompted
-4. **Status Check**: Verify merge completion
+2. **Force Merge Strategy**: `git pull upstream main --no-rebase` (CRITICAL: force merge, never rebase)
+3. **Merge Completion**: Verify merge status (conflicts expected)
+4. **Status Check**: Identify conflicted files for resolution
 
 ### Step 4: Dependency Update
 1. **Update Dependencies**: `pnpm i` (or npm/yarn based on project)
@@ -43,13 +43,22 @@ Following Makerkit's official procedure for Next.js Supabase Turbo Starter Kit:
 
 ### Step 5: Conflict Resolution (Automated)
 
-#### A) Lock File Conflicts (`pnpm-lock.yaml`)
-- **Detection**: Check if lock file has conflicts
-- **Resolution**: Accept upstream version, then `pnpm i`
-- **Verification**: Ensure dependencies resolve correctly
+#### A) Package.json Conflicts (INTELLIGENT MERGE)
+- **Detection**: Identify conflicted package.json files
+- **Smart Resolution**: For each conflicted dependency:
+  1. **Parse both versions** (yours vs upstream)
+  2. **Compare semantic versions** (use higher version)
+  3. **Preserve your custom dependencies** not in upstream
+  4. **Merge scripts and configs** intelligently
+- **Manual Review**: Flag major version differences for review
 
-#### B) Database Types Conflicts (`database.types.ts`)
-- **Detection**: Check for database types conflicts
+#### B) Lock File Conflicts (`pnpm-lock.yaml`) 
+- **Detection**: Check if lock file has conflicts
+- **Resolution**: Delete lock file, regenerate with `pnpm i`
+- **Verification**: Ensure all dependencies resolve correctly
+
+#### C) Database Types Conflicts (`database.types.ts`)
+- **Detection**: Check for database types conflicts  
 - **Reset Database**: `npm run supabase:web:reset`
 - **Regenerate Types**: `npm run supabase:web:typegen`
 - **Verification**: Confirm types generation success
@@ -78,9 +87,23 @@ Following Makerkit's official procedure for Next.js Supabase Turbo Starter Kit:
 - **Type Generation**: Automatic regeneration after reset
 - **Verification**: Ensure Supabase services remain functional
 
+### Intelligent Dependency Resolution
+**Package.json Merge Logic:**
+1. **Version Comparison**: Use semver to compare versions
+2. **Choose Higher Version**: `^2.1.0` vs `^2.0.5` → choose `^2.1.0`
+3. **Preserve Custom Deps**: Keep dependencies unique to your fork
+4. **Merge Scripts**: Combine scripts from both, prefer yours for custom scripts
+5. **Flag Breaking Changes**: Alert on major version bumps (1.x → 2.x)
+
+**Conflict Resolution Priority:**
+1. **Dependencies**: Choose higher semantic version
+2. **DevDependencies**: Choose higher semantic version  
+3. **Scripts**: Merge both, resolve duplicates by preferring yours
+4. **Custom Fields**: Preserve your customizations
+
 ### Common Conflict Patterns
-- **Lock files**: Always regenerate after accepting changes
-- **Config files**: Merge carefully, preserving customizations
+- **Lock files**: Delete and regenerate (never merge manually)
+- **Package.json**: Intelligent version merge (higher semver wins)
 - **Database schemas**: Reset and regenerate when needed
 - **Environment files**: Preserve local configurations
 

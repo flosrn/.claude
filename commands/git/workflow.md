@@ -32,7 +32,7 @@ This command will:
 ### Step 3: Staging & Commit
 - Guide user to stage files (`git add`)
 - Execute smart commit workflow
-- Generate conventional commit messages
+- Auto-select best conventional commit message
 - Handle pre-commit validations
 
 ### Step 4: Pull Request Creation
@@ -87,7 +87,7 @@ Then describe the task when prompted.
 
 ## User Confirmations
 - **Branch name approval**: Show generated name for confirmation
-- **Commit message selection**: Present options for user choice
+- **Auto-commit execution**: Best message selected automatically
 - **PR content review**: Display title/description before creation
 - **Final confirmation**: Summary of all actions before execution
 
@@ -116,7 +116,7 @@ User: /workflow "Add user authentication with OAuth"
 User: Ready to commit
 
 ✅ 4. Analyzing changes in src/auth/
-✅ 5. Generated 5 commit message options
+✅ 5. Auto-selected best commit message
 ✅ 6. Committed: ✨ feat(auth): add OAuth authentication flow
 ✅ 7. Pushing to remote...
 ✅ 8. Creating PR...

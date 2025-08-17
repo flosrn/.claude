@@ -11,13 +11,15 @@
 5. **Link Issues**: Auto-detect and link related issues
 
 ## Implementation Steps
-1. **Check Branch Status**: Verify current branch and commit status
-2. **Push if Needed**: `git push -u origin current-branch` if not pushed
-3. **Analyze Changes**: Review commit history and file changes since main
-4. **Generate PR Content**: Create title and description based on commits
-5. **Detect Issues**: Look for issue references in commits
-6. **Create PR**: Execute `gh pr create` with generated content
-7. **Provide Links**: Show PR URL and next steps
+1. **Security Check**: Verify we're NOT on main/master/upstream branches
+2. **Branch Validation**: Ensure current branch is a feature/fix/etc. branch
+3. **Check Branch Status**: Verify current branch and commit status
+4. **Safe Push**: `git push -u origin current-branch` ONLY if on safe branch
+5. **Analyze Changes**: Review commit history and file changes since main
+6. **Generate PR Content**: Create title and description based on commits
+7. **Detect Issues**: Look for issue references in commits
+8. **Create PR**: Execute `gh pr create` with generated content
+9. **Provide Links**: Show PR URL and next steps
 
 ## PR Title Format
 **Conventional format with emoji:**
@@ -78,11 +80,20 @@ gh pr view         # View current PR details
 - **Generate summary** based on actual changes made
 - **Suggest appropriate emoji** based on change type
 
-## Pre-flight Validations
+## Security Validations (CRITICAL)
+- **ABORT if on main/master/develop/upstream** branches
+- **ABORT if branch name doesn't follow conventions** (feature/, fix/, docs/, etc.)
+- **NEVER push to protected branches**
 - Verify GitHub CLI is authenticated (`gh auth status`)
 - Check if current branch has commits ahead of main
-- Ensure branch is pushed to remote
+- Ensure branch is pushed to remote (safe branches only)
 - Confirm no uncommitted changes
+
+## Protected Branches (NO PUSH ALLOWED)
+- main, master, develop
+- production, staging  
+- upstream, origin/main
+- Any branch without conventional prefix
 
 ## Branch Analysis
 - **Compare with main**: `git log main..HEAD --oneline`

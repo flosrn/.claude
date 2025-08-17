@@ -14,6 +14,10 @@ Following Makerkit's official procedure for Next.js Supabase Turbo Starter Kit:
 
 ## Implementation Steps
 
+### Step 0: Date Acquisition
+1. **Get Current Date**: Execute `date +%Y-%m-%d` to obtain today's date
+2. **Store Date Variable**: Use result for branch naming throughout process
+
 ### Step 1: Preparation & Safety
 1. **Check Working Directory**: Ensure clean state or stash changes
 2. **Verify Remotes**: Confirm upstream remote exists
@@ -23,7 +27,7 @@ Following Makerkit's official procedure for Next.js Supabase Turbo Starter Kit:
 ### Step 2: Create Update Branch  
 1. **Switch to Main**: `git checkout main`
 2. **Pull Latest**: `git pull origin main` (sync your fork first)
-3. **Create Branch**: `git checkout -b update-codebase-YYYY-MM-DD`
+3. **Create Branch**: `git checkout -b update-codebase-YYYY-MM-DD` (using date from Step 0)
 4. **Confirm Creation**: Verify branch creation success
 
 ### Step 3: Fetch Upstream Changes
@@ -113,8 +117,13 @@ Source: Makerkit Next.js Supabase Turbo Starter
 
 ## Command Arguments
 - `$ARGUMENTS` - Optional date override: `/sync-upstream 2024-01-15`
-- **Auto-date**: Uses current date if no argument provided
+- **Auto-date**: Execute `date +%Y-%m-%d` to get current date if no argument provided
 - **Branch naming**: `update-codebase-YYYY-MM-DD` format
+
+## Date Handling Logic
+1. **If arguments provided**: Use provided date (validate format YYYY-MM-DD)
+2. **If no arguments**: Execute `date +%Y-%m-%d` to obtain current system date
+3. **Branch creation**: Use resolved date for `update-codebase-{date}` branch name
 
 ## Verification Checklist
 After sync completion:

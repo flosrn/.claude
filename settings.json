@@ -8,7 +8,8 @@
     ]
   },
   "env": {
-    "CLAUDE_NO_ANY": "true"
+    "CLAUDE_NO_ANY": "true",
+    "CLAUDE_NO_TS_CHECK": "false"
   },
   "hooks": {
     "PreToolUse": [

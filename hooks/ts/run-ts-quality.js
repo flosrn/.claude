@@ -276,6 +276,12 @@ class StrictTypeScriptQualityHook {
 
   async run() {
     try {
+      // Check if TypeScript checking is disabled
+      if (process.env.CLAUDE_NO_TS_CHECK === 'true') {
+        console.error('[INFO] TypeScript checking disabled via CLAUDE_NO_TS_CHECK=true');
+        process.exit(0);
+      }
+      
       // Parse input from Claude Code hook
       const input = await this.readStdin();
       let hookData;

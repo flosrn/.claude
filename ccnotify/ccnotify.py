@@ -151,9 +151,12 @@ class ClaudePromptTracker:
                 conn.execute("""
                     UPDATE prompt 
                     SET lastWaitUserAt = CURRENT_TIMESTAMP
-                    WHERE session_id = ?
-                    ORDER BY created_at DESC
-                    LIMIT 1
+                    WHERE id = (
+                        SELECT id FROM prompt 
+                        WHERE session_id = ? 
+                        ORDER BY created_at DESC 
+                        LIMIT 1
+                    )
                 """, (session_id,))
                 conn.commit()
             

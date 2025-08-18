@@ -5,10 +5,11 @@
 ## 📋 Table des Matières
 
 1. [Vue d'ensemble](#vue-densemble)
-2. [Gestion des Sessions (Flashbacker)](#gestion-des-sessions-flashbacker)
-3. [Commandes Disponibles](#commandes-disponibles)
-4. [Hooks de Sécurité et Qualité](#hooks-de-sécurité-et-qualité)
-5. [Workflows Recommandés](#workflows-recommandés)
+2. [Status Line Intelligente](#status-line-intelligente)
+3. [Système de Notifications](#système-de-notifications)
+4. [Commandes Disponibles](#commandes-disponibles)
+5. [Hooks de Sécurité et Qualité](#hooks-de-sécurité-et-qualité)
+6. [Workflows Recommandés](#workflows-recommandés)
 
 ---
 
@@ -18,133 +19,95 @@
 ```
 ~/.claude/
 ├── commands/           # Commandes slash personnalisées
-│   ├── core/          # Commandes utilitaires (centminmod)
-│   └── fb/            # Commandes session (flashbacker)
-├── flashback/         # Système de mémoire persistante
-│   ├── memory/        # Fichiers REMEMBER.md, WORKING_PLAN.md
-│   ├── scripts/       # Scripts hooks
-│   └── prompts/       # Templates AI
+│   ├── core/          # Commandes utilitaires
+│   ├── git/           # Workflows Git
+│   └── observability/ # Commandes monitoring
+├── observability/     # Système d'observabilité
+│   ├── apps/server/   # Serveur événements (port 4000)
+│   ├── apps/client/   # Dashboard UI (port 5173)
+│   └── statusline-ccusage.sh  # Status line avancée
+├── ccnotify/          # Notifications Ghostty
 ├── hooks/             # Hooks de validation
-│   └── ts/           # Validation TypeScript
-├── scripts/          # Scripts utilitaires
+│   ├── ts/           # Validation TypeScript
+│   └── observability/ # Tracking événements
+├── scripts/          # Scripts utilitaires et sécurité
 ├── logs/             # Logs de sécurité
 └── settings.json     # Configuration Claude Code
 ```
 
 ---
 
-## 🧠 Gestion des Sessions (Flashbacker)
+## 🔋 Status Line Intelligente
 
-### Concept Clé
-Flashbacker maintient votre contexte de travail entre les sessions Claude, même après compaction du contexte.
+### Fonctionnalités
+La status line affiche en temps réel toutes les informations importantes :
 
-### Fichiers de Mémoire
+#### Éléments Affichés
+- **🌿 Branch Git** : Branche courante avec modifications (+/-) colorées
+- **📁 Répertoire** : Nom du dossier courant
+- **🤖 Modèle** : Modèle Claude actuel (Sonnet 4, Opus 4.1, etc.)
+- **💰 Coûts** : Session (vert), journée (violet), block (gris)
+- **⏱ Temps restant** : Temps restant du block actuel
+- **🔋 Progress Bar** : Barre de progression colorée du block
+- **🧩 Tokens** : Comptage intelligent des tokens
 
-#### `REMEMBER.md`
-- **Rôle** : Mémoire long-terme du projet
-- **Contenu** : Architecture, décisions importantes, conventions, pièges à éviter
-- **Persistance** : Permanent, survit aux compactions
-
-#### `WORKING_PLAN.md`
-- **Rôle** : Plan de développement actuel
-- **Contenu** : Tâches en cours, priorités, blocages
-- **Mise à jour** : À chaque session importante
-
-#### `CURRENT_SESSION.md`
-- **Rôle** : Snapshot de la session courante
-- **Contenu** : Résumé des accomplissements, décisions, problèmes résolus
-- **Archivage** : Automatique (garde 10 dernières sessions)
-
-### 🔄 Workflow Session Management
-
-#### Avant Compaction (Context ~90% plein)
-
-1. **Sauvegarder la session** :
+#### Format d'Affichage
 ```
-/fb:save-session
-```
-- Crée un résumé formaté de la session
-- Archive automatiquement l'ancienne session
-- Sauvegarde dans `CURRENT_SESSION.md`
-
-2. **OU Mettre à jour le plan** :
-```
-/fb:working-plan
-```
-- Analyse la conversation
-- Met à jour les priorités dans `WORKING_PLAN.md`
-- Déplace les tâches complétées
-
-#### Après Compaction
-
-Le hook `SessionStart` s'exécute automatiquement et charge :
-- REMEMBER.md (mémoire projet)
-- WORKING_PLAN.md (priorités actuelles)  
-- Historique de conversation précédente
-
-Si le hook ne se déclenche pas, exécutez manuellement :
-```
-/fb:session-start
+🌿 main* (+3 -8) | 📁 .claude | 🤖 Sonnet 4 | 💰 $20.25 / 📅 $30.10 / 🧊 $13.48 (4h 24m left) | 🔋 ██░░░░░░░░ 11% | 🧩 16.5K tokens
 ```
 
-#### Ajouter à la Mémoire Permanente
-
-Pour sauvegarder une information critique :
-```
-/fb:remember "Ne jamais utiliser l'API v1, toujours v2 pour l'auth"
-```
-
-### 📊 Format du Session Summary
-
-Le `/fb:save-session` génère automatiquement :
-```markdown
-# 📋 Session Summary - [Date]
-
-## 🎯 Session Overview
-[Résumé principal]
-
-## 📁 Files Modified
-- **`path/file.ts`** - Description détaillée
-
-## ⚒️ Tool Calls & Operations
-- **Edit**: `file:lines` - Changement effectué
-- **Bash**: `command` - Résultat
-
-## ✅ Key Accomplishments
-- Feature implémentée avec détails
-
-## 🔧 Problems Solved
-- Issue → Solution → Vérification
-
-## 💡 Technical Decisions
-- Décision prise avec justification
-
-## 🔄 Next Steps
-- Prochaines priorités
-```
+#### Codes Couleur Progress Bar
+- **🟢 Vert** : 0-59% d'utilisation (sécurisé)
+- **🟡 Jaune** : 60-79% d'utilisation (attention)
+- **🔴 Rouge** : 80-100% d'utilisation (critique)
 
 ---
 
+## 🔔 Système de Notifications
+
+### ccnotify - Notifications Intelligentes
+
+#### Fonctionnalités
+- **Tracking automatique** : Suivi des tâches Claude Code
+- **Calcul de durée** : Temps d'exécution précis
+- **Base de données** : SQLite pour historique complet
+- **Integration Ghostty** : Clic pour retourner à votre session
+
+#### Types de Notifications
+1. **Task Complete** : Tâche terminée avec durée
+2. **Waiting for Input** : Claude attend votre réponse
+
+#### Fonctionnement
+- **Déclenchement** : Hooks Stop et Notification
+- **Affichage** : `terminal-notifier` avec titre/durée
+- **Action clic** : Active Ghostty et revient à votre session
+
+
 ## 📚 Commandes Disponibles
 
-### Commandes Session (`/fb:*`)
-
-| Commande | Description | Quand l'utiliser |
-|----------|-------------|------------------|
-| `/fb:session-start` | Restaure le contexte après compaction | Début de session ou après compaction |
-| `/fb:save-session` | Capture et formate le résumé de session | Avant compaction (90% contexte) |
-| `/fb:working-plan` | Met à jour le plan de développement | Après avancement significatif |
-| `/fb:remember "info"` | Ajoute à la mémoire permanente | Information critique découverte |
-
-### Commandes Utilitaires (`/core/*`)
+### Commandes Git (`/git:*`)
 
 | Commande | Description | Usage |
 |----------|-------------|-------|
-| `/cleanup-context` | Optimise les tokens en consolidant la doc | Quand le contexte devient trop large |
-| `/refactor-code` | Analyse approfondie pour refactoring | Avant refactoring majeur |
-| `/check-best-practices` | Vérifie standards TS/React/Next.js | Review de qualité code |
-| `/create-readme-section` | Génère sections README professionnelles | Documentation projet |
-| `/update-memory-bank` | Met à jour CLAUDE.md | Sync mémoire projet |
+| `/workflow "description"` | Workflow complet branch→commit→PR | Nouvelle feature ou fix |
+| `/branch "nom-feature"` | Créer branche depuis main | Début développement feature |
+| `/commit` | Commit intelligent avec message auto | Après modifications complètes |
+| `/pr` | Créer pull request avec description | Prêt pour review |
+| `/sync-upstream` | Synchroniser avec upstream (sécurisé) | Mise à jour depuis fork original |
+
+### Commandes TypeScript (`/typescript:*`)
+
+| Commande | Description | Usage |
+|----------|-------------|-------|
+| `/disable-ts-check` | Désactive validation TypeScript | Debug temporaire |
+| `/enable-ts-check` | Réactive validation TypeScript | Retour mode strict |
+
+### Commandes Observabilité (`/observability:*`)
+
+| Commande | Description | Usage |
+|----------|-------------|-------|
+| `/start-monitoring` | Lance dashboard observabilité | Monitoring session |
+| `/stop-monitoring` | Arrête système monitoring | Fin session |
 
 ### Meta-Commande
 

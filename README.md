@@ -13,12 +13,12 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 ### Key Features
 
 - **🔐 Fork-Safe Security**: Never accidentally push to upstream repositories
-- **🧠 Persistent Memory**: Session state survives context compactions via Flashback
-- **🤖 24 Specialized Agents**: From TypeScript mastery to Kubernetes orchestration
+- **🔋 Smart Status Line**: Real-time usage tracking with color-coded progress bars
 - **🛡️ Security-First**: Multi-level command validation and production safeguards
 - **📊 Real-Time Observability**: Track all operations with built-in dashboard
 - **🔄 Smart Git Workflows**: Automated branch → commit → PR orchestration
 - **✨ TypeScript Excellence**: Strict type checking, no `any` types allowed
+- **🔔 Ghostty Integration**: Notifications that bring you back to your terminal session
 - **🔌 7 MCP Integrations**: Pieces, Context7, Vercel, Playwright, and more
 
 ## 📁 Architecture
@@ -27,22 +27,17 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 ~/.claude/
 ├── 📝 commands/           # Slash commands for workflows
 │   ├── core/             # Utility commands
-│   ├── fb/               # Flashback session management
 │   ├── git/              # Git workflow automation
 │   ├── typescript/       # TypeScript utilities
 │   └── observability/    # Monitoring commands
-├── 🤖 agents/            # 24 specialized AI agents
 ├── 🔗 hooks/             # Automation & validation hooks
 │   ├── ts/               # TypeScript quality gates
 │   └── observability/    # Event tracking
-├── 🧠 flashback/         # Persistent memory system
-│   ├── memory/           # REMEMBER.md, WORKING_PLAN.md
-│   ├── scripts/          # Session management
-│   └── prompts/          # AI templates
 ├── 📊 observability/     # Real-time monitoring
 │   ├── apps/server/      # Event server (port 4000)
-│   └── apps/client/      # Dashboard UI (port 5173)
-├── 🔔 ccnotify/          # System notifications
+│   ├── apps/client/      # Dashboard UI (port 5173)
+│   └── statusline-ccusage.sh  # Enhanced status line
+├── 🔔 ccnotify/          # Ghostty-integrated notifications
 ├── 🛡️ scripts/           # Security & validation
 ├── 📁 projects/          # Project contexts
 ├── 🎵 songs/             # Audio notifications
@@ -98,12 +93,10 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 
 ## 📝 Command System
 
-### Session Management (`/fb:*`)
+### Observability (`/observability:*`)
 ```bash
-/fb:session-start      # Restore context after compaction
-/fb:save-session       # Save current session state
-/fb:working-plan       # Update development plan
-/fb:remember "info"    # Add to permanent memory
+/start-monitoring      # Start observability dashboard
+/stop-monitoring       # Stop monitoring system  
 ```
 
 ### Git Workflows (`/git:*`)
@@ -123,23 +116,20 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 /create-readme-section    # Generate documentation
 ```
 
-## 🧠 Memory System (Flashback)
+## 📊 Enhanced Status Line
 
-The Flashback system maintains context across Claude Code sessions:
+The intelligent status line provides real-time usage tracking with visual indicators:
 
-### Memory Files
-- **`REMEMBER.md`** - Long-term project knowledge
-- **`WORKING_PLAN.md`** - Current development priorities
-- **`CURRENT_SESSION.md`** - Active session snapshot
+### Features
+- **🔋 Progress Bar**: Color-coded block usage (green → yellow → red)
+- **💰 Cost Tracking**: Session, daily, and block costs with distinct colors
+- **⏱ Time Remaining**: Smart formatting for remaining block time
+- **🧩 Token Counter**: Real-time token usage with smart formatting
 
-### Workflow
-1. **Before Context Compaction** (~90% full):
-   ```bash
-   /fb:save-session
-   ```
-2. **After Compaction**:
-   - Automatic restoration via SessionStart hook
-   - Manual: `/fb:session-start`
+### Status Line Format
+```
+🌿 main* | 📁 .claude | 🤖 Sonnet 4 | 💰 $20.25 / 📅 $30.10 / 🧊 $13.48 (4h 24m left) | 🔋 ██░░░░░░░░ 11% | 🧩 16.5K tokens
+```
 
 ## 🔗 Hooks & Automation
 
@@ -158,11 +148,12 @@ The Flashback system maintains context across Claude Code sessions:
 
 ## 📊 Observability System
 
-Real-time monitoring of all Claude Code operations:
+Real-time monitoring of all Claude Code operations with enhanced status line:
 
 ### Components
 - **Event Server**: SQLite-backed server (port 4000)
 - **Dashboard**: React-based UI (port 5173)
+- **Status Line**: Enhanced with progress bars and cost tracking
 - **Event Types**: PreToolUse, PostToolUse, Stop, Notification
 
 ### Usage
@@ -171,6 +162,11 @@ cd observability
 ./start.sh    # Start monitoring system
 ./stop.sh     # Stop monitoring system
 ```
+
+### Notification System (ccnotify)
+- **Smart Notifications**: Task completion alerts with duration tracking
+- **Ghostty Integration**: Click notifications to return to your terminal session
+- **Audio Feedback**: Sound notifications for task completion
 
 ## 🔌 MCP Integrations
 

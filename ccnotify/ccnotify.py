@@ -233,7 +233,7 @@ class ClaudePromptTracker:
             ]
             
             if cwd:
-                cmd.extend(['-execute', f'/usr/local/bin/code "{cwd}"'])
+                cmd.extend(['-execute', 'osascript -e "tell application \\"Ghostty\\" to activate"'])
             
             subprocess.run(cmd, check=False, capture_output=True)
             logging.info(f"Notification sent: {title} - {subtitle}")

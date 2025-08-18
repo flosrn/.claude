@@ -41,5 +41,8 @@ node_modules/
 /observability/.pids
 /observability/logs/
 
+# Flashback memory system
+flashback/memory/CURRENT_SESSION.md
+
 # Claude Code frameworks (exclude all)
 .claude/

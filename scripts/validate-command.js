@@ -85,6 +85,12 @@ const SECURITY_RULES = {
     /shred\s+.*\/dev\//i,
     /mkfs\.\w+\s+\/dev\//i,
 
+    // Supabase production database protection
+    /DELETE\s+FROM\s+\w+\s*;?\s*$/i, // DELETE without WHERE clause
+    /DROP\s+(TABLE|DATABASE|SCHEMA)\s+/i, // DROP operations
+    /TRUNCATE\s+TABLE\s+/i, // TRUNCATE operations
+    /ALTER\s+TABLE\s+.*DROP\s+COLUMN/i, // Destructive schema changes
+
     // Fork bomb and resource exhaustion
     /:\(\)\{\s*:\|:&\s*\};:/,
     /while\s+true\s*;\s*do.*done/i,
@@ -156,8 +162,9 @@ const SECURITY_RULES = {
   // Paths that should never be written to
   PROTECTED_PATHS: [
     "/etc/",
-    "/usr/",
-    "/bin/",
+    "/usr/bin/",
+    "/usr/sbin/",
+    "/usr/lib/",
     "/sbin/",
     "/boot/",
     "/sys/",
@@ -203,7 +210,7 @@ const SAFE_COMMANDS = [
 
 class CommandValidator {
   constructor() {
-    this.logFile = "/Users/Flo/.claude/security.log";
+    this.logFile = "/Users/flo/.claude/logs/security.log";
   }
 
   /**
@@ -235,6 +242,78 @@ class CommandValidator {
   }
 
   /**
+   * Supabase production safety validation
+   */
+  validateSupabaseCommand(command) {
+    const violations = [];
+    
+    // Skip if not a Supabase command
+    if (!/supabase\s+/i.test(command) && !/DELETE|DROP|TRUNCATE|ALTER/i.test(command)) {
+      return violations;
+    }
+    
+    // Detect production environment
+    const isProduction = 
+      // Project ref explicite (production - 20+ chars alphanumeric)
+      /--project-ref\s+[a-z0-9]{20,}/i.test(command) ||
+      // Variable d'env pointant vers prod (pas local)
+      (process.env.SUPABASE_PROJECT_REF && !process.env.SUPABASE_PROJECT_REF.includes('local')) ||
+      // URL de production
+      /--db-url\s+.*\.supabase\.co/i.test(command) ||
+      // Commandes avec --remote
+      /--remote/i.test(command) ||
+      // Supabase CLI sans --local (par défaut = remote)
+      (/supabase\s+(db|functions|projects|secrets)/i.test(command) && !/--local/i.test(command));
+
+    // Production-specific dangerous operations
+    if (isProduction) {
+      // Database reset
+      if (/supabase\s+db\s+reset/i.test(command)) {
+        violations.push("CRITICAL: Tentative de reset de la base de données en production");
+      }
+      
+      // Project deletion
+      if (/supabase\s+projects\s+delete/i.test(command)) {
+        violations.push("CRITICAL: Tentative de suppression du projet Supabase en production");
+      }
+      
+      // Function deletion
+      if (/supabase\s+functions\s+delete/i.test(command)) {
+        violations.push("HIGH: Tentative de suppression de fonction en production");
+      }
+      
+      // Branch deletion
+      if (/supabase\s+db\s+branch\s+delete/i.test(command)) {
+        violations.push("HIGH: Tentative de suppression de branche DB en production");
+      }
+      
+      // Secrets modification with production keywords
+      if (/supabase\s+secrets\s+set/i.test(command) && /prod|production|live/i.test(command)) {
+        violations.push("HIGH: Modification de secrets de production détectée");
+      }
+      
+      // Direct SQL dangerous operations
+      if (/DELETE\s+FROM/i.test(command) && !/WHERE/i.test(command)) {
+        violations.push("CRITICAL: DELETE sans clause WHERE en production");
+      }
+      
+      if (/DROP\s+(TABLE|DATABASE|SCHEMA)/i.test(command)) {
+        violations.push("CRITICAL: Opération DROP détectée en production");
+      }
+      
+      if (/TRUNCATE\s+TABLE/i.test(command)) {
+        violations.push("CRITICAL: TRUNCATE TABLE détecté en production");
+      }
+      
+      if (/ALTER\s+TABLE\s+.*DROP\s+COLUMN/i.test(command)) {
+        violations.push("HIGH: Suppression de colonne détectée en production");
+      }
+    }
+    
+    return violations;
+  }
+
+  /**
    * Main validation function
    */
   validate(command, toolName = "Unknown") {
@@ -251,6 +330,20 @@ class CommandValidator {
       result.isValid = false;
       result.severity = "CRITICAL";
       result.violations.push(...forkViolations);
+    }
+
+    // Supabase production safety checks
+    const supabaseViolations = this.validateSupabaseCommand(command);
+    if (supabaseViolations.length > 0) {
+      result.isValid = false;
+      // Set severity based on violation type
+      const hasCritical = supabaseViolations.some(v => v.startsWith("CRITICAL"));
+      if (hasCritical || result.severity === "CRITICAL") {
+        result.severity = "CRITICAL";
+      } else {
+        result.severity = "HIGH";
+      }
+      result.violations.push(...supabaseViolations);
     }
 
     if (!command || typeof command !== "string") {
@@ -273,9 +366,14 @@ class CommandValidator {
 
     // Check privilege escalation commands
     if (SECURITY_RULES.PRIVILEGE_COMMANDS.includes(mainCommand)) {
-      result.isValid = false;
-      result.severity = "HIGH";
-      result.violations.push(`Privilege escalation command: ${mainCommand}`);
+      // Allow chmod for Claude directories (scripts and hooks)
+      if (mainCommand === "chmod" && (command.includes("/.claude/scripts/") || command.includes("/.claude/hooks/"))) {
+        // Allow chmod for Claude scripts and hooks
+      } else {
+        result.isValid = false;
+        result.severity = "HIGH";
+        result.violations.push(`Privilege escalation command: ${mainCommand}`);
+      }
     }
 
     // Check network commands
@@ -313,6 +411,10 @@ class CommandValidator {
         ) {
           continue;
         }
+        // Allow project-specific /bin/ directories (not system /bin/)
+        if ((path === "/usr/bin/" || path === "/usr/sbin/") && !command.includes("/usr/")) {
+          continue;
+        }
         result.isValid = false;
         result.severity = "HIGH";
         result.violations.push(`Access to protected path: ${path}`);
@@ -327,17 +429,19 @@ class CommandValidator {
     }
 
     // Additional safety checks
-    if (command.length > 2000) {
+    // Increased limit to 10000 for long gh pr create commands with detailed descriptions
+    if (command.length > 10000) {
       result.isValid = false;
       result.severity = "MEDIUM";
       result.violations.push("Command too long (potential buffer overflow)");
     }
 
-    // Check for binary/encoded content
-    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/.test(command)) {
+    // Check for binary/encoded content (but allow UTF-8 characters for internationalization)
+    // Only block actual control characters and null bytes
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(command)) {
       result.isValid = false;
       result.severity = "HIGH";
-      result.violations.push("Binary or encoded content detected");
+      result.violations.push("Binary or control characters detected");
     }
 
     return result;

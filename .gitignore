@@ -28,3 +28,18 @@ node_modules/
 
 # Settings with potentially sensitive paths
 # Note: settings.json kept but reviewed for sensitive data
+
+# CCNotify database and logs
+/ccnotify/*.db
+/ccnotify/*.log
+
+# Observability system
+/observability/apps/server/events.db*
+/observability/apps/server/node_modules/
+/observability/apps/client/node_modules/
+/observability/apps/client/dist/
+/observability/.pids
+/observability/logs/
+
+# Claude Code frameworks (exclude all)
+.claude/

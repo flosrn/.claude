@@ -1,6 +1,11 @@
 {
   "permissions": {
-    "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)"]
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Read(*)"
+    ]
   },
   "env": {
     "CLAUDE_NO_TS_CHECK": "true"
@@ -138,5 +143,10 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bunx -y ccstatusline@latest",
+    "padding": 0
   }
 }

@@ -1,11 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(*)",
-      "Edit(*)",
-      "Write(*)",
-      "Read(*)"
-    ]
+    "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)"]
   },
   "env": {
     "CLAUDE_NO_TS_CHECK": "true"
@@ -135,7 +130,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bunx -y ccstatusline@latest",
+    "command": "bash /Users/flo/.claude/observability/statusline-ccusage.sh",
     "padding": 0
   }
 }

@@ -1,25 +1,296 @@
-# Claude Code Setup
+# Claude Code Professional Setup
 
-Structure propre et robuste pour Claude Code avec intégrations de qualité.
+> **My personal Claude Code setup - a production-ready, security-first configuration tailored to my development workflow with advanced automation, quality gates, and multi-agent orchestration**
 
-## Structure
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Optimized-blue)](https://claude.ai/code)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue)](https://www.typescriptlang.org/)
+[![Security](https://img.shields.io/badge/Security-Fork--Safe-green)](https://github.com)
 
-- `commands/` - Commandes Claude disponibles
-- `hooks/` - Hooks pour validation et contrôle qualité
-- `scripts/` - Scripts utilitaires et validation
-- `agents/` - Configuration des agents spécialisés
-- `flashback/` - Système de mémoire et trace (Flashbacker)
-- `logs/` - Logs de sécurité et activité
-- `docs/` - Documentation du setup
+## 🚀 Overview
 
-## Composants intégrés
+This repository contains my personal Claude Code setup, meticulously crafted to meet my specific development needs. It features enterprise-grade security, automated quality control, and intelligent session management. The system includes a multi-layered architecture with 24 specialized AI agents, comprehensive automation workflows, and real-time observability - all configured to optimize my daily development workflow.
 
-- Security validator (PreToolUse avec Bun)
-- TypeScript quality hooks (strict rules)
-- Command creation tools (Scopecraft)
-- Memory/trace system (Flashbacker)
-- Selected tools from centminmod
+### Key Features
 
-## Usage
+- **🔐 Fork-Safe Security**: Never accidentally push to upstream repositories
+- **🧠 Persistent Memory**: Session state survives context compactions via Flashback
+- **🤖 24 Specialized Agents**: From TypeScript mastery to Kubernetes orchestration
+- **🛡️ Security-First**: Multi-level command validation and production safeguards
+- **📊 Real-Time Observability**: Track all operations with built-in dashboard
+- **🔄 Smart Git Workflows**: Automated branch → commit → PR orchestration
+- **✨ TypeScript Excellence**: Strict type checking, no `any` types allowed
+- **🔌 7 MCP Integrations**: Pieces, Context7, Vercel, Playwright, and more
 
-Voir `docs/USAGE.md` pour les détails d'utilisation.
+## 📁 Architecture
+
+```
+~/.claude/
+├── 📝 commands/           # Slash commands for workflows
+│   ├── core/             # Utility commands
+│   ├── fb/               # Flashback session management
+│   ├── git/              # Git workflow automation
+│   ├── typescript/       # TypeScript utilities
+│   └── observability/    # Monitoring commands
+├── 🤖 agents/            # 24 specialized AI agents
+├── 🔗 hooks/             # Automation & validation hooks
+│   ├── ts/               # TypeScript quality gates
+│   └── observability/    # Event tracking
+├── 🧠 flashback/         # Persistent memory system
+│   ├── memory/           # REMEMBER.md, WORKING_PLAN.md
+│   ├── scripts/          # Session management
+│   └── prompts/          # AI templates
+├── 📊 observability/     # Real-time monitoring
+│   ├── apps/server/      # Event server (port 4000)
+│   └── apps/client/      # Dashboard UI (port 5173)
+├── 🔔 ccnotify/          # System notifications
+├── 🛡️ scripts/           # Security & validation
+├── 📁 projects/          # Project contexts
+├── 🎵 songs/             # Audio notifications
+└── ⚙️ settings.json      # Core configuration
+```
+
+## 🛡️ Security Features
+
+### Fork Safety
+- **Upstream Protection**: Blocks all attempts to push to upstream remotes
+- **Origin-Only Push**: Ensures changes only go to your fork
+- **Remote Validation**: Validates all git remote operations
+
+### Command Validation
+- **Dangerous Command Blocking**: Prevents `rm -rf /`, `sudo`, system modifications
+- **Production Database Protection**: Blocks destructive Supabase operations
+- **Path Protection**: Restricts access to system directories
+- **Comprehensive Logging**: All security events logged to `logs/security.log`
+
+### TypeScript Quality Gates
+- **No `any` Types**: Automatically blocks any usage of `any` type
+- **Strict Compilation**: TypeScript strict mode enforcement
+- **Auto-Formatting**: Prettier + ESLint on every file modification
+- **Cache System**: Smart caching for instant re-validation
+
+## 🤖 Specialized Agents
+
+### Development Agents
+- `typescript-master` - Advanced TypeScript architecture (backend/frontend/cli)
+- `backend` - API design, database architecture, server-side development
+- `frontend` - UI/UX, accessibility, performance optimization
+- `cli-master` - CLI design optimized for human and AI interaction
+
+### Infrastructure Agents
+- `docker-master` - Docker, Compose, Swarm orchestration
+- `platform-engineer` - Kubernetes, IaC, observability
+- `database-architect` - Schema design, query optimization
+- `devops` - CI/CD pipelines, deployment strategies
+
+### Quality Agents
+- `code-critic` - Ruthless code quality enforcement
+- `debt-hunter` - Technical debt detection and cleanup
+- `hallucination-hunter` - AI code validation
+- `qa` - Comprehensive testing strategies
+- `security` - Threat modeling, vulnerability assessment
+
+### Specialized Agents
+- `john-carmack` - Performance-critical systems analysis
+- `fix-master` - Surgical bug resolution
+- `refactorer` - Code simplification and cleanup
+- `mentor` - Educational guidance and tutorials
+- `product` - Feature prioritization and strategy
+
+## 📝 Command System
+
+### Session Management (`/fb:*`)
+```bash
+/fb:session-start      # Restore context after compaction
+/fb:save-session       # Save current session state
+/fb:working-plan       # Update development plan
+/fb:remember "info"    # Add to permanent memory
+```
+
+### Git Workflows (`/git:*`)
+```bash
+/workflow "feature description"    # Complete git workflow
+/branch "feature-name"            # Create feature branch
+/commit                           # Smart conventional commit
+/pr                              # Create pull request
+/sync-upstream                   # Safe fork synchronization
+```
+
+### Utility Commands (`/core:*`)
+```bash
+/cleanup-context           # Optimize token usage
+/refactor-code            # Analyze for refactoring
+/check-best-practices     # Verify code standards
+/create-readme-section    # Generate documentation
+```
+
+## 🧠 Memory System (Flashback)
+
+The Flashback system maintains context across Claude Code sessions:
+
+### Memory Files
+- **`REMEMBER.md`** - Long-term project knowledge
+- **`WORKING_PLAN.md`** - Current development priorities
+- **`CURRENT_SESSION.md`** - Active session snapshot
+
+### Workflow
+1. **Before Context Compaction** (~90% full):
+   ```bash
+   /fb:save-session
+   ```
+2. **After Compaction**:
+   - Automatic restoration via SessionStart hook
+   - Manual: `/fb:session-start`
+
+## 🔗 Hooks & Automation
+
+### PreToolUse Hooks
+- **Command Validation**: Security checks before execution
+- **Observability**: Event tracking for all tool usage
+
+### PostToolUse Hooks
+- **TypeScript Quality**: Auto-format and type checking
+- **Event Logging**: Operation result tracking
+
+### Session Hooks
+- **SessionStart**: Auto-restore context on new session
+- **Stop**: Audio notification on task completion
+- **UserPromptSubmit**: Track user interactions
+
+## 📊 Observability System
+
+Real-time monitoring of all Claude Code operations:
+
+### Components
+- **Event Server**: SQLite-backed server (port 4000)
+- **Dashboard**: React-based UI (port 5173)
+- **Event Types**: PreToolUse, PostToolUse, Stop, Notification
+
+### Usage
+```bash
+cd observability
+./start.sh    # Start monitoring system
+./stop.sh     # Stop monitoring system
+```
+
+## 🔌 MCP Integrations
+
+Seven active MCP (Model Context Protocol) servers:
+
+1. **`pieces`** - Long-term memory and context management
+2. **`context7`** - Library documentation retrieval
+3. **`shadcn-ui`** - UI component library v4
+4. **`vercel`** - Deployment and platform docs
+5. **`youtube-transcript`** - Video transcript extraction
+6. **`playwright`** - Browser automation
+7. **`rewatch`** - File watching (configurable)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Claude Code CLI installed
+- Bun runtime for performance
+- Git configured with fork setup
+- Node.js for certain tools
+
+### Installation
+
+1. **Clone to Claude directory**:
+   ```bash
+   git clone <your-fork> ~/.claude
+   cd ~/.claude
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   bun install
+   # or
+   npm install
+   ```
+
+3. **Configure MCP servers** (optional):
+   ```bash
+   claude mcp add <server-name>
+   ```
+
+4. **Start observability** (optional):
+   ```bash
+   cd observability && ./start.sh
+   ```
+
+### Daily Workflow
+
+1. **Start new session**:
+   - Automatic context restoration
+   - Or manual: `/fb:session-start`
+
+2. **Development**:
+   ```bash
+   /workflow "implement new feature"
+   # Creates branch → guides development → commits → creates PR
+   ```
+
+3. **Before context fills**:
+   ```bash
+   /fb:save-session
+   # Preserves session for next time
+   ```
+
+## 🔧 Configuration
+
+### Core Settings (`settings.json`)
+
+```json
+{
+  "permissions": {
+    "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)"]
+  },
+  "hooks": {
+    "PreToolUse": [...],
+    "PostToolUse": [...],
+    "SessionStart": [...],
+    "Stop": [...]
+  }
+}
+```
+
+### Environment Variables
+- `CLAUDE_NO_TS_CHECK`: Skip TypeScript checking (not recommended)
+- `CLAUDE_HOOKS_DEBUG`: Enable debug logging
+
+## 🔒 Security Considerations
+
+### Protected Operations
+- No `sudo` or privilege escalation
+- No system directory modifications
+- No upstream repository pushes
+- No production database destructive operations
+
+### Audit Trail
+- All commands logged to `logs/security.log`
+- Blocked operations tracked with reasons
+- Session-based correlation IDs
+
+## 📚 Documentation
+
+- [`GUIDE.md`](./GUIDE.md) - Complete usage guide (French)
+- [`commands/create-command.md`](./commands/create-command.md) - Creating custom commands
+- Individual agent docs in [`agents/`](./agents/) directory
+
+## 🤝 Contributing
+
+This setup combines best practices from multiple sources:
+- [Flashbacker](https://github.com/agentsea/flashbacker) - Session management
+- [Centminmod](https://github.com/centminmod/my-claude-code-setup) - Utility commands
+- [Scopecraft](https://github.com/scopecraft/command) - Command system
+
+## 📄 License
+
+This configuration is provided as-is for use with Claude Code. Feel free to adapt and modify for your needs.
+
+## 🙏 Acknowledgments
+
+Built with inspiration from the Claude Code community and designed for developers who demand excellence in their AI-assisted development workflow.
+
+---
+
+**Note**: This setup enforces strict TypeScript standards and will never allow `any` types in your code. This is by design to maintain code quality and type safety.

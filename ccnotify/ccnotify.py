@@ -102,6 +102,9 @@ class ClaudePromptTracker:
         """Handle Stop event - update completion time and send notification"""
         session_id = data.get('session_id')
         
+        # Try to get the last Claude message from transcript
+        last_claude_message = self.get_last_claude_message(data)
+        
         with sqlite3.connect(self.db_path) as conn:
             # Find the latest unfinished record for this session
             cursor = conn.execute("""
@@ -130,9 +133,20 @@ class ClaudePromptTracker:
                 seq = seq_row[0] if seq_row else 1
                 
                 duration = self.calculate_duration_from_db(record_id)
+                
+                # Create prettier notification with Claude's message
+                pretty_title = f"✨ {os.path.basename(cwd) if cwd else 'Claude'}"
+                
+                if last_claude_message:
+                    # First 80 chars of Claude's response + duration
+                    preview = last_claude_message[:80] + "..." if len(last_claude_message) > 80 else last_claude_message
+                    subtitle = f"🎉 Task #{seq} complete! ({duration})\n💬 {preview}"
+                else:
+                    subtitle = f"🎉 Task #{seq} completed in {duration} ⚡"
+                
                 self.send_notification(
-                    title=os.path.basename(cwd) if cwd else "Claude Task",
-                    subtitle=f"job#{seq} done, duration: {duration}",
+                    title=pretty_title,
+                    subtitle=subtitle,
                     cwd=cwd
                 )
                 
@@ -160,13 +174,46 @@ class ClaudePromptTracker:
                 """, (session_id,))
                 conn.commit()
             
+            pretty_title = f"🤔 {os.path.basename(cwd) if cwd else 'Claude'}"
             self.send_notification(
-                title=os.path.basename(cwd) if cwd else 'Claude Task',
-                subtitle="Waiting for input",
+                title=pretty_title,
+                subtitle="⏱ Waiting for your input...",
                 cwd=cwd
             )
             
             logging.info(f"Waiting notification sent for session {session_id}")
+    
+    def get_last_claude_message(self, data):
+        """Extract the last Claude message from transcript if available"""
+        try:
+            # Try to get transcript path from data
+            transcript_path = data.get('transcript_path')
+            if not transcript_path or not os.path.exists(transcript_path):
+                return None
+            
+            # Read the last few lines of the JSONL transcript
+            with open(transcript_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            
+            # Look for the last Claude message (assistant role)
+            for line in reversed(lines[-10:]):  # Check last 10 entries
+                try:
+                    entry = json.loads(line.strip())
+                    if entry.get('role') == 'assistant' and entry.get('content'):
+                        content = entry['content']
+                        if isinstance(content, list) and content:
+                            # Extract text from content blocks
+                            text_parts = [block.get('text', '') for block in content if block.get('type') == 'text']
+                            return ' '.join(text_parts).strip()
+                        elif isinstance(content, str):
+                            return content.strip()
+                except (json.JSONDecodeError, KeyError):
+                    continue
+            
+            return None
+        except Exception as e:
+            logging.debug(f"Could not extract Claude message: {e}")
+            return None
     
     def calculate_duration_from_db(self, record_id):
         """Calculate duration for a completed record"""

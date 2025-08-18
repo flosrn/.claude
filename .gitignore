@@ -43,6 +43,7 @@ node_modules/
 
 # Flashback memory system
 flashback/memory/CURRENT_SESSION.md
+flashback/memory/ARCHIVE/
 
 # Backup files
 *.bak

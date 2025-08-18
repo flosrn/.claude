@@ -9,8 +9,113 @@ import json
 import sqlite3
 import subprocess
 import logging
+import fcntl
+import time
+import tempfile
 from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime, timezone
+
+
+class NotificationDeduplicator:
+    """Prevents duplicate notifications using file locking and cooldown"""
+    
+    def __init__(self, cooldown_seconds=8):
+        """Initialize with configurable cooldown period"""
+        self.cooldown_seconds = cooldown_seconds
+        self.temp_dir = tempfile.gettempdir()
+        
+    def should_send_notification(self, session_id, event_type):
+        """
+        Check if notification should be sent based on:
+        1. File locking to prevent simultaneous notifications
+        2. Cooldown period to prevent rapid notifications
+        3. Priority system (Stop > Notification)
+        
+        Returns tuple: (should_send: bool, reason: str)
+        """
+        lock_file_path = os.path.join(self.temp_dir, f"claude_notify_{session_id}.lock")
+        
+        try:
+            # Try to acquire lock
+            with open(lock_file_path, 'w') as lock_file:
+                try:
+                    # Non-blocking lock attempt
+                    fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    
+                    # Check if there was a recent notification
+                    last_notification_info = self._get_last_notification_info(session_id)
+                    
+                    if last_notification_info:
+                        last_time, last_event_type = last_notification_info
+                        time_since_last = time.time() - last_time
+                        
+                        # If within cooldown period
+                        if time_since_last < self.cooldown_seconds:
+                            # Priority: Stop notifications are more important than Notification
+                            if event_type == 'Notification' and last_event_type == 'Stop':
+                                return False, f"Suppressed {event_type} - Stop notification sent {time_since_last:.1f}s ago"
+                            elif event_type == 'Stop' and last_event_type == 'Notification':
+                                # Allow Stop to override Notification, but update the record
+                                self._record_notification(session_id, event_type)
+                                return True, f"Stop overrides previous Notification"
+                            elif event_type == last_event_type:
+                                return False, f"Duplicate {event_type} suppressed - sent {time_since_last:.1f}s ago"
+                    
+                    # Record this notification
+                    self._record_notification(session_id, event_type)
+                    return True, f"Notification approved for {event_type}"
+                    
+                except IOError:
+                    # Lock is held by another process
+                    return False, "Another notification process is active"
+                    
+        except Exception as e:
+            logging.warning(f"Deduplication check failed: {e}")
+            # In case of error, allow notification to go through
+            return True, f"Deduplication failed, allowing notification: {e}"
+    
+    def _get_last_notification_info(self, session_id):
+        """Get timestamp and type of last notification for session"""
+        info_file = os.path.join(self.temp_dir, f"claude_notify_info_{session_id}.json")
+        
+        try:
+            if os.path.exists(info_file):
+                with open(info_file, 'r') as f:
+                    data = json.load(f)
+                    return data.get('timestamp'), data.get('event_type')
+        except Exception as e:
+            logging.debug(f"Could not read notification info: {e}")
+        
+        return None
+    
+    def _record_notification(self, session_id, event_type):
+        """Record notification timestamp and type"""
+        info_file = os.path.join(self.temp_dir, f"claude_notify_info_{session_id}.json")
+        
+        try:
+            with open(info_file, 'w') as f:
+                json.dump({
+                    'timestamp': time.time(),
+                    'event_type': event_type,
+                    'session_id': session_id
+                }, f)
+        except Exception as e:
+            logging.debug(f"Could not record notification info: {e}")
+    
+    def cleanup_old_files(self):
+        """Clean up old lock and info files (older than 1 hour)"""
+        try:
+            current_time = time.time()
+            for filename in os.listdir(self.temp_dir):
+                if filename.startswith('claude_notify_'):
+                    filepath = os.path.join(self.temp_dir, filename)
+                    try:
+                        if current_time - os.path.getmtime(filepath) > 3600:  # 1 hour
+                            os.remove(filepath)
+                    except OSError:
+                        pass  # File might be in use or already deleted
+        except Exception as e:
+            logging.debug(f"Cleanup failed: {e}")
 
 
 class ClaudePromptTracker:
@@ -20,6 +125,10 @@ class ClaudePromptTracker:
         self.db_path = os.path.join(script_dir, "ccnotify.db")
         self.setup_logging()
         self.init_database()
+        # Initialize notification deduplicator with 15-second cooldown  
+        self.deduplicator = NotificationDeduplicator(cooldown_seconds=15)
+        # Clean up old temporary files
+        self.deduplicator.cleanup_old_files()
     
     def setup_logging(self):
         """Setup logging to file with daily rotation"""
@@ -102,6 +211,14 @@ class ClaudePromptTracker:
         """Handle Stop event - update completion time and send notification"""
         session_id = data.get('session_id')
         
+        # Check if notification should be sent
+        should_send, reason = self.deduplicator.should_send_notification(session_id, 'Stop')
+        logging.info(f"Stop notification check for session {session_id}: {reason}")
+        
+        if not should_send:
+            logging.info(f"Stop notification suppressed for session {session_id}: {reason}")
+            return
+        
         # Try to get the last Claude message from transcript
         last_claude_message = self.get_last_claude_message(data)
         
@@ -158,6 +275,14 @@ class ClaudePromptTracker:
         message = data.get('message', '')
         
         if 'waiting for your input' in message.lower():
+            # Check if notification should be sent
+            should_send, reason = self.deduplicator.should_send_notification(session_id, 'Notification')
+            logging.info(f"Notification check for session {session_id}: {reason}")
+            
+            if not should_send:
+                logging.info(f"Notification suppressed for session {session_id}: {reason}")
+                return
+            
             cwd = data.get('cwd', '')
             
             with sqlite3.connect(self.db_path) as conn:

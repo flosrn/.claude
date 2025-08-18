@@ -33,6 +33,9 @@ node_modules/
 /ccnotify/*.db
 /ccnotify/*.log
 
+# TypeScript quality hooks cache
+/hooks/ts/quality-cache.json
+
 # Observability system
 /observability/apps/server/events.db*
 /observability/apps/server/node_modules/

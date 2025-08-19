@@ -124,7 +124,7 @@ Commenter le hook dans `.claude/settings.json`
 Ce hook s'intègre parfaitement avec :
 - **Validator sécurité** (PreToolUse) - Double protection
 - **Memory bank pattern** (centminmod) - Cohérence documentation
-- **Flashbacker** - Traçage des corrections de qualité
+- **Observability** - Traçage des corrections de qualité
 - **Commands core** - Workflow de refactoring
 
 Le combo forme un système de qualité robuste et non-négociable.

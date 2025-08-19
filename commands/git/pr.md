@@ -114,7 +114,7 @@ gh pr view         # View current PR details
 ## Integration
 - **CCNotify**: Notification when PR is created successfully
 - **Observability**: Log PR creation events
-- **Flashback**: Save PR context to session memory
+- **Context tracking**: PR context logged in observability system
 - **Project standards**: Respect CLAUDE.md guidelines
 
 ## Error Handling

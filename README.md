@@ -8,7 +8,7 @@
 
 ## 🚀 Overview
 
-This repository contains my personal Claude Code setup, meticulously crafted to meet my specific development needs. It features enterprise-grade security, automated quality control, and intelligent session management. The system includes a multi-layered architecture with 24 specialized AI agents, comprehensive automation workflows, and real-time observability - all configured to optimize my daily development workflow.
+This repository contains my personal Claude Code setup, meticulously crafted to meet my specific development needs. It features enterprise-grade security, automated quality control, and real-time monitoring. The system includes a multi-layered architecture with 24 specialized AI agents, comprehensive automation workflows, and real-time observability - all configured to optimize my daily development workflow.
 
 ### Key Features
 
@@ -275,7 +275,6 @@ Seven active MCP (Model Context Protocol) servers:
 ## 🤝 Contributing
 
 This setup combines best practices from multiple sources:
-- [Flashbacker](https://github.com/agentsea/flashbacker) - Session management
 - [Centminmod](https://github.com/centminmod/my-claude-code-setup) - Utility commands
 - [Scopecraft](https://github.com/scopecraft/command) - Command system
 

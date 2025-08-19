@@ -129,7 +129,7 @@ Source: Makerkit Next.js Supabase Turbo Starter
 ## Integration Features
 - **CCNotify**: Progress notifications at each step
 - **Observability**: Log complete sync operation
-- **Flashback**: Save sync context for troubleshooting
+- **Context tracking**: Sync operation logged in observability system
 - **Quality Gates**: Respect existing CI/CD requirements
 
 ## Error Handling & Recovery

@@ -74,7 +74,7 @@ cd ~/.claude/observability
 - **Validation sécurité** : Maintenue
 - **Pipeline qualité TS** : Maintenu
 - **CCNotify** : Maintenu
-- **Flashbacker** : Maintenu
+- **MCP Servers** : Maintenu
 
 ### 🔗 **Hooks Ajoutés**
 L'observability a été ajoutée comme **hooks supplémentaires** non-bloquants :

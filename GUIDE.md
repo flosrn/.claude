@@ -137,10 +137,9 @@ La status line affiche en temps réel toutes les informations importantes :
   3. TypeScript Compiler (vérification types)
 - **Exit 2** = Bloque si erreurs
 
-### SessionStart - Restauration Contexte
-- **Script** : `flashback/scripts/session-start.sh`
+### SessionStart - Notification Démarrage
 - **Déclencheur** : Nouvelle session Claude
-- **Action** : Charge automatiquement la mémoire projet
+- **Action** : Notification de démarrage de session
 
 ### Stop - Notification
 - **Action** : Son de notification fin de tâche
@@ -152,49 +151,31 @@ La status line affiche en temps réel toutes les informations importantes :
 
 ### 🚀 Démarrage de Projet
 
-1. **Première session** :
-   ```
-   /fb:remember "Architecture: Next.js 14 avec App Router"
-   /fb:remember "Base de données: PostgreSQL avec Prisma"
-   /fb:working-plan
-   ```
-
-2. **Sessions suivantes** :
-   - Le hook SessionStart charge automatiquement le contexte
-   - Sinon : `/fb:session-start`
+1. **Nouvelle session** :
+   - Le système d'observabilité track automatiquement vos actions
+   - Utilisez les MCP servers pour la persistence (Pieces notamment)
 
 ### 💾 Gestion du Contexte
 
-**Surveillez le % de contexte utilisé**
+**Surveillez le % de contexte utilisé via la status line**
 
-1. **À 85-90%** :
-   ```
-   /fb:save-session
-   ```
-   
-2. **Après compaction automatique** :
-   - Vérifiez que le contexte est restauré
-   - Sinon : `/fb:session-start`
+1. **Contexte critique** :
+   - Utilisez les MCP servers pour sauvegarder le contexte important
+   - Redémarrez une nouvelle session si nécessaire
 
 ### 🔄 Cycle de Développement
 
 1. **Début de feature** :
-   ```
-   /fb:working-plan
-   # Met à jour avec nouvelle feature
-   ```
+   - Utilisez les agents spécialisés pour la planification
+   - Documentez dans les MCP servers pour persistence
 
 2. **Découverte importante** :
-   ```
-   /fb:remember "L'API rate limit est 100 req/min"
-   ```
+   - Utilisez Pieces MCP pour sauvegarder les insights
+   - Le système d'observabilité track automatiquement
 
 3. **Fin de session** :
-   ```
-   /fb:save-session
-   # Ou
-   /fb:working-plan
-   ```
+   - L'audio notification confirme la fin des tâches
+   - Contexte important sauvé via MCP
 
 ### 🧹 Maintenance
 
@@ -224,21 +205,18 @@ La status line affiche en temps réel toutes les informations importantes :
 
 ### Fichiers à ne pas commiter
 - `logs/security.log` - Logs de sécurité temporaires
-- `flashback/memory/CURRENT_SESSION.md` - Session temporaire
 - `hooks/ts/quality-cache.json` - Cache de validation
+- `observability/` - Données de monitoring locales
 
 ### Debugging
 
 **Vérifier l'installation** :
 ```bash
-flashback status
-flashback doctor
-```
+# Tester les MCP servers
+claude mcp list
 
-**Voir la mémoire actuelle** :
-```bash
-cat ~/.claude/flashback/memory/REMEMBER.md
-cat ~/.claude/flashback/memory/WORKING_PLAN.md
+# Vérifier l'observabilité
+cd ~/.claude/observability && ./status.sh
 ```
 
 **Logs de sécurité** :
@@ -250,9 +228,9 @@ tail ~/.claude/logs/security.log
 
 ## 🆘 Troubleshooting
 
-### Le contexte n'est pas restauré
-1. Vérifiez que SessionStart hook est configuré
-2. Exécutez manuellement : `/fb:session-start`
+### Gestion du contexte
+1. Utilisez les MCP servers pour la persistence
+2. Le système d'observabilité track vos sessions automatiquement
 
 ### Commande bloquée par sécurité
 - Vérifiez `logs/security.log` pour la raison
@@ -266,10 +244,10 @@ tail ~/.claude/logs/security.log
 
 ## 📚 Ressources
 
-- **Flashbacker** : https://github.com/agentsea/flashbacker
 - **Centminmod** : https://github.com/centminmod/my-claude-code-setup
 - **Scopecraft** : https://github.com/scopecraft/command
+- **Claude Code Docs** : https://docs.anthropic.com/en/docs/claude-code
 
 ---
 
-*Configuration créée le 2025-08-16 - Version avec Flashbacker 2.3.5*
+*Configuration mise à jour le 2025-08-19 - Setup avec observabilité avancée et MCP integrations*

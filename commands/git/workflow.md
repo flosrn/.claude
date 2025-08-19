@@ -91,7 +91,7 @@ Then describe the task when prompted.
 - **Final confirmation**: Summary of all actions before execution
 
 ## Integration Features
-- **Flashback memory**: Save workflow context for future reference
+- **Context tracking**: Workflow tracked in observability system for future reference
 - **Observability logging**: Track complete workflow execution
 - **CCNotify alerts**: Notifications at key milestones
 - **Quality gates**: Respect existing CI/CD requirements

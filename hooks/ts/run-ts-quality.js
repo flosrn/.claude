@@ -14,7 +14,7 @@
 
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { resolve, dirname, basename } from 'path';
+import { resolve, dirname } from 'path';
 import { createHash } from 'crypto';
 
 class StrictTypeScriptQualityHook {
@@ -95,7 +95,17 @@ class StrictTypeScriptQualityHook {
     }
   }
 
-  findTSConfig() {
+  findTSConfig(filePath = null) {
+    // If we have a specific file, find the closest tsconfig
+    if (filePath && existsSync(filePath)) {
+      const closestConfig = this.findClosestTSConfig(filePath);
+      if (closestConfig) {
+        this.log('debug', `Found closest tsconfig: ${closestConfig}`);
+        return closestConfig;
+      }
+    }
+
+    // Fallback to repo root logic
     const repoRoot = this.findRepoRoot();
     const candidates = [
       resolve(repoRoot, 'tsconfig.json'),
@@ -105,12 +115,42 @@ class StrictTypeScriptQualityHook {
 
     for (const candidate of candidates) {
       if (existsSync(candidate)) {
-        this.log('debug', `Found tsconfig: ${candidate}`);
+        this.log('debug', `Found fallback tsconfig: ${candidate}`);
         return candidate;
       }
     }
 
     this.log('debug', 'No tsconfig found');
+    return null;
+  }
+
+  findClosestTSConfig(filePath) {
+    // "Find up" algorithm - like TypeScript does
+    let currentDir = dirname(resolve(filePath));
+    const repoRoot = this.findRepoRoot();
+
+    while (currentDir !== dirname(currentDir)) { // Until filesystem root
+      const candidates = [
+        resolve(currentDir, 'tsconfig.json'),
+        resolve(currentDir, 'tsconfig.build.json')
+      ];
+
+      for (const candidate of candidates) {
+        if (existsSync(candidate)) {
+          this.log('debug', `Found tsconfig via find-up: ${candidate}`);
+          return candidate;
+        }
+      }
+
+      // Stop at repo root if we reach it
+      if (currentDir === repoRoot) {
+        this.log('debug', 'Reached repo root, stopping find-up');
+        break;
+      }
+
+      currentDir = dirname(currentDir);
+    }
+
     return null;
   }
 
@@ -165,8 +205,37 @@ class StrictTypeScriptQualityHook {
     
     try {
       const repoRoot = this.findRepoRoot();
-      let eslintCmd;
       
+      // Check if we're in a Turborepo project
+      const turboConfigPath = resolve(repoRoot, 'turbo.json');
+      const hasTurbo = existsSync(turboConfigPath);
+      
+      if (hasTurbo) {
+        // Use Turbo for ESLint in monorepo
+        const packageJsonPath = this.findPackageJson(files[0]);
+        if (packageJsonPath) {
+          const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+          const packageName = packageJson.name;
+          
+          if (packageName) {
+            const cmd = `pnpm turbo lint --filter=${packageName} --force`;
+            
+            this.log('debug', `Running Turbo ESLint: ${cmd}`);
+            
+            const output = execSync(cmd, { 
+              encoding: 'utf8',
+              cwd: repoRoot,
+              stdio: ['ignore', 'pipe', 'pipe']
+            });
+            
+            this.log('info', `Turbo ESLint passed for ${files.length} files`);
+            return { success: true, output, hasErrors: false };
+          }
+        }
+      }
+      
+      // Fallback to direct eslint
+      let eslintCmd;
       if (existsSync(resolve(repoRoot, 'node_modules', '.bin', 'eslint'))) {
         eslintCmd = resolve(repoRoot, 'node_modules', '.bin', 'eslint');
       } else {
@@ -205,18 +274,76 @@ class StrictTypeScriptQualityHook {
     
     try {
       const repoRoot = this.findRepoRoot();
-      let tscCmd;
       
+      // Check if we're in a Turborepo project
+      const turboConfigPath = resolve(repoRoot, 'turbo.json');
+      const hasTurbo = existsSync(turboConfigPath);
+      
+      if (hasTurbo) {
+        // For Turborepo with moduleResolution: "bundler", we need a hybrid approach
+        // 1. Try to find and use the package-specific typecheck script
+        const packageJsonPath = this.findPackageJson(configPath);
+        if (packageJsonPath) {
+          const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+          const packageName = packageJson.name;
+          
+          if (packageName && packageJson.scripts?.typecheck) {
+            const cmd = `pnpm turbo typecheck --filter=${packageName} --force`;
+            
+            this.log('debug', `Running Turbo TypeScript: ${cmd}`);
+            
+            const output = execSync(cmd, { 
+              encoding: 'utf8',
+              cwd: repoRoot,
+              stdio: ['ignore', 'pipe', 'pipe']
+            });
+            
+            this.log('info', 'Turbo TypeScript compilation passed');
+            return { success: true, output, hasErrors: false };
+          }
+        }
+        
+        // 2. If no package typecheck script, use root-level typecheck for the specific package
+        if (configPath !== resolve(repoRoot, 'tsconfig.json')) {
+          // We're in a package, but try to run typecheck from package directory
+          const packageDir = dirname(configPath);
+          const packageJson = resolve(packageDir, 'package.json');
+          
+          if (existsSync(packageJson)) {
+            const pkg = JSON.parse(readFileSync(packageJson, 'utf8'));
+            
+            if (pkg.scripts?.typecheck) {
+              const cmd = 'pnpm typecheck';
+              
+              this.log('debug', `Running package TypeScript: ${cmd} in ${packageDir}`);
+              
+              const output = execSync(cmd, { 
+                encoding: 'utf8',
+                cwd: packageDir,
+                stdio: ['ignore', 'pipe', 'pipe']
+              });
+              
+              this.log('info', 'Package TypeScript compilation passed');
+              return { success: true, output, hasErrors: false };
+            }
+          }
+        }
+      }
+      
+      // Final fallback: Run the file-specific check using tsc with individual files
+      // This provides the most granular error detection
+      let tscCmd;
       if (existsSync(resolve(repoRoot, 'node_modules', '.bin', 'tsc'))) {
         tscCmd = resolve(repoRoot, 'node_modules', '.bin', 'tsc');
       } else {
         tscCmd = 'tsc';
       }
       
-      // Use --noEmit for type checking only
-      const cmd = `${tscCmd} --project "${configPath}" --noEmit`;
+      // Check individual files for maximum error detection
+      const fileArgs = files.map(f => `"${f}"`).join(' ');
+      const cmd = `${tscCmd} --noEmit --skipLibCheck --strict ${fileArgs}`;
       
-      this.log('debug', `Running TypeScript: ${cmd}`);
+      this.log('debug', `Running file-specific TypeScript: ${cmd}`);
       
       const output = execSync(cmd, { 
         encoding: 'utf8',
@@ -224,7 +351,7 @@ class StrictTypeScriptQualityHook {
         stdio: ['ignore', 'pipe', 'pipe']
       });
       
-      this.log('info', 'TypeScript compilation passed');
+      this.log('info', 'File-specific TypeScript compilation passed');
       return { success: true, output, hasErrors: false };
       
     } catch (error) {
@@ -235,6 +362,21 @@ class StrictTypeScriptQualityHook {
         hasErrors: true
       };
     }
+  }
+
+  findPackageJson(filePath) {
+    // Find package.json for the given file path
+    let currentDir = dirname(resolve(filePath));
+    
+    while (currentDir !== dirname(currentDir)) {
+      const packageJsonPath = resolve(currentDir, 'package.json');
+      if (existsSync(packageJsonPath)) {
+        return packageJsonPath;
+      }
+      currentDir = dirname(currentDir);
+    }
+    
+    return null;
   }
 
   checkStrictRules(files) {
@@ -293,7 +435,6 @@ class StrictTypeScriptQualityHook {
         process.exit(2);
       }
       
-      const toolName = hookData.tool_name;
       const filePath = hookData.tool_input?.file_path;
       
       // Only process TypeScript files
@@ -317,7 +458,7 @@ class StrictTypeScriptQualityHook {
       
       // Find and cache TypeScript config
       const cache = this.loadCache();
-      const configPath = this.findTSConfig();
+      const configPath = this.findTSConfig(filePath);
       
       if (!configPath) {
         this.log('error', 'No TypeScript configuration found');

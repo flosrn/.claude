@@ -1,6 +1,7 @@
 {
   "env": {
-    "CLAUDE_NO_TS_CHECK": "false"
+    "CLAUDE_NO_TS_CHECK": "false",
+    "CLAUDE_MEMORY_SEARCH_AUTO": "false"
   },
   "includeCoAuthoredBy": false,
   "permissions": {

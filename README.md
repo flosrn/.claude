@@ -1,6 +1,6 @@
-# Claude Code Professional Setup
+# My Personal Claude Code Setup
 
-> **My personal Claude Code setup - a production-ready, security-first configuration tailored to my development workflow with advanced automation, quality gates, and multi-agent orchestration**
+> **My custom Claude Code configuration - a tailored setup that evolves with my dev needs, optimized for my personal projects and AI experiments**
 
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Optimized-blue)](https://claude.ai/code)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue)](https://www.typescriptlang.org/)
@@ -8,7 +8,7 @@
 
 ## 🚀 Overview
 
-This repository contains my personal Claude Code setup, meticulously crafted to meet my specific development needs. It features enterprise-grade security, automated quality control, and persistent memory management via CORE Memory integration. The system includes comprehensive automation workflows, real-time observability, and active AI agents - all configured to optimize my daily development workflow.
+This repo contains my personal Claude Code configuration, crafted over time for my specific development needs. An evolving setup that grows with my projects and AI experiments
 
 ### Key Features
 
@@ -47,17 +47,20 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 ## 🛡️ Security Features
 
 ### Fork Safety
+
 - **Upstream Protection**: Blocks all attempts to push to upstream remotes
 - **Origin-Only Push**: Ensures changes only go to your fork
 - **Remote Validation**: Validates all git remote operations
 
 ### Command Validation
+
 - **Dangerous Command Blocking**: Prevents `rm -rf /`, `sudo`, system modifications
 - **Production Database Protection**: Blocks destructive Supabase operations
 - **Path Protection**: Restricts access to system directories
 - **Comprehensive Logging**: All security events logged to `logs/security.log`
 
 ### TypeScript Quality Gates
+
 - **No `any` Types**: Automatically blocks any usage of `any` type
 - **Strict Compilation**: TypeScript strict mode enforcement
 - **Auto-Formatting**: Prettier + ESLint on every file modification
@@ -66,6 +69,7 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 ## 🤖 Active Agents
 
 ### Memory Management Agents
+
 - **`memory-search`** - Automatic memory search at conversation start and when context retrieval is needed
   - Searches CORE Memory for relevant project context, user preferences, and previous discussions
   - Maintains continuity across Claude Code sessions
@@ -76,17 +80,20 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
   - Enables persistent knowledge across all sessions
 
 ### Future Planned Agents
-*Coming soon - Development, Infrastructure, Quality & Specialized agents for comprehensive workflow automation*
+
+_Coming soon - Development, Infrastructure, Quality & Specialized agents for comprehensive workflow automation_
 
 ## 📝 Command System
 
 ### Observability (`/observability:*`)
+
 ```bash
 /start-monitoring      # Start observability dashboard
-/stop-monitoring       # Stop monitoring system  
+/stop-monitoring       # Stop monitoring system
 ```
 
 ### Git Workflows (`/git:*`)
+
 ```bash
 /workflow "feature description"    # Complete git workflow
 /branch "feature-name"            # Create feature branch
@@ -96,6 +103,7 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 ```
 
 ### Utility Commands (`/core:*`)
+
 ```bash
 /cleanup-context           # Optimize token usage
 /refactor-code            # Analyze for refactoring
@@ -108,12 +116,14 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 The intelligent status line provides real-time usage tracking with visual indicators:
 
 ### Features
+
 - **🔋 Progress Bar**: Color-coded block usage (green → yellow → red)
 - **💰 Cost Tracking**: Session, daily, and block costs with distinct colors
 - **⏱ Time Remaining**: Smart formatting for remaining block time
 - **🧩 Token Counter**: Real-time token usage with smart formatting
 
 ### Status Line Format
+
 ```
 🌿 main* | 📁 .claude | 🤖 Sonnet 4 | 💰 $20.25 / 📅 $30.10 / 🧊 $13.48 (4h 24m left) | 🔋 ██░░░░░░░░ 11% | 🧩 16.5K tokens
 ```
@@ -121,14 +131,17 @@ The intelligent status line provides real-time usage tracking with visual indica
 ## 🔗 Hooks & Automation
 
 ### PreToolUse Hooks
+
 - **Command Validation**: Security checks before execution
 - **Observability**: Event tracking for all tool usage
 
 ### PostToolUse Hooks
+
 - **TypeScript Quality**: Auto-format and type checking
 - **Event Logging**: Operation result tracking
 
 ### Session Hooks
+
 - **SessionStart**: Auto-restore context on new session
 - **Stop**: Audio notification on task completion
 - **UserPromptSubmit**: Track user interactions
@@ -138,12 +151,14 @@ The intelligent status line provides real-time usage tracking with visual indica
 Real-time monitoring of all Claude Code operations with enhanced status line:
 
 ### Components
+
 - **Event Server**: SQLite-backed server (port 4000)
 - **Dashboard**: React-based UI (port 5173)
 - **Status Line**: Enhanced with progress bars and cost tracking
 - **Event Types**: PreToolUse, PostToolUse, Stop, Notification
 
 ### Usage
+
 ```bash
 cd observability
 ./start.sh    # Start monitoring system
@@ -151,6 +166,7 @@ cd observability
 ```
 
 ### Notification System (ccnotify)
+
 - **Smart Notifications**: Task completion alerts with duration tracking
 - **Ghostty Integration**: Click notifications to return to your terminal session
 - **Audio Feedback**: Sound notifications for task completion
@@ -160,7 +176,7 @@ cd observability
 Active MCP (Model Context Protocol) servers:
 
 1. **`core-memory`** - Persistent memory management and context storage
-2. **`context7`** - Library documentation retrieval  
+2. **`context7`** - Library documentation retrieval
 3. **`shadcn-ui`** - UI component library v4
 4. **`vercel`** - Deployment and platform docs
 5. **`youtube-transcript`** - Video transcript extraction
@@ -170,6 +186,7 @@ Active MCP (Model Context Protocol) servers:
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Claude Code CLI installed
 - Bun runtime for performance
 - Git configured with fork setup
@@ -178,12 +195,14 @@ Active MCP (Model Context Protocol) servers:
 ### Installation
 
 1. **Clone to Claude directory**:
+
    ```bash
    git clone <your-fork> ~/.claude
    cd ~/.claude
    ```
 
 2. **Install dependencies**:
+
    ```bash
    bun install
    # or
@@ -191,6 +210,7 @@ Active MCP (Model Context Protocol) servers:
    ```
 
 3. **Configure MCP servers** (optional):
+
    ```bash
    claude mcp add <server-name>
    ```
@@ -207,6 +227,7 @@ Active MCP (Model Context Protocol) servers:
    - Or manual: `/fb:session-start`
 
 2. **Development**:
+
    ```bash
    /workflow "implement new feature"
    # Creates branch → guides development → commits → creates PR
@@ -237,18 +258,21 @@ Active MCP (Model Context Protocol) servers:
 ```
 
 ### Environment Variables
+
 - `CLAUDE_NO_TS_CHECK`: Skip TypeScript checking (not recommended)
 - `CLAUDE_HOOKS_DEBUG`: Enable debug logging
 
 ## 🔒 Security Considerations
 
 ### Protected Operations
+
 - No `sudo` or privilege escalation
 - No system directory modifications
 - No upstream repository pushes
 - No production database destructive operations
 
 ### Audit Trail
+
 - All commands logged to `logs/security.log`
 - Blocked operations tracked with reasons
 - Session-based correlation IDs
@@ -262,8 +286,11 @@ Active MCP (Model Context Protocol) servers:
 ## 🤝 Contributing
 
 This setup combines best practices from multiple sources:
+
+- [CORE](https://github.com/RedPlanetHQ/core) - Persistent memory
 - [Centminmod](https://github.com/centminmod/my-claude-code-setup) - Utility commands
 - [Scopecraft](https://github.com/scopecraft/command) - Command system
+- [Awesome Claude Code](https://github.com/hesreallyhim/awesome-claude-code) - Community-driven resources
 
 ## 📄 License
 

@@ -19,6 +19,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash $HOME/.claude/scripts/update-claude-date.sh",
+            "timeout": 1000
+          },
+          {
+            "type": "command",
             "command": "bash $HOME/.claude/scripts/core-memory-search.sh",
             "timeout": 3000
           }

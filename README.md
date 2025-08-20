@@ -8,7 +8,7 @@
 
 ## 🚀 Overview
 
-This repository contains my personal Claude Code setup, meticulously crafted to meet my specific development needs. It features enterprise-grade security, automated quality control, and real-time monitoring. The system includes a multi-layered architecture with 24 specialized AI agents, comprehensive automation workflows, and real-time observability - all configured to optimize my daily development workflow.
+This repository contains my personal Claude Code setup, meticulously crafted to meet my specific development needs. It features enterprise-grade security, automated quality control, and persistent memory management via CORE Memory integration. The system includes comprehensive automation workflows, real-time observability, and active AI agents - all configured to optimize my daily development workflow.
 
 ### Key Features
 
@@ -19,7 +19,7 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 - **🔄 Smart Git Workflows**: Automated branch → commit → PR orchestration
 - **✨ TypeScript Excellence**: Strict type checking, no `any` types allowed
 - **🔔 Ghostty Integration**: Notifications that bring you back to your terminal session
-- **🔌 7 MCP Integrations**: Pieces, Context7, Vercel, Playwright, and more
+- **🔌 MCP Integrations**: CORE Memory, Context7, Vercel, Playwright, and more
 
 ## 📁 Architecture
 
@@ -63,33 +63,20 @@ This repository contains my personal Claude Code setup, meticulously crafted to 
 - **Auto-Formatting**: Prettier + ESLint on every file modification
 - **Cache System**: Smart caching for instant re-validation
 
-## 🤖 Specialized Agents
+## 🤖 Active Agents
 
-### Development Agents
-- `typescript-master` - Advanced TypeScript architecture (backend/frontend/cli)
-- `backend` - API design, database architecture, server-side development
-- `frontend` - UI/UX, accessibility, performance optimization
-- `cli-master` - CLI design optimized for human and AI interaction
+### Memory Management Agents
+- **`memory-search`** - Automatic memory search at conversation start and when context retrieval is needed
+  - Searches CORE Memory for relevant project context, user preferences, and previous discussions
+  - Maintains continuity across Claude Code sessions
+  - Proactive context retrieval for ongoing work
+- **`memory-ingest`** - Automatic conversation data storage in CORE Memory
+  - Stores comprehensive conversation summaries after each interaction
+  - Captures user requests, assistant solutions, and decision rationale
+  - Enables persistent knowledge across all sessions
 
-### Infrastructure Agents
-- `docker-master` - Docker, Compose, Swarm orchestration
-- `platform-engineer` - Kubernetes, IaC, observability
-- `database-architect` - Schema design, query optimization
-- `devops` - CI/CD pipelines, deployment strategies
-
-### Quality Agents
-- `code-critic` - Ruthless code quality enforcement
-- `debt-hunter` - Technical debt detection and cleanup
-- `hallucination-hunter` - AI code validation
-- `qa` - Comprehensive testing strategies
-- `security` - Threat modeling, vulnerability assessment
-
-### Specialized Agents
-- `john-carmack` - Performance-critical systems analysis
-- `fix-master` - Surgical bug resolution
-- `refactorer` - Code simplification and cleanup
-- `mentor` - Educational guidance and tutorials
-- `product` - Feature prioritization and strategy
+### Future Planned Agents
+*Coming soon - Development, Infrastructure, Quality & Specialized agents for comprehensive workflow automation*
 
 ## 📝 Command System
 
@@ -170,15 +157,15 @@ cd observability
 
 ## 🔌 MCP Integrations
 
-Seven active MCP (Model Context Protocol) servers:
+Active MCP (Model Context Protocol) servers:
 
-1. **`pieces`** - Long-term memory and context management
-2. **`context7`** - Library documentation retrieval
+1. **`core-memory`** - Persistent memory management and context storage
+2. **`context7`** - Library documentation retrieval  
 3. **`shadcn-ui`** - UI component library v4
 4. **`vercel`** - Deployment and platform docs
 5. **`youtube-transcript`** - Video transcript extraction
 6. **`playwright`** - Browser automation
-7. **`rewatch`** - File watching (configurable)
+7. **`brave-search`** - Web search functionality
 
 ## 🚀 Getting Started
 

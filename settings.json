@@ -1,12 +1,30 @@
 {
-  "includeCoAuthoredBy": false,
-  "permissions": {
-    "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)"]
-  },
   "env": {
     "CLAUDE_NO_TS_CHECK": "false"
   },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Read(*)"
+    ]
+  },
+  "model": "sonnet",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/core-memory-search.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -19,7 +37,6 @@
           {
             "type": "command",
             "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PreToolUse",
-            "run_in_background": true,
             "timeout": 2000
           }
         ]
@@ -30,7 +47,6 @@
           {
             "type": "command",
             "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PreToolUse",
-            "run_in_background": true,
             "timeout": 2000
           }
         ]
@@ -48,7 +64,6 @@
           {
             "type": "command",
             "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PostToolUse",
-            "run_in_background": true,
             "timeout": 2000
           }
         ]
@@ -59,7 +74,6 @@
           {
             "type": "command",
             "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PostToolUse",
-            "run_in_background": true,
             "timeout": 2000
           }
         ]
@@ -71,20 +85,22 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash $HOME/.claude/scripts/core-memory-ingest.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
             "command": "afplay -v 0.1 $HOME/.claude/songs/finish.mp3",
-            "run_in_background": true,
             "timeout": 2000
           },
           {
             "type": "command",
             "command": "python3 $HOME/.claude/ccnotify/ccnotify.py Stop",
-            "run_in_background": true,
             "timeout": 3000
           },
           {
             "type": "command",
             "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type Stop",
-            "run_in_background": true,
             "timeout": 2000
           }
         ]
@@ -96,14 +112,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash $HOME/.claude/scripts/core-memory-context.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
             "command": "python3 $HOME/.claude/ccnotify/ccnotify.py UserPromptSubmit",
-            "run_in_background": true,
             "timeout": 2000
           },
           {
             "type": "command",
             "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type UserPromptSubmit",
-            "run_in_background": true,
             "timeout": 2000
           }
         ]
@@ -116,13 +135,11 @@
           {
             "type": "command",
             "command": "python3 $HOME/.claude/ccnotify/ccnotify.py Notification",
-            "run_in_background": true,
             "timeout": 2000
           },
           {
             "type": "command",
             "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type Notification",
-            "run_in_background": true,
             "timeout": 2000
           }
         ]

@@ -13,6 +13,9 @@ RESET='\033[0m'
 # Read JSON input from stdin
 input=$(cat)
 
+# Debug: Log the input to a file for troubleshooting
+echo "$(date): INPUT: $input" >> /tmp/statusline-debug.log
+
 # Extract current session ID and model info from Claude Code input
 session_id=$(echo "$input" | jq -r '.session_id // empty')
 model_name=$(echo "$input" | jq -r '.model.display_name // empty')
@@ -65,8 +68,8 @@ else
     branch="no-git"
 fi
 
-# Get basename of current directory
-dir_name=$(basename "$current_dir")
+# Get basename of ACTUAL current directory (ignore Claude Code's incorrect workspace info)
+dir_name=$(basename "$(pwd)")
 
 # Get today's date in YYYYMMDD format
 today=$(date +%Y%m%d)
@@ -138,7 +141,7 @@ remaining_time="N/A"
 block_percentage=0
 
 # Get current session data by finding the session JSONL file
-if command -v ccusage >/dev/null 2>&1 && [ -n "$session_id" ] && [ "$session_id" != "empty" ]; then
+if command -v ccusage >/dev/null 2>&1; then
     # Look for the session JSONL file in Claude project directories
     session_jsonl_file=""
     

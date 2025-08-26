@@ -1,4 +1,4 @@
-- **Current date**: 2025-08-20
+- **Current date**: 2025-08-26
 - **Date usage** - Treat the line above as the single source of truth for “today.”
 - **Precedence** - System → Developer → User → Tools. Resolve conflicts by escalating upward.
 - **Language** - English only for all code, comments, docs, examples, commits, configs, errors, tests.

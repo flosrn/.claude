@@ -4,11 +4,12 @@
 *Based on proven community practices from SteadyStart and best practices*
 
 ## Task Workflow
-1. **Check Staged Changes**: Verify what files are staged for commit
-2. **Analyze Changes**: Understand the nature and scope of modifications
-3. **Generate Best Message**: Automatically select the most appropriate commit message
-4. **Pre-commit Validation**: Run quality checks if available
-5. **Execute Commit**: Perform git commit with selected message
+1. **Stage All Changes**: Automatically add all modified files with `git add .`
+2. **Check Staged Changes**: Verify what files are now staged for commit
+3. **Analyze Changes**: Understand the nature and scope of modifications
+4. **Generate Best Message**: Automatically select the most appropriate commit message
+5. **Pre-commit Validation**: Run quality checks if available
+6. **Execute Commit**: Perform git commit with selected message
 
 ## Commit Message Format
 **Conventional Commits with Emojis:**
@@ -30,20 +31,21 @@
 - **🔒 security**: Security improvements
 
 ## Implementation Steps
-1. **Check Status**: `git status` to see staged files
-2. **Analyze Diff**: `git diff --cached` to understand changes
-3. **Intelligent Selection**: Automatically determine the best commit message based on:
+1. **Stage Changes**: `git add .` to stage all modifications
+2. **Check Status**: `git status` to see staged files
+3. **Analyze Diff**: `git diff --cached` to understand changes
+4. **Intelligent Selection**: Automatically determine the best commit message based on:
    - File patterns and locations
    - Change types (new files, modifications, deletions)
    - Scope identification from directory structure
    - Impact analysis (breaking changes, features, fixes)
-4. **Quality Checks**: Run linting/tests if configured
-5. **Commit**: Execute `git commit -m "auto-selected message"`
+5. **Quality Checks**: Run linting/tests if configured
+6. **Commit**: Execute `git commit -m "auto-selected message"`
 
 ## Validation Rules
-- **NEVER stage files automatically** - only work with pre-staged files
+- **AUTO-STAGE all modified files** - use `git add .` before committing
 - **AUTO-SELECT best commit message** - no user confirmation needed
-- **Abort if no staged changes** detected
+- **Abort if no changes** detected after staging
 - **Use English** for all commit messages
 - **Keep descriptions concise** but descriptive
 - **Include scope** when changes affect specific modules/features

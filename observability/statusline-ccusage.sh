@@ -140,66 +140,47 @@ block_cost="0.00"
 remaining_time="N/A"
 block_percentage=0
 
-# Get current session data by finding the session JSONL file
-if command -v ccusage >/dev/null 2>&1; then
-    # Look for the session JSONL file in Claude project directories
-    session_jsonl_file=""
-    
-    # Check common Claude paths
-    claude_paths=(
-        "$HOME/.config/claude"
-        "$HOME/.claude"
-    )
-    
-    for claude_path in "${claude_paths[@]}"; do
-        if [ -d "$claude_path/projects" ]; then
-            # Use find to search for the session file
-            session_jsonl_file=$(find "$claude_path/projects" -name "${session_id}.jsonl" -type f 2>/dev/null | head -1)
-            if [ -n "$session_jsonl_file" ]; then
-                break
-            fi
-        fi
-    done
-    
-    # Parse the session file if found
-    if [ -n "$session_jsonl_file" ] && [ -f "$session_jsonl_file" ]; then
-        # Count lines and estimate cost (simple approximation)
-        # Each line is a usage entry, we can count tokens and estimate
-        session_tokens=0
-        session_entries=0
-        
-        while IFS= read -r line; do
-            if [ -n "$line" ]; then
-                session_entries=$((session_entries + 1))
-                # Extract token usage from message.usage field (only count input + output tokens)
-                # Cache tokens shouldn't be added up as they're reused/shared across messages
-                input_tokens=$(echo "$line" | jq -r '.message.usage.input_tokens // 0' 2>/dev/null || echo "0")
-                output_tokens=$(echo "$line" | jq -r '.message.usage.output_tokens // 0' 2>/dev/null || echo "0")
-                
-                line_tokens=$((input_tokens + output_tokens))
-                session_tokens=$((session_tokens + line_tokens))
-            fi
-        done < "$session_jsonl_file"
-        
-        # Use ccusage statusline to get the accurate cost for this session
-        ccusage_statusline=$(echo "$input" | ccusage statusline 2>/dev/null)
-        current_session_cost=$(echo "$ccusage_statusline" | sed -n 's/.*💰 \([^[:space:]]*\) session.*/\1/p')
-        
-        if [ -n "$current_session_cost" ] && [ "$current_session_cost" != "N/A" ]; then
-            session_cost=$(echo "$current_session_cost" | sed 's/\$//g')
-        fi
-    fi
+# Get current session cost directly from Claude Code input
+session_cost_raw=$(echo "$input" | jq -r '.cost.total_cost_usd // "0.00"')
+if [ -n "$session_cost_raw" ] && [ "$session_cost_raw" != "null" ] && [ "$session_cost_raw" != "0.00" ]; then
+    session_cost="$session_cost_raw"
 fi
 
-if command -v ccusage >/dev/null 2>&1; then
-    # Get daily data
-    daily_data=$(ccusage daily --json --since "$today" 2>/dev/null)
-    if [ $? -eq 0 ] && [ -n "$daily_data" ]; then
-        daily_cost=$(echo "$daily_data" | jq -r '.totals.totalCost // 0')
+# Get session token count from input (if available)
+input_tokens=$(echo "$input" | jq -r '.cost.total_lines_added // 0' 2>/dev/null || echo "0")
+output_tokens=$(echo "$input" | jq -r '.cost.total_lines_removed // 0' 2>/dev/null || echo "0")
+if [ "$input_tokens" != "0" ] || [ "$output_tokens" != "0" ]; then
+    # Rough approximation using lines changed as proxy for activity
+    session_tokens=$((input_tokens + output_tokens))
+fi
+
+# Cache for 30 seconds to avoid multiple ccusage calls
+CACHE_FILE="/tmp/ccusage-cache-$today"
+CACHE_AGE=30
+
+# Use full path to ccusage since it may not be in PATH in all projects
+CCUSAGE_PATH="/Users/flo/.nvm/versions/node/v22.17.1/bin/ccusage"
+if [ -x "$CCUSAGE_PATH" ]; then
+    target_dir="${cwd:-$current_dir}"
+    cd "$target_dir" 2>/dev/null || cd "$(pwd)"
+    
+    # Check if cache is fresh
+    if [ -f "$CACHE_FILE" ] && [ $(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0))) -lt $CACHE_AGE ]; then
+        # Use cached data
+        daily_cost=$(cat "$CACHE_FILE" 2>/dev/null || echo "0")
+    else
+        # Fetch fresh data
+        daily_data=$("$CCUSAGE_PATH" daily --json --since "$today" 2>/dev/null)
+        if [ $? -eq 0 ] && [ -n "$daily_data" ]; then
+            daily_cost=$(echo "$daily_data" | jq -r '.totals.totalCost // 0')
+            echo "$daily_cost" > "$CACHE_FILE"
+        fi
     fi
     
-    # Get active block data
-    block_data=$(ccusage blocks --active --json 2>/dev/null)
+    # Get active block data - ensure we run from correct directory  
+    target_dir="${cwd:-$current_dir}"
+    cd "$target_dir" 2>/dev/null || cd "$(pwd)"
+    block_data=$("$CCUSAGE_PATH" blocks --active --json 2>/dev/null)
     if [ $? -eq 0 ] && [ -n "$block_data" ]; then
         active_block=$(echo "$block_data" | jq -r '.blocks[] | select(.isActive == true) // empty')
         if [ -n "$active_block" ] && [ "$active_block" != "null" ]; then

@@ -52,5 +52,8 @@ flashback/memory/ARCHIVE/
 *.bak
 backups/
 
+# Generated reports and analyses
+/reports/
+
 # Claude Code frameworks (exclude all)
 .claude/

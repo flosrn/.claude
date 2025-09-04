@@ -5,12 +5,7 @@
   },
   "includeCoAuthoredBy": false,
   "permissions": {
-    "allow": [
-      "Bash(*)",
-      "Edit(*)",
-      "Write(*)",
-      "Read(*)"
-    ]
+    "allow": ["Bash", "Edit", "Write", "Read"]
   },
   "model": "sonnet",
   "hooks": {

@@ -1,0 +1,10 @@
+2025-08-30 12:45:15 - INFO - Recorded prompt for session d1c5ab82-02ec-4451-9cc3-de2a1b22d4ae
+2025-08-30 12:45:36 - INFO - Stop notification check for session d1c5ab82-02ec-4451-9cc3-de2a1b22d4ae: Notification approved for Stop
+2025-08-30 12:45:37 - INFO - Notification sent: ✨ gapila - 🎉 Task #1 completed in 21s ⚡
+2025-08-30 12:45:37 - INFO - Task completed for session d1c5ab82-02ec-4451-9cc3-de2a1b22d4ae, job#1, duration: 21s
+2025-08-30 12:51:13 - INFO - Recorded prompt for session d1c5ab82-02ec-4451-9cc3-de2a1b22d4ae
+2025-08-30 12:52:28 - INFO - Stop notification check for session d1c5ab82-02ec-4451-9cc3-de2a1b22d4ae: Notification approved for Stop
+2025-08-30 12:52:28 - INFO - Notification sent: ✨ gapila - 🎉 Task #2 completed in 1m15s ⚡
+2025-08-30 12:52:28 - INFO - Task completed for session d1c5ab82-02ec-4451-9cc3-de2a1b22d4ae, job#2, duration: 1m15s
+2025-08-30 12:52:39 - INFO - Notification check for session d1c5ab82-02ec-4451-9cc3-de2a1b22d4ae: Suppressed Notification - Stop notification sent 11.2s ago
+2025-08-30 12:52:39 - INFO - Notification suppressed for session d1c5ab82-02ec-4451-9cc3-de2a1b22d4ae: Suppressed Notification - Stop notification sent 11.2s ago

@@ -19,7 +19,7 @@ This repo contains my personal Claude Code configuration, crafted over time for 
 - **🔄 Smart Git Workflows**: Automated branch → commit → PR orchestration
 - **✨ TypeScript Excellence**: Strict type checking, no `any` types allowed
 - **🔔 Ghostty Integration**: Notifications that bring you back to your terminal session
-- **🔌 MCP Integrations**: CORE Memory, Context7, Vercel, Playwright, and more
+- **🔌 MCP Integrations**: Context7, Vercel, Playwright, and more
 
 ## 📁 Architecture
 
@@ -67,19 +67,6 @@ This repo contains my personal Claude Code configuration, crafted over time for 
 - **Cache System**: Smart caching for instant re-validation
 
 ## 🤖 Active Agents
-
-### Memory Management Agents
-
-- **`memory-search`** - Automatic memory search at conversation start and when context retrieval is needed
-  - Searches CORE Memory for relevant project context, user preferences, and previous discussions
-  - Maintains continuity across Claude Code sessions
-  - Proactive context retrieval for ongoing work
-- **`memory-ingest`** - Automatic conversation data storage in CORE Memory
-  - Stores comprehensive conversation summaries after each interaction
-  - Captures user requests, assistant solutions, and decision rationale
-  - Enables persistent knowledge across all sessions
-
-### Future Planned Agents
 
 _Coming soon - Development, Infrastructure, Quality & Specialized agents for comprehensive workflow automation_
 
@@ -175,13 +162,12 @@ cd observability
 
 Active MCP (Model Context Protocol) servers:
 
-1. **`core-memory`** - Persistent memory management and context storage
-2. **`context7`** - Library documentation retrieval
-3. **`shadcn-ui`** - UI component library v4
-4. **`vercel`** - Deployment and platform docs
-5. **`youtube-transcript`** - Video transcript extraction
-6. **`playwright`** - Browser automation
-7. **`brave-search`** - Web search functionality
+1. **`context7`** - Library documentation retrieval
+2. **`shadcn-ui`** - UI component library v4
+3. **`vercel`** - Deployment and platform docs
+4. **`youtube-transcript`** - Video transcript extraction
+5. **`playwright`** - Browser automation
+6. **`brave-search`** - Web search functionality
 
 ## 🚀 Getting Started
 

@@ -17,11 +17,6 @@
             "type": "command",
             "command": "bash $HOME/.claude/scripts/update-claude-date.sh",
             "timeout": 1000
-          },
-          {
-            "type": "command",
-            "command": "bash $HOME/.claude/scripts/core-memory-search.sh",
-            "timeout": 3000
           }
         ]
       }
@@ -86,11 +81,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash $HOME/.claude/scripts/core-memory-ingest.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
             "command": "afplay -v 0.1 $HOME/.claude/songs/finish.mp3",
             "timeout": 2000
           },
@@ -111,11 +101,6 @@
       {
         "matcher": "",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash $HOME/.claude/scripts/core-memory-context.sh",
-            "timeout": 3000
-          },
           {
             "type": "command",
             "command": "python3 $HOME/.claude/ccnotify/ccnotify.py UserPromptSubmit",

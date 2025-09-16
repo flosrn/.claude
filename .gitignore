@@ -31,7 +31,7 @@ node_modules/
 
 # CCNotify database and logs
 /ccnotify/*.db
-/ccnotify/*.log
+/ccnotify/*.log*
 
 # TypeScript quality hooks cache
 /hooks/ts/quality-cache.json

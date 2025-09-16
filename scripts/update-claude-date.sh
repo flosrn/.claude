@@ -26,5 +26,3 @@ $NEW_DATE_LINE" "$CLAUDE_MD"
 
 # Clean up backup files older than 7 days
 find "$BACKUPS_DIR" -name "CLAUDE.md.backup.*" -mtime +7 -delete 2>/dev/null
-
-echo "Updated CLAUDE.md date to: $CURRENT_DATE (backup saved to backups/)"

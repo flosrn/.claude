@@ -12,7 +12,7 @@
       "Read"
     ]
   },
-  "model": "sonnet",
+  "model": "opusplan",
   "hooks": {
     "SessionStart": [
       {

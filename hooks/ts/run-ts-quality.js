@@ -26,6 +26,7 @@ class StrictTypeScriptQualityHook {
   }
 
   log(level, message, ...args) {
+    // Always show info, warn, error, ok levels - only filter debug
     if (level === 'debug' && !this.debug) return;
     
     const prefix = {

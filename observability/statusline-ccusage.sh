@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Claude Code statusline script for Max 5x plan
+# Shows token usage progress toward 88,000 token limit per 5-hour session
+# Updated to track rolling 5-hour windows instead of $17 cost tranches
+
 # ANSI color codes
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -107,7 +111,7 @@ create_progress_bar() {
     local width=10  # Width of the progress bar in characters
     local filled_width=$((percentage * width / 100))
     local empty_width=$((width - filled_width))
-    
+
     # Choose color based on percentage
     local color=""
     if [ "$percentage" -ge 80 ]; then
@@ -117,7 +121,7 @@ create_progress_bar() {
     else
         color="$GREEN"
     fi
-    
+
     # Build the progress bar
     local bar="${color}"
     for ((i=0; i<filled_width; i++)); do
@@ -128,8 +132,52 @@ create_progress_bar() {
         bar="${bar}░"
     done
     bar="${bar}${RESET}"
-    
+
     printf "%s" "$bar"
+}
+
+# Function to calculate usage in 5-hour token windows for Max 5x plan
+calculate_5hour_token_usage() {
+    local block_data=$1
+    local token_limit_per_5h=88000  # 88,000 tokens per 5-hour session for Max 5x
+
+    # Get current 5-hour window start time (Unix timestamp rounded to 5-hour blocks)
+    current_time=$(date +%s)
+    window_start=$((current_time - (current_time % 18000)))  # 18000 seconds = 5 hours
+
+    # Calculate tokens used in current 5-hour window from block data
+    window_tokens=0
+    if [ -n "$block_data" ] && [ "$block_data" != "null" ]; then
+        # Extract token usage from active block within the current 5-hour window
+        # Note: This is a simplified approach - in reality we'd need to track tokens over time
+        # For now, we'll use the block's total token count as an approximation
+        input_tokens=$(echo "$block_data" | jq -r '.inputTokens // 0' 2>/dev/null || echo "0")
+        output_tokens=$(echo "$block_data" | jq -r '.outputTokens // 0' 2>/dev/null || echo "0")
+        window_tokens=$((input_tokens + output_tokens))
+    fi
+
+    # Calculate percentage within current 5-hour window
+    if [ "$window_tokens" -gt 0 ] && [ "$token_limit_per_5h" -gt 0 ]; then
+        if command -v bc >/dev/null 2>&1; then
+            percentage=$(echo "scale=0; $window_tokens * 100 / $token_limit_per_5h" | bc -l 2>/dev/null || echo "0")
+        else
+            percentage=$((window_tokens * 100 / token_limit_per_5h))
+        fi
+    else
+        percentage=0
+    fi
+
+    # Ensure percentage is between 0 and 100
+    if [ "${percentage%.*}" -gt 100 ]; then
+        percentage=100
+    elif [ "${percentage%.*}" -lt 0 ]; then
+        percentage=0
+    fi
+
+    # Calculate which 5-hour window we're in (1-based)
+    window_number=$(( (window_tokens / token_limit_per_5h) + 1 ))
+
+    printf "%.0f %d %d %d" "$percentage" "$window_number" "$window_tokens" "$token_limit_per_5h"
 }
 
 # Initialize variables with defaults
@@ -137,8 +185,10 @@ session_cost="0.00"
 session_tokens=0
 daily_cost="0.00"
 block_cost="0.00"
-remaining_time="N/A"
 block_percentage=0
+window_number=0
+window_tokens=0
+token_limit=88000
 
 # Get current session cost directly from Claude Code input
 session_cost_raw=$(echo "$input" | jq -r '.cost.total_cost_usd // "0.00"')
@@ -147,11 +197,19 @@ if [ -n "$session_cost_raw" ] && [ "$session_cost_raw" != "null" ] && [ "$sessio
 fi
 
 # Get session token count from input (if available)
-input_tokens=$(echo "$input" | jq -r '.cost.total_lines_added // 0' 2>/dev/null || echo "0")
-output_tokens=$(echo "$input" | jq -r '.cost.total_lines_removed // 0' 2>/dev/null || echo "0")
-if [ "$input_tokens" != "0" ] || [ "$output_tokens" != "0" ]; then
-    # Rough approximation using lines changed as proxy for activity
-    session_tokens=$((input_tokens + output_tokens))
+# Try to get actual token counts from the input JSON
+session_input_tokens=$(echo "$input" | jq -r '.cost.input_tokens // 0' 2>/dev/null || echo "0")
+session_output_tokens=$(echo "$input" | jq -r '.cost.output_tokens // 0' 2>/dev/null || echo "0")
+
+if [ "$session_input_tokens" != "0" ] || [ "$session_output_tokens" != "0" ]; then
+    session_tokens=$((session_input_tokens + session_output_tokens))
+else
+    # Fallback: rough approximation using lines changed as proxy for activity
+    input_tokens=$(echo "$input" | jq -r '.cost.total_lines_added // 0' 2>/dev/null || echo "0")
+    output_tokens=$(echo "$input" | jq -r '.cost.total_lines_removed // 0' 2>/dev/null || echo "0")
+    if [ "$input_tokens" != "0" ] || [ "$output_tokens" != "0" ]; then
+        session_tokens=$((input_tokens + output_tokens))
+    fi
 fi
 
 # Cache for 30 seconds to avoid multiple ccusage calls
@@ -177,7 +235,7 @@ if [ -x "$CCUSAGE_PATH" ]; then
         fi
     fi
     
-    # Get active block data - ensure we run from correct directory  
+    # Get active block data - ensure we run from correct directory
     target_dir="${cwd:-$current_dir}"
     cd "$target_dir" 2>/dev/null || cd "$(pwd)"
     block_data=$("$CCUSAGE_PATH" blocks --active --json 2>/dev/null)
@@ -185,28 +243,14 @@ if [ -x "$CCUSAGE_PATH" ]; then
         active_block=$(echo "$block_data" | jq -r '.blocks[] | select(.isActive == true) // empty')
         if [ -n "$active_block" ] && [ "$active_block" != "null" ]; then
             block_cost=$(echo "$active_block" | jq -r '.costUSD // 0')
-            remaining_minutes=$(echo "$active_block" | jq -r '.projection.remainingMinutes // 0')
-            if [ "$remaining_minutes" != "0" ] && [ "$remaining_minutes" != "null" ]; then
-                remaining_time=$(format_time "$remaining_minutes")
-            fi
-            
-            # Calculate block usage percentage using projected cost
-            projected_cost=$(echo "$active_block" | jq -r '.projection.totalCost // 0')
-            if [ "$projected_cost" != "0" ] && [ "$projected_cost" != "null" ]; then
-                # Calculate current usage percentage based on projection
-                # block_cost / projected_cost * 100
-                if command -v bc >/dev/null 2>&1; then
-                    block_percentage=$(echo "scale=0; $block_cost * 100 / $projected_cost" | bc -l 2>/dev/null || echo "0")
-                else
-                    # Fallback without bc
-                    block_percentage=$(( block_cost * 100 / projected_cost ))
-                fi
-                # Ensure percentage is between 0 and 100
-                if [ "$block_percentage" -gt 100 ]; then
-                    block_percentage=100
-                elif [ "$block_percentage" -lt 0 ]; then
-                    block_percentage=0
-                fi
+
+            # Calculate 5-hour token window usage for Max 5x plan
+            window_data=$(calculate_5hour_token_usage "$active_block")
+            if [ -n "$window_data" ]; then
+                block_percentage=$(echo "$window_data" | cut -d' ' -f1)
+                window_number=$(echo "$window_data" | cut -d' ' -f2)
+                window_tokens=$(echo "$window_data" | cut -d' ' -f3)
+                token_limit=$(echo "$window_data" | cut -d' ' -f4)
             fi
         fi
     fi
@@ -221,8 +265,11 @@ formatted_tokens=$(format_tokens "$session_tokens")
 # Build the status line with colors (light gray as default)
 status_line="${LIGHT_GRAY}🌿 $branch ${GRAY}|${LIGHT_GRAY} 📁 $dir_name ${GRAY}|${LIGHT_GRAY} 🤖 $model_name ${GRAY}|${GREEN} 💰 \$$formatted_session_cost ${GRAY}/${PURPLE} 📅 \$$formatted_daily_cost ${GRAY}/${LIGHT_GRAY} 🧊 \$$formatted_block_cost"
 
-if [ "$remaining_time" != "N/A" ]; then
-    status_line="$status_line ${GRAY}(${LIGHT_GRAY}$remaining_time left${GRAY})"
+# Add 5-hour token window information if available
+if [ "$window_number" -gt 0 ] && [ "$window_tokens" -gt 0 ]; then
+    formatted_window_tokens=$(format_tokens "$window_tokens")
+    formatted_token_limit=$(format_tokens "$token_limit")
+    status_line="$status_line ${GRAY}(${LIGHT_GRAY}window $window_number: $formatted_window_tokens/${formatted_token_limit}${GRAY})"
 fi
 
 # Add progress bar if we have block percentage
@@ -231,7 +278,33 @@ if [ "$block_percentage" -gt 0 ]; then
     status_line="$status_line ${GRAY}|${LIGHT_GRAY} 🔋 ${RESET}$progress_bar ${LIGHT_GRAY}${block_percentage}%"
 fi
 
-status_line="$status_line ${GRAY}|${LIGHT_GRAY} 🧩 ${formatted_tokens} ${GRAY}tokens${RESET}"
+# Show session tokens and 5-hour window progress
+if [ "$session_tokens" -gt 0 ]; then
+    status_line="$status_line ${GRAY}|${LIGHT_GRAY} 🧩 ${formatted_tokens} ${GRAY}tokens"
+
+    # If we have window token data, show progress toward 88K limit
+    if [ "$window_tokens" -gt 0 ]; then
+        window_percentage=$(( (window_tokens * 100) / token_limit ))
+        if [ "$window_percentage" -gt 100 ]; then
+            window_percentage=100
+        fi
+
+        # Color-coded progress indicator
+        if [ "$window_percentage" -ge 80 ]; then
+            token_color="$RED"
+        elif [ "$window_percentage" -ge 60 ]; then
+            token_color="$YELLOW"
+        else
+            token_color="$GREEN"
+        fi
+
+        status_line="$status_line ${GRAY}(${token_color}${window_percentage}%${GRAY} of 88K limit)"
+    fi
+else
+    status_line="$status_line ${GRAY}|${LIGHT_GRAY} 🧩 ${formatted_tokens} ${GRAY}tokens"
+fi
+
+status_line="$status_line${RESET}"
 
 printf "%b\n" "$status_line"
 

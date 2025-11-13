@@ -1,1 +1,0 @@
-{"timestamp":"2025-08-15T20:49:49.121Z","sessionId":null,"toolName":"Bash","command":"rm -rf /","blocked":true,"severity":"CRITICAL","violations":["Dangerous pattern detected: rm\\s+.*-rf\\s*\\/\\s*$"],"source":"claude-code-hook"}

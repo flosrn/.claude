@@ -67,9 +67,8 @@ const SECURITY_RULES = {
 
   // Dangerous regex patterns
   DANGEROUS_PATTERNS: [
-    // File system destruction - block rm -rf with absolute paths
+    // File system destruction - block rm -rf with absolute paths (checked separately)
     /rm\s+.*-rf\s*\/\s*$/i, // rm -rf ending at root directory
-    /rm\s+.*-rf\s*\/\w+/i, // rm -rf with any absolute path
     /rm\s+.*-rf\s*\/etc/i, // rm -rf in /etc
     /rm\s+.*-rf\s*\/usr/i, // rm -rf in /usr
     /rm\s+.*-rf\s*\/bin/i, // rm -rf in /bin
@@ -85,21 +84,15 @@ const SECURITY_RULES = {
     /shred\s+.*\/dev\//i,
     /mkfs\.\w+\s+\/dev\//i,
 
-    // Supabase production database protection
-    /DELETE\s+FROM\s+\w+\s*;?\s*$/i, // DELETE without WHERE clause
-    /DROP\s+(TABLE|DATABASE|SCHEMA)\s+/i, // DROP operations
-    /TRUNCATE\s+TABLE\s+/i, // TRUNCATE operations
-    /ALTER\s+TABLE\s+.*DROP\s+COLUMN/i, // Destructive schema changes
-
     // Fork bomb and resource exhaustion
     /:\(\)\{\s*:\|:&\s*\};:/,
     /while\s+true\s*;\s*do.*done/i,
     /for\s*\(\(\s*;\s*;\s*\)\)/i,
 
-    // Command injection and chaining
-    /;\s*(rm|dd|mkfs|format)/i,
-    /&&\s*(rm|dd|mkfs|format)/i,
-    /\|\|\s*(rm|dd|mkfs|format)/i,
+    // Command injection (but allow general chaining - we'll validate each command separately)
+    // /;\s*(rm|dd|mkfs|format)/i,  // Commented out - handled by individual command validation
+    // /&&\s*(rm|dd|mkfs|format)/i, // Commented out - handled by individual command validation
+    // /\|\|\s*(rm|dd|mkfs|format)/i, // Commented out - handled by individual command validation
 
     // Remote code execution
     /\|\s*(sh|bash|zsh|fish)$/i,
@@ -151,26 +144,27 @@ const SECURITY_RULES = {
     // Environment variable exposure
     /env\s*\|\s*grep.*PASSWORD/i,
     /printenv.*PASSWORD/i,
-
-    // Fork safety: NEVER push to upstream
-    /git\s+push\s+upstream/i,
-    /git\s+push\s+.*upstream/i,
-    /gh\s+.*--repo\s+(?!flosrn\/)\w+\//i, // Dangerous repo targeting (except flosrn/)
-    /git\s+remote\s+set-url\s+origin.*upstream/i, // Switching origin to upstream
   ],
 
   // Paths that should never be written to
   PROTECTED_PATHS: [
     "/etc/",
-    "/usr/bin/",
-    "/usr/sbin/",
-    "/usr/lib/",
+    "/usr/",
+    "/bin/",
     "/sbin/",
     "/boot/",
     "/sys/",
     "/proc/",
     "/dev/",
     "/root/",
+  ],
+
+  // Safe paths where rm -rf is allowed
+  SAFE_RM_PATHS: [
+    "/Users/melvynx/Developer/",
+    "/tmp/",
+    "/var/tmp/",
+    process.cwd() + "/", // Current working directory
   ],
 };
 
@@ -200,6 +194,7 @@ const SAFE_COMMANDS = [
   "bun",
   "python",
   "pip",
+  "source",
   "cd",
   "cp",
   "mv",
@@ -210,107 +205,7 @@ const SAFE_COMMANDS = [
 
 class CommandValidator {
   constructor() {
-    this.logFile = "/Users/flo/.claude/logs/security.log";
-  }
-
-  /**
-   * Fork safety validation
-   */
-  validateForkSafety(command) {
-    const violations = [];
-    
-    // Check for upstream push attempts
-    if (/git\s+push\s+upstream/i.test(command)) {
-      violations.push("CRITICAL: Attempting to push to upstream remote");
-    }
-    
-    if (/git\s+push\s+.*upstream/i.test(command)) {
-      violations.push("CRITICAL: Attempting to push to upstream remote");
-    }
-    
-    // Check for dangerous repo targeting in gh commands
-    if (/gh\s+.*--repo\s+\w+\//i.test(command) && !/--repo\s+flosrn\//i.test(command)) {
-      violations.push("WARNING: Using --repo flag with non-fork repository");
-    }
-    
-    // Check for origin remote manipulation
-    if (/git\s+remote\s+set-url\s+origin.*upstream/i.test(command)) {
-      violations.push("CRITICAL: Attempting to change origin to upstream");
-    }
-    
-    return violations;
-  }
-
-  /**
-   * Supabase production safety validation
-   */
-  validateSupabaseCommand(command) {
-    const violations = [];
-    
-    // Skip if not a Supabase command
-    if (!/supabase\s+/i.test(command) && !/DELETE|DROP|TRUNCATE|ALTER/i.test(command)) {
-      return violations;
-    }
-    
-    // Detect production environment
-    const isProduction = 
-      // Project ref explicite (production - 20+ chars alphanumeric)
-      /--project-ref\s+[a-z0-9]{20,}/i.test(command) ||
-      // Variable d'env pointant vers prod (pas local)
-      (process.env.SUPABASE_PROJECT_REF && !process.env.SUPABASE_PROJECT_REF.includes('local')) ||
-      // URL de production
-      /--db-url\s+.*\.supabase\.co/i.test(command) ||
-      // Commandes avec --remote
-      /--remote/i.test(command) ||
-      // Supabase CLI sans --local (par défaut = remote)
-      (/supabase\s+(db|functions|projects|secrets)/i.test(command) && !/--local/i.test(command));
-
-    // Production-specific dangerous operations
-    if (isProduction) {
-      // Database reset
-      if (/supabase\s+db\s+reset/i.test(command)) {
-        violations.push("CRITICAL: Tentative de reset de la base de données en production");
-      }
-      
-      // Project deletion
-      if (/supabase\s+projects\s+delete/i.test(command)) {
-        violations.push("CRITICAL: Tentative de suppression du projet Supabase en production");
-      }
-      
-      // Function deletion
-      if (/supabase\s+functions\s+delete/i.test(command)) {
-        violations.push("HIGH: Tentative de suppression de fonction en production");
-      }
-      
-      // Branch deletion
-      if (/supabase\s+db\s+branch\s+delete/i.test(command)) {
-        violations.push("HIGH: Tentative de suppression de branche DB en production");
-      }
-      
-      // Secrets modification with production keywords
-      if (/supabase\s+secrets\s+set/i.test(command) && /prod|production|live/i.test(command)) {
-        violations.push("HIGH: Modification de secrets de production détectée");
-      }
-      
-      // Direct SQL dangerous operations
-      if (/DELETE\s+FROM/i.test(command) && !/WHERE/i.test(command)) {
-        violations.push("CRITICAL: DELETE sans clause WHERE en production");
-      }
-      
-      if (/DROP\s+(TABLE|DATABASE|SCHEMA)/i.test(command)) {
-        violations.push("CRITICAL: Opération DROP détectée en production");
-      }
-      
-      if (/TRUNCATE\s+TABLE/i.test(command)) {
-        violations.push("CRITICAL: TRUNCATE TABLE détecté en production");
-      }
-      
-      if (/ALTER\s+TABLE\s+.*DROP\s+COLUMN/i.test(command)) {
-        violations.push("HIGH: Suppression de colonne détectée en production");
-      }
-    }
-    
-    return violations;
+    this.logFile = "/Users/melvynx/.claude/security.log";
   }
 
   /**
@@ -323,28 +218,6 @@ class CommandValidator {
       violations: [],
       sanitizedCommand: command,
     };
-    
-    // Fork safety checks first
-    const forkViolations = this.validateForkSafety(command);
-    if (forkViolations.length > 0) {
-      result.isValid = false;
-      result.severity = "CRITICAL";
-      result.violations.push(...forkViolations);
-    }
-
-    // Supabase production safety checks
-    const supabaseViolations = this.validateSupabaseCommand(command);
-    if (supabaseViolations.length > 0) {
-      result.isValid = false;
-      // Set severity based on violation type
-      const hasCritical = supabaseViolations.some(v => v.startsWith("CRITICAL"));
-      if (hasCritical || result.severity === "CRITICAL") {
-        result.severity = "CRITICAL";
-      } else {
-        result.severity = "HIGH";
-      }
-      result.violations.push(...supabaseViolations);
-    }
 
     if (!command || typeof command !== "string") {
       result.isValid = false;
@@ -357,6 +230,11 @@ class CommandValidator {
     const cmdParts = normalizedCmd.split(/\s+/);
     const mainCommand = cmdParts[0];
 
+    // Allow source and python commands unconditionally
+    if (mainCommand === "source" || mainCommand === "python") {
+      return result; // Always allow
+    }
+
     // Check against critical commands
     if (SECURITY_RULES.CRITICAL_COMMANDS.includes(mainCommand)) {
       result.isValid = false;
@@ -366,14 +244,9 @@ class CommandValidator {
 
     // Check privilege escalation commands
     if (SECURITY_RULES.PRIVILEGE_COMMANDS.includes(mainCommand)) {
-      // Allow chmod for Claude directories (scripts and hooks)
-      if (mainCommand === "chmod" && (command.includes("/.claude/scripts/") || command.includes("/.claude/hooks/"))) {
-        // Allow chmod for Claude scripts and hooks
-      } else {
-        result.isValid = false;
-        result.severity = "HIGH";
-        result.violations.push(`Privilege escalation command: ${mainCommand}`);
-      }
+      result.isValid = false;
+      result.severity = "HIGH";
+      result.violations.push(`Privilege escalation command: ${mainCommand}`);
     }
 
     // Check network commands
@@ -390,13 +263,79 @@ class CommandValidator {
       result.violations.push(`System manipulation command: ${mainCommand}`);
     }
 
-    // Check dangerous patterns
+    // Check for rm -rf commands first (special handling)
+    if (/rm\s+.*-rf\s/.test(command)) {
+      const isRmRfSafe = this.isRmRfCommandSafe(command);
+      if (!isRmRfSafe) {
+        result.isValid = false;
+        result.severity = "CRITICAL";
+        result.violations.push("rm -rf command targeting unsafe path");
+      }
+    }
+
+    // Check dangerous patterns (skip rm -rf patterns as they're handled above)
     for (const pattern of SECURITY_RULES.DANGEROUS_PATTERNS) {
-      if (pattern.test(command)) {
+      if (pattern.test(command) && !/rm\s+.*-rf/.test(pattern.source)) {
         result.isValid = false;
         result.severity = "CRITICAL";
         result.violations.push(`Dangerous pattern detected: ${pattern.source}`);
       }
+    }
+
+    // Allow && chaining for safe commands like source and python
+    if (command.includes("&&")) {
+      const chainedCommands = this.splitCommandChain(command);
+      let allSafe = true;
+      for (const chainedCmd of chainedCommands) {
+        const trimmedCmd = chainedCmd.trim();
+        const cmdParts = trimmedCmd.split(/\s+/);
+        const mainCommand = cmdParts[0];
+
+        // Allow source and python commands in && chains
+        if (
+          mainCommand === "source" ||
+          mainCommand === "python" ||
+          SAFE_COMMANDS.includes(mainCommand)
+        ) {
+          continue;
+        }
+
+        const chainResult = this.validateSingleCommand(trimmedCmd, toolName);
+        if (!chainResult.isValid) {
+          result.isValid = false;
+          result.severity = chainResult.severity;
+          result.violations.push(
+            `Chained command violation: ${trimmedCmd} - ${chainResult.violations.join(
+              ", "
+            )}`
+          );
+          allSafe = false;
+        }
+      }
+      if (allSafe) {
+        return result; // Allow safe && chains
+      }
+    }
+
+    // Check other command chaining (; and ||)
+    if (command.includes(";") || command.includes("||")) {
+      const chainedCommands = this.splitCommandChain(command);
+      for (const chainedCmd of chainedCommands) {
+        const chainResult = this.validateSingleCommand(
+          chainedCmd.trim(),
+          toolName
+        );
+        if (!chainResult.isValid) {
+          result.isValid = false;
+          result.severity = chainResult.severity;
+          result.violations.push(
+            `Chained command violation: ${chainedCmd.trim()} - ${chainResult.violations.join(
+              ", "
+            )}`
+          );
+        }
+      }
+      return result;
     }
 
     // Check for protected path access (but allow common redirections like /dev/null)
@@ -411,8 +350,112 @@ class CommandValidator {
         ) {
           continue;
         }
-        // Allow project-specific /bin/ directories (not system /bin/)
-        if ((path === "/usr/bin/" || path === "/usr/sbin/") && !command.includes("/usr/")) {
+        result.isValid = false;
+        result.severity = "HIGH";
+        result.violations.push(`Access to protected path: ${path}`);
+      }
+    }
+
+    // Additional safety checks
+    if (command.length > 2000) {
+      result.isValid = false;
+      result.severity = "MEDIUM";
+      result.violations.push("Command too long (potential buffer overflow)");
+    }
+
+    // Check for binary/encoded content
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/.test(command)) {
+      result.isValid = false;
+      result.severity = "HIGH";
+      result.violations.push("Binary or encoded content detected");
+    }
+
+    return result;
+  }
+
+  /**
+   * Validate a single command (without chaining logic to avoid recursion)
+   */
+  validateSingleCommand(command, toolName = "Unknown") {
+    const result = {
+      isValid: true,
+      severity: "LOW",
+      violations: [],
+      sanitizedCommand: command,
+    };
+
+    if (!command || typeof command !== "string") {
+      result.isValid = false;
+      result.violations.push("Invalid command format");
+      return result;
+    }
+
+    // Normalize command for analysis
+    const normalizedCmd = command.trim().toLowerCase();
+    const cmdParts = normalizedCmd.split(/\s+/);
+    const mainCommand = cmdParts[0];
+
+    // Allow source and python commands unconditionally in single command validation too
+    if (mainCommand === "source" || mainCommand === "python") {
+      return result; // Always allow
+    }
+
+    // Check against critical commands
+    if (SECURITY_RULES.CRITICAL_COMMANDS.includes(mainCommand)) {
+      result.isValid = false;
+      result.severity = "CRITICAL";
+      result.violations.push(`Critical dangerous command: ${mainCommand}`);
+    }
+
+    // Check privilege escalation commands
+    if (SECURITY_RULES.PRIVILEGE_COMMANDS.includes(mainCommand)) {
+      result.isValid = false;
+      result.severity = "HIGH";
+      result.violations.push(`Privilege escalation command: ${mainCommand}`);
+    }
+
+    // Check network commands
+    if (SECURITY_RULES.NETWORK_COMMANDS.includes(mainCommand)) {
+      result.isValid = false;
+      result.severity = "HIGH";
+      result.violations.push(`Network/remote access command: ${mainCommand}`);
+    }
+
+    // Check system commands
+    if (SECURITY_RULES.SYSTEM_COMMANDS.includes(mainCommand)) {
+      result.isValid = false;
+      result.severity = "HIGH";
+      result.violations.push(`System manipulation command: ${mainCommand}`);
+    }
+
+    // Check for rm -rf commands first (special handling)
+    if (/rm\s+.*-rf\s/.test(command)) {
+      const isRmRfSafe = this.isRmRfCommandSafe(command);
+      if (!isRmRfSafe) {
+        result.isValid = false;
+        result.severity = "CRITICAL";
+        result.violations.push("rm -rf command targeting unsafe path");
+      }
+    }
+
+    // Check dangerous patterns (skip rm -rf patterns as they're handled above)
+    for (const pattern of SECURITY_RULES.DANGEROUS_PATTERNS) {
+      if (pattern.test(command) && !/rm\s+.*-rf/.test(pattern.source)) {
+        result.isValid = false;
+        result.severity = "CRITICAL";
+        result.violations.push(`Dangerous pattern detected: ${pattern.source}`);
+      }
+    }
+
+    // Check for protected path access
+    for (const path of SECURITY_RULES.PROTECTED_PATHS) {
+      if (command.includes(path)) {
+        if (
+          path === "/dev/" &&
+          (command.includes("/dev/null") ||
+            command.includes("/dev/stderr") ||
+            command.includes("/dev/stdout"))
+        ) {
           continue;
         }
         result.isValid = false;
@@ -421,30 +464,70 @@ class CommandValidator {
       }
     }
 
-    // Git-specific safety checks
-    if (command.includes('git push') && !command.includes('origin')) {
-      // If git push without explicit remote, warn about potential upstream push
-      result.violations.push("WARNING: git push without explicit origin remote");
-      if (result.severity === "LOW") result.severity = "MEDIUM";
-    }
-
     // Additional safety checks
-    // Increased limit to 10000 for long gh pr create commands with detailed descriptions
-    if (command.length > 10000) {
+    if (command.length > 2000) {
       result.isValid = false;
       result.severity = "MEDIUM";
       result.violations.push("Command too long (potential buffer overflow)");
     }
 
-    // Check for binary/encoded content (but allow UTF-8 characters for internationalization)
-    // Only block actual control characters and null bytes
-    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(command)) {
+    // Check for binary/encoded content
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/.test(command)) {
       result.isValid = false;
       result.severity = "HIGH";
-      result.violations.push("Binary or control characters detected");
+      result.violations.push("Binary or encoded content detected");
     }
 
     return result;
+  }
+
+  /**
+   * Split command chain into individual commands
+   */
+  splitCommandChain(command) {
+    // Simple splitting on && ; ||
+    // This is basic - doesn't handle complex quoting, but good enough for basic validation
+    const commands = [];
+    let current = "";
+    let inQuotes = false;
+    let quoteChar = "";
+
+    for (let i = 0; i < command.length; i++) {
+      const char = command[i];
+      const nextChar = command[i + 1];
+
+      // Handle quotes
+      if ((char === '"' || char === "'") && !inQuotes) {
+        inQuotes = true;
+        quoteChar = char;
+        current += char;
+      } else if (char === quoteChar && inQuotes) {
+        inQuotes = false;
+        quoteChar = "";
+        current += char;
+      } else if (inQuotes) {
+        current += char;
+      } else if (char === "&" && nextChar === "&") {
+        commands.push(current.trim());
+        current = "";
+        i++; // skip next &
+      } else if (char === "|" && nextChar === "|") {
+        commands.push(current.trim());
+        current = "";
+        i++; // skip next |
+      } else if (char === ";") {
+        commands.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+
+    if (current.trim()) {
+      commands.push(current.trim());
+    }
+
+    return commands.filter((cmd) => cmd.length > 0);
   }
 
   /**
@@ -477,6 +560,39 @@ class CommandValidator {
     } catch (error) {
       console.error("Failed to write security log:", error);
     }
+  }
+
+  /**
+   * Check if rm -rf command targets a safe path
+   */
+  isRmRfCommandSafe(command) {
+    // Extract the path from rm -rf command
+    const rmRfMatch = command.match(/rm\s+.*-rf\s+([^\s;&|]+)/);
+    if (!rmRfMatch) {
+      return false; // Couldn't parse path, block for safety
+    }
+
+    const targetPath = rmRfMatch[1];
+
+    // Block if targeting root or ending at root
+    if (targetPath === "/" || targetPath.endsWith("/")) {
+      return false;
+    }
+
+    // Check if path starts with any safe prefix
+    for (const safePath of SECURITY_RULES.SAFE_RM_PATHS) {
+      if (targetPath.startsWith(safePath)) {
+        return true;
+      }
+    }
+
+    // Check if it's a relative path (safer)
+    if (!targetPath.startsWith("/")) {
+      return true;
+    }
+
+    // Block all other absolute paths
+    return false;
   }
 
   /**
@@ -559,11 +675,23 @@ async function main() {
       console.log("Command validation passed");
       process.exit(0); // Allow execution
     } else {
-      console.error(
-        `Command validation failed: ${result.violations.join(", ")}`
-      );
-      console.error(`Severity: ${result.severity}`);
-      process.exit(2); // Block execution (Claude Code requires exit code 2)
+      // Instead of blocking, ask user for confirmation
+      const confirmationMessage = `⚠️  Potentially dangerous command detected!\n\nCommand: ${command}\nViolations: ${result.violations.join(
+        ", "
+      )}\nSeverity: ${
+        result.severity
+      }\n\nDo you want to proceed with this command?`;
+
+      const hookOutput = {
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "ask",
+          permissionDecisionReason: confirmationMessage,
+        },
+      };
+
+      console.log(JSON.stringify(hookOutput));
+      process.exit(0); // Exit with 0 to trigger user prompt
     }
   } catch (error) {
     console.error("Validation script error:", error);

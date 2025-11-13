@@ -1,6 +1,6 @@
 {
   "env": {
-    "CLAUDE_NO_TS_CHECK": "false",
+    "CLAUDE_NO_TS_CHECK": "true",
     "CLAUDE_MEMORY_SEARCH_AUTO": "false"
   },
   "includeCoAuthoredBy": false,
@@ -12,7 +12,6 @@
       "Read"
     ]
   },
-  "model": "opusplan",
   "hooks": {
     "SessionStart": [
       {
@@ -141,5 +140,6 @@
     "type": "command",
     "command": "bash /Users/flo/.claude/observability/statusline-ccusage.sh",
     "padding": 0
-  }
+  },
+  "alwaysThinkingEnabled": true
 }

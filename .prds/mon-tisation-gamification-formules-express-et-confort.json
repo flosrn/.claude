@@ -1,0 +1,63 @@
+{
+  "introduction": {
+    "title": "Monétisation & Gamification - Formules Express et Confort",
+    "overview": "Mise en place d'un système complet de monétisation avec 2 formules d'abonnement (Express 11,90€ et Confort 15,90€) et d'un système de gamification avec points, badges et progression pour augmenter l'engagement des élèves.",
+    "lastUpdated": "2025-10-18"
+  },
+  "problemStatement": {
+    "problem": "L'AS de la Route n'a actuellement pas de modèle de revenus récurrents. Les élèves manquent de motivation et d'engagement à long terme sans système de récompenses et de progression visible.",
+    "marketOpportunity": "Le marché de la formation au permis en ligne représente 500M€ en France. Les formules par abonnement permettent des revenus prévisibles et une meilleure rétention. La gamification augmente l'engagement de 40% selon les études du secteur edtech.",
+    "targetUsers": [
+      "Élèves cherchant une formule économique pour réviser (Express)",
+      "Élèves voulant un accompagnement complet (Confort)",
+      "Auto-écoles partenaires proposant des formules à leurs élèves"
+    ]
+  },
+  "solutionOverview": {
+    "description": "Intégration complète de Stripe avec l'architecture MakerKit pour gérer 2 formules d'abonnement avec options mensuelles et trimestrielles. Système de gamification avec points pour chaque action (exercices, cours, connexions) et badges de récompense. Système de permissions granulaires pour contrôler l'accès aux contenus selon la formule.",
+    "keyFeatures": [
+      "2 formules d'abonnement: Express (11,90€) et Confort (15,90€)",
+      "Options mensuelles et trimestrielles avec économies",
+      "Page pricing publique avec FAQ et comparaison",
+      "Système de points pour toutes les actions utilisateur",
+      "Badges et accomplissements déblocables",
+      "Gating de contenu selon la formule (cours premium, entraînements, défis)",
+      "Dashboard de progression et statistiques",
+      "Webhooks Stripe pour gestion automatique des abonnements"
+    ],
+    "successMetrics": [
+      "Taux de conversion visiteur→abonné > 5%",
+      "Taux de rétention mensuelle > 75%",
+      "Upgrade Express→Confort > 20%",
+      "Engagement quotidien des utilisateurs gamifiés +40%",
+      "Revenu mensuel récurrent (MRR) cible: 10K€ en 6 mois"
+    ]
+  },
+  "userStories": [],
+  "technicalRequirements": {
+    "constraints": [],
+    "integrationNeeds": [],
+    "complianceRequirements": []
+  },
+  "acceptanceCriteria": {
+    "global": [],
+    "qualityStandards": []
+  },
+  "constraints": {
+    "timeline": "",
+    "resources": [],
+    "nonNegotiables": []
+  },
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-10-18",
+    "lastUpdated": "2025-10-18",
+    "approver": ""
+  },
+  "progress": {
+    "overall": 0,
+    "completed": 0,
+    "total": 0,
+    "blocked": 0
+  }
+}

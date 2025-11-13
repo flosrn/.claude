@@ -1,7 +1,7 @@
 ---
 name: git-committer
 description: PROACTIVELY handle intelligent git commits with conventional format and validation using fast, cost-effective processing. Use when user wants to commit changes, needs commit messages, or mentions git commits.
-model: haiku
+model: claude-haiku-4-5-20251001
 tools: Bash, Read, Grep, Glob
 ---
 

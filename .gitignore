@@ -57,3 +57,8 @@ backups/
 
 # Claude Code frameworks (exclude all)
 .claude/
+
+# Debug and history files
+debug/
+file-history/
+history.jsonl

@@ -1,0 +1,129 @@
+{
+  "introduction": {
+    "title": "Interface Training Élèves - Système d'Entraînement H5P",
+    "overview": "Créer une interface d'entraînement complètement nouvelle pour les élèves, séparée de l'interface instructeur existante. L'interface doit permettre aux élèves de naviguer dans les catégories d'exercices H5P avec un système de progression séquentiel basé sur les scores.",
+    "lastUpdated": "2025-10-18"
+  },
+  "problemStatement": {
+    "problem": "Les élèves n'ont actuellement pas d'interface dédiée pour s'entraîner de manière autonome. L'interface instructeur existante ne convient pas pour un apprentissage progressif et gamifié des exercices H5P.",
+    "marketOpportunity": "Offrir une expérience d'apprentissage moderne et progressive pour les élèves en formation au permis de conduire, avec un système de déverrouillage motivant basé sur les performances.",
+    "targetUsers": [
+      "Élèves en formation au permis de conduire",
+      "Instructeurs supervisant la progression de leurs élèves",
+      "Administrateurs de la plateforme"
+    ]
+  },
+  "solutionOverview": {
+    "description": "Une interface de training complète avec navigation par catégories, système de progression séquentiel (déverrouillage par score ≥50%), statuts visuels (locked/unlocked/completed/failed), et suivi détaillé des performances. Architecture basée sur Next.js App Router avec Drizzle ORM.",
+    "keyFeatures": [
+      "Navigation hiérarchique par catégories/sous-catégories d'exercices",
+      "Système de progression séquentiel avec déverrouillage automatique",
+      "Statuts visuels avec icônes (🔒 📝 ✅ ❌)",
+      "Tableaux de bord de progression par catégorie",
+      "Intégration H5P pour les exercices interactifs",
+      "Suivi détaillé des scores et tentatives"
+    ],
+    "successMetrics": [
+      "Taux de complétion des exercices > 60%",
+      "Temps moyen de session > 15 minutes",
+      "Score moyen de progression > 70%",
+      "Taux de déverrouillage progressif > 80%"
+    ]
+  },
+  "userStories": [
+    {
+      "id": "US001",
+      "title": "Voir Toutes Les Catégories",
+      "userStory": "As a Élève, I want to voir toutes les catégories d'exercices disponibles avec mes statistiques de progression so that je puisse choisir sur quoi m'entraîner et visualiser mes progrès",
+      "businessValue": "je puisse choisir sur quoi m'entraîner et visualiser mes progrès",
+      "acceptanceCriteria": [
+        "Affichage grid des catégories principales",
+        "Icônes et couleurs thématiques par catégorie",
+        "Statistiques visibles: X/Y exercices complétés",
+        "Navigation fluide vers sous-catégories",
+        "Responsive mobile et desktop"
+      ],
+      "status": "not_started",
+      "priority": "P0",
+      "estimatedComplexity": "M",
+      "dependencies": []
+    },
+    {
+      "id": "US002",
+      "title": "Débloquer Les Exercices Progressivement",
+      "userStory": "As a Élève, I want to débloquer les exercices progressivement selon mes scores so that je progresse de manière structurée sans être submergé",
+      "businessValue": "je progresse de manière structurée sans être submergé",
+      "acceptanceCriteria": [
+        "Premier exercice débloqué automatiquement par défaut",
+        "Déverrouillage automatique si score ≥ 50%",
+        "Affichage clair des statuts avec icônes (locked/unlocked/completed/failed)",
+        "Impossibilité de tenter les exercices locked",
+        "Message explicatif pour les exercices locked"
+      ],
+      "status": "not_started",
+      "priority": "P0",
+      "estimatedComplexity": "M",
+      "dependencies": []
+    },
+    {
+      "id": "US003",
+      "title": "Faire Les Exercices H5p",
+      "userStory": "As a Élève, I want to faire les exercices H5P directement dans l'interface so that j'aie une expérience fluide sans quitter la plateforme",
+      "businessValue": "j'aie une expérience fluide sans quitter la plateforme",
+      "acceptanceCriteria": [
+        "Lecteur H5P intégré en iframe responsive",
+        "Soumission automatique des résultats à la fin",
+        "Mise à jour du statut après validation",
+        "Feedback visuel immédiat (score, nouvel exercice débloqué)",
+        "Gestion des erreurs de chargement"
+      ],
+      "status": "not_started",
+      "priority": "P0",
+      "estimatedComplexity": "M",
+      "dependencies": []
+    },
+    {
+      "id": "US004",
+      "title": "Voir Ma Progression Globale",
+      "userStory": "As a Élève, I want to voir ma progression globale et mes statistiques so that je visualise mes efforts et reste motivé",
+      "businessValue": "je visualise mes efforts et reste motivé",
+      "acceptanceCriteria": [
+        "Dashboard avec statistiques générales (exercices complétés, score moyen)",
+        "Progression détaillée par catégorie",
+        "Historique des dernières tentatives",
+        "Badges/accomplissements débloqués",
+        "Graphiques de progression"
+      ],
+      "status": "not_started",
+      "priority": "P1",
+      "estimatedComplexity": "M",
+      "dependencies": []
+    }
+  ],
+  "technicalRequirements": {
+    "constraints": [],
+    "integrationNeeds": [],
+    "complianceRequirements": []
+  },
+  "acceptanceCriteria": {
+    "global": [],
+    "qualityStandards": []
+  },
+  "constraints": {
+    "timeline": "",
+    "resources": [],
+    "nonNegotiables": []
+  },
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-10-18",
+    "lastUpdated": "2025-10-18",
+    "approver": ""
+  },
+  "progress": {
+    "overall": 0,
+    "completed": 0,
+    "total": 4,
+    "blocked": 0
+  }
+}

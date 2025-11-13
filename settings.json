@@ -1,80 +1,17 @@
 {
-  "env": {
-    "CLAUDE_NO_TS_CHECK": "true",
-    "CLAUDE_MEMORY_SEARCH_AUTO": "false"
-  },
-  "includeCoAuthoredBy": false,
-  "permissions": {
-    "allow": [
-      "Bash",
-      "Edit",
-      "Write",
-      "Read"
-    ]
+  "statusLine": {
+    "type": "command",
+    "command": "bun /Users/flo/.claude/scripts/statusline/src/index.ts",
+    "padding": 0
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash $HOME/.claude/scripts/update-claude-date.sh",
-            "timeout": 1000
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "bun $HOME/.claude/scripts/validate-command.js",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PreToolUse",
-            "timeout": 2000
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write|Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PreToolUse",
-            "timeout": 2000
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/.claude/hooks/ts/run-ts-quality.js",
-            "timeout": 15000
-          },
-          {
-            "type": "command",
-            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PostToolUse",
-            "timeout": 2000
-          }
-        ]
-      },
-      {
-        "matcher": "Bash|Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type PostToolUse",
-            "timeout": 2000
+            "command": "bun /Users/flo/.claude/scripts/command-validator/src/cli.ts"
           }
         ]
       }
@@ -85,35 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay -v 0.1 $HOME/.claude/songs/finish.mp3",
-            "timeout": 2000
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/ccnotify/ccnotify.py Stop",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type Stop",
-            "timeout": 2000
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/ccnotify/ccnotify.py UserPromptSubmit",
-            "timeout": 2000
-          },
-          {
-            "type": "command",
-            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type UserPromptSubmit",
-            "timeout": 2000
+            "command": "afplay -v 0.1 /Users/flo/.claude/song/finish.mp3"
           }
         ]
       }
@@ -124,22 +33,21 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/ccnotify/ccnotify.py Notification",
-            "timeout": 2000
-          },
+            "command": "afplay -v 0.1 /Users/flo/.claude/song/need-human.mp3"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
           {
             "type": "command",
-            "command": "uv run $HOME/.claude/hooks/observability/send_event.py --source-app claude-setup --event-type Notification",
-            "timeout": 2000
+            "command": "bun /Users/flo/.claude/scripts/hook-post-file.ts"
           }
         ]
       }
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash /Users/flo/.claude/observability/statusline-ccusage.sh",
-    "padding": 0
-  },
-  "alwaysThinkingEnabled": true
+  }
 }

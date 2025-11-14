@@ -1,4 +1,5 @@
 {
+  "includeCoAuthoredBy": false,
   "statusLine": {
     "type": "command",
     "command": "bun /Users/flo/.claude/scripts/statusline/src/index.ts",

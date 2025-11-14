@@ -2,10 +2,64 @@
   "sessions": [
     {
       "id": "ecee418e-9890-49bf-8c47-535349063b0f",
-      "cost": 0.15795555,
+      "cost": 0.30149545000000005,
       "date": "2025-11-13",
-      "duration_ms": 2812767,
+      "duration_ms": 2944089,
       "lines_added": 0,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/.claude"
+    },
+    {
+      "id": "a84b521c-bb40-4008-b353-50256e178a51",
+      "cost": 3.6308771500000003,
+      "date": "2025-11-13",
+      "duration_ms": 1448207,
+      "lines_added": 1634,
+      "lines_removed": 8,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "012f9b5a-cb42-4b8a-a10c-bb701d7846c5",
+      "cost": 3.7286783499999987,
+      "date": "2025-11-14",
+      "duration_ms": 53385909,
+      "lines_added": 844,
+      "lines_removed": 94,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "c07be4df-ed80-45b7-83ba-d9edb3ed312d",
+      "cost": 0.005011,
+      "date": "2025-11-14",
+      "duration_ms": 53838410,
+      "lines_added": 0,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/.claude"
+    },
+    {
+      "id": "0761a505-ab13-4e11-866b-3e696bddca58",
+      "cost": 0.11068114999999998,
+      "date": "2025-11-14",
+      "duration_ms": 403271,
+      "lines_added": 80,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/.claude"
+    },
+    {
+      "id": "b74ee075-4747-4778-9efe-72f1fd4505cb",
+      "cost": 0.16214715,
+      "date": "2025-11-14",
+      "duration_ms": 84828,
+      "lines_added": 1,
+      "lines_removed": 1,
+      "cwd": "/Users/flo/.claude"
+    },
+    {
+      "id": "fb8a8efc-344c-4b09-ab9d-2973b5ee4501",
+      "cost": 0.19283665,
+      "date": "2025-11-14",
+      "duration_ms": 140372,
+      "lines_added": 42,
       "lines_removed": 0,
       "cwd": "/Users/flo/.claude"
     }

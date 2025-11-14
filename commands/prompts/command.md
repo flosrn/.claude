@@ -199,7 +199,7 @@ When user runs `/review 123 high alice`, variables are:
 
 ### Bash Command Execution: !\`command\`
 
-Execute bash commands before the slash command runs using the `!` prefix. The output is included in the command context.
+Execute bash commands before the slash command runs using the exclamation mark prefix. The output is included in the command context.
 
 ```markdown
 ---

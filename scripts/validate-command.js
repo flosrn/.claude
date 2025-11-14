@@ -25,6 +25,30 @@ const SECURITY_RULES = {
     "cfdisk",
   ],
 
+  // Supabase CLI dangerous commands
+  SUPABASE_CRITICAL_COMMANDS: [
+    "supabase projects delete",
+    "supabase branches delete",
+  ],
+
+  // Only block these Supabase commands when they affect production/remote
+  SUPABASE_PRODUCTION_COMMANDS: [
+    "supabase db push",
+    "supabase migration repair",
+    "supabase functions delete",
+    "supabase secrets unset",
+  ],
+
+  // PostgreSQL critical commands (always dangerous)
+  POSTGRESQL_CRITICAL_PATTERNS: ["DROP DATABASE", "DROP SCHEMA", "TRUNCATE"],
+
+  // PostgreSQL high-risk commands
+  POSTGRESQL_HIGH_RISK_COMMANDS: [
+    "DROP TABLE",
+    "ALTER DATABASE",
+    "VACUUM FULL",
+  ],
+
   // Privilege escalation and system access
   PRIVILEGE_COMMANDS: [
     "sudo",
@@ -67,6 +91,25 @@ const SECURITY_RULES = {
 
   // Dangerous regex patterns
   DANGEROUS_PATTERNS: [
+    // PostgreSQL dangerous patterns
+    /psql\s+.*-c\s+["'].*DROP\s+(DATABASE|SCHEMA)/i, // psql -c "DROP DATABASE/SCHEMA"
+    /psql\s+.*-c\s+["'].*TRUNCATE/i, // psql -c "TRUNCATE"
+    /psql\s+.*-c\s+["'].*DELETE\s+FROM[^;]*;[^W]/i, // DELETE without WHERE
+    /DROP\s+SCHEMA\s+.*CASCADE/i, // DROP SCHEMA with CASCADE
+    /DROP\s+TABLE\s+.*CASCADE/i, // DROP TABLE with CASCADE
+    /DELETE\s+FROM\s+\w+\s*;\s*$/i, // DELETE FROM table; (without WHERE)
+    /TRUNCATE\s+(TABLE\s+)?\w+/i, // TRUNCATE TABLE
+    /pg_restore\s+.*--no-sync/i, // pg_restore without sync (dangerous in prod)
+    /pg_restore\s+.*--clean/i, // pg_restore with DROP before restore
+    /psql\s+.*-h\s+(?!localhost|127\.0\.0\.1)\S+.*-c\s+["'].*DROP/i, // psql to remote host with DROP
+
+    // Supabase CLI dangerous patterns (only production/remote operations)
+    /supabase\s+db\s+reset\s+.*--linked/i, // Reset linked/remote database
+    /supabase\s+db\s+reset\s+.*--db-url/i, // Reset with direct DB URL
+    /supabase\s+db\s+push\s+.*--linked/i, // Push to linked project
+    /supabase\s+storage\s+rm\s+.*--project-ref/i, // Storage deletion on remote project
+    /supabase\s+migration\s+repair\s+.*--linked/i, // Migration repair on remote
+
     // File system destruction - block rm -rf with absolute paths (checked separately)
     /rm\s+.*-rf\s*\/\s*$/i, // rm -rf ending at root directory
     /rm\s+.*-rf\s*\/etc/i, // rm -rf in /etc
@@ -205,7 +248,7 @@ const SAFE_COMMANDS = [
 
 class CommandValidator {
   constructor() {
-    this.logFile = "/Users/melvynx/.claude/security.log";
+    this.logFile = "/Users/flo/.claude/security.log";
   }
 
   /**
@@ -240,6 +283,71 @@ class CommandValidator {
       result.isValid = false;
       result.severity = "CRITICAL";
       result.violations.push(`Critical dangerous command: ${mainCommand}`);
+    }
+
+    // Check Supabase critical commands (multi-word commands)
+    for (const supabaseCmd of SECURITY_RULES.SUPABASE_CRITICAL_COMMANDS) {
+      if (normalizedCmd.startsWith(supabaseCmd.toLowerCase())) {
+        result.isValid = false;
+        result.severity = "CRITICAL";
+        result.violations.push(
+          `Supabase critical command: ${supabaseCmd} - This will permanently delete data!`,
+        );
+      }
+    }
+
+    // Check Supabase production commands (only when targeting remote/production)
+    for (const supabaseCmd of SECURITY_RULES.SUPABASE_PRODUCTION_COMMANDS) {
+      if (normalizedCmd.startsWith(supabaseCmd.toLowerCase())) {
+        // Only block if it has production flags like --linked, --project-ref, --db-url
+        if (
+          command.includes("--linked") ||
+          command.includes("--project-ref") ||
+          command.includes("--db-url")
+        ) {
+          result.isValid = false;
+          result.severity = "CRITICAL";
+          result.violations.push(
+            `Supabase production command: ${supabaseCmd} with remote flag - This will affect production data!`,
+          );
+        }
+      }
+    }
+
+    // Check PostgreSQL critical patterns (case-insensitive search in command)
+    for (const pgPattern of SECURITY_RULES.POSTGRESQL_CRITICAL_PATTERNS) {
+      if (command.toUpperCase().includes(pgPattern)) {
+        result.isValid = false;
+        result.severity = "CRITICAL";
+        result.violations.push(
+          `PostgreSQL critical command: ${pgPattern} - This will permanently delete data!`,
+        );
+      }
+    }
+
+    // Check PostgreSQL high-risk commands
+    for (const pgCmd of SECURITY_RULES.POSTGRESQL_HIGH_RISK_COMMANDS) {
+      if (command.toUpperCase().includes(pgCmd)) {
+        // Check if it's targeting remote host
+        const isRemote =
+          /psql\s+.*-h\s+(?!localhost|127\.0\.0\.1)\S+/.test(command) ||
+          command.includes("--host=") ||
+          command.includes("DATABASE_URL");
+
+        if (isRemote) {
+          result.isValid = false;
+          result.severity = "CRITICAL";
+          result.violations.push(
+            `PostgreSQL high-risk command on remote host: ${pgCmd} - This may affect production data!`,
+          );
+        } else {
+          result.isValid = false;
+          result.severity = "HIGH";
+          result.violations.push(
+            `PostgreSQL high-risk command: ${pgCmd} - Use with caution!`,
+          );
+        }
+      }
     }
 
     // Check privilege escalation commands
@@ -306,8 +414,8 @@ class CommandValidator {
           result.severity = chainResult.severity;
           result.violations.push(
             `Chained command violation: ${trimmedCmd} - ${chainResult.violations.join(
-              ", "
-            )}`
+              ", ",
+            )}`,
           );
           allSafe = false;
         }
@@ -323,15 +431,15 @@ class CommandValidator {
       for (const chainedCmd of chainedCommands) {
         const chainResult = this.validateSingleCommand(
           chainedCmd.trim(),
-          toolName
+          toolName,
         );
         if (!chainResult.isValid) {
           result.isValid = false;
           result.severity = chainResult.severity;
           result.violations.push(
             `Chained command violation: ${chainedCmd.trim()} - ${chainResult.violations.join(
-              ", "
-            )}`
+              ", ",
+            )}`,
           );
         }
       }
@@ -405,6 +513,71 @@ class CommandValidator {
       result.isValid = false;
       result.severity = "CRITICAL";
       result.violations.push(`Critical dangerous command: ${mainCommand}`);
+    }
+
+    // Check Supabase critical commands (multi-word commands)
+    for (const supabaseCmd of SECURITY_RULES.SUPABASE_CRITICAL_COMMANDS) {
+      if (normalizedCmd.startsWith(supabaseCmd.toLowerCase())) {
+        result.isValid = false;
+        result.severity = "CRITICAL";
+        result.violations.push(
+          `Supabase critical command: ${supabaseCmd} - This will permanently delete data!`,
+        );
+      }
+    }
+
+    // Check Supabase production commands (only when targeting remote/production)
+    for (const supabaseCmd of SECURITY_RULES.SUPABASE_PRODUCTION_COMMANDS) {
+      if (normalizedCmd.startsWith(supabaseCmd.toLowerCase())) {
+        // Only block if it has production flags like --linked, --project-ref, --db-url
+        if (
+          command.includes("--linked") ||
+          command.includes("--project-ref") ||
+          command.includes("--db-url")
+        ) {
+          result.isValid = false;
+          result.severity = "CRITICAL";
+          result.violations.push(
+            `Supabase production command: ${supabaseCmd} with remote flag - This will affect production data!`,
+          );
+        }
+      }
+    }
+
+    // Check PostgreSQL critical patterns (case-insensitive search in command)
+    for (const pgPattern of SECURITY_RULES.POSTGRESQL_CRITICAL_PATTERNS) {
+      if (command.toUpperCase().includes(pgPattern)) {
+        result.isValid = false;
+        result.severity = "CRITICAL";
+        result.violations.push(
+          `PostgreSQL critical command: ${pgPattern} - This will permanently delete data!`,
+        );
+      }
+    }
+
+    // Check PostgreSQL high-risk commands
+    for (const pgCmd of SECURITY_RULES.POSTGRESQL_HIGH_RISK_COMMANDS) {
+      if (command.toUpperCase().includes(pgCmd)) {
+        // Check if it's targeting remote host
+        const isRemote =
+          /psql\s+.*-h\s+(?!localhost|127\.0\.0\.1)\S+/.test(command) ||
+          command.includes("--host=") ||
+          command.includes("DATABASE_URL");
+
+        if (isRemote) {
+          result.isValid = false;
+          result.severity = "CRITICAL";
+          result.violations.push(
+            `PostgreSQL high-risk command on remote host: ${pgCmd} - This may affect production data!`,
+          );
+        } else {
+          result.isValid = false;
+          result.severity = "HIGH";
+          result.violations.push(
+            `PostgreSQL high-risk command: ${pgCmd} - Use with caution!`,
+          );
+        }
+      }
     }
 
     // Check privilege escalation commands
@@ -555,7 +728,7 @@ class CommandValidator {
       console.error(
         `[SECURITY] ${
           result.isValid ? "ALLOWED" : "BLOCKED"
-        }: ${command.substring(0, 100)}`
+        }: ${command.substring(0, 100)}`,
       );
     } catch (error) {
       console.error("Failed to write security log:", error);
@@ -606,7 +779,7 @@ class CommandValidator {
         const cmdPattern = pattern.slice(5, -1); // Remove "Bash(" and ")"
         const regex = new RegExp(
           "^" + cmdPattern.replace(/\*/g, ".*") + "$",
-          "i"
+          "i",
         );
         if (regex.test(command)) {
           return true;
@@ -677,7 +850,7 @@ async function main() {
     } else {
       // Instead of blocking, ask user for confirmation
       const confirmationMessage = `⚠️  Potentially dangerous command detected!\n\nCommand: ${command}\nViolations: ${result.violations.join(
-        ", "
+        ", ",
       )}\nSeverity: ${
         result.severity
       }\n\nDo you want to proceed with this command?`;

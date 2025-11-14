@@ -20,11 +20,11 @@
     },
     {
       "id": "012f9b5a-cb42-4b8a-a10c-bb701d7846c5",
-      "cost": 5.294220899999998,
+      "cost": 6.219992099999997,
       "date": "2025-11-14",
-      "duration_ms": 54409139,
-      "lines_added": 848,
-      "lines_removed": 94,
+      "duration_ms": 54804109,
+      "lines_added": 1363,
+      "lines_removed": 420,
       "cwd": "/Users/flo/Code/nextjs/gapila"
     },
     {

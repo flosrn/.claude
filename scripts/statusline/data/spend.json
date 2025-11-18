@@ -20,11 +20,11 @@
     },
     {
       "id": "012f9b5a-cb42-4b8a-a10c-bb701d7846c5",
-      "cost": 6.219992099999997,
+      "cost": 23.701295849999983,
       "date": "2025-11-14",
-      "duration_ms": 54804109,
-      "lines_added": 1363,
-      "lines_removed": 420,
+      "duration_ms": 78008226,
+      "lines_added": 2660,
+      "lines_removed": 905,
       "cwd": "/Users/flo/Code/nextjs/gapila"
     },
     {
@@ -60,6 +60,150 @@
       "date": "2025-11-14",
       "duration_ms": 146292,
       "lines_added": 42,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/.claude"
+    },
+    {
+      "id": "9366cc35-3b6b-48ef-ad21-b2c8bbe24c48",
+      "cost": 2.98184575,
+      "date": "2025-11-14",
+      "duration_ms": 2801087,
+      "lines_added": 97,
+      "lines_removed": 1,
+      "cwd": "/Users/flo/.claude/scripts/command-validator"
+    },
+    {
+      "id": "0bcb036a-dedc-49f8-a1e5-0dce45a714db",
+      "cost": 1.5190846500000001,
+      "date": "2025-11-14",
+      "duration_ms": 1877541,
+      "lines_added": 24,
+      "lines_removed": 13,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "84af3c2c-3a04-4dd7-ab33-95be7227e1ab",
+      "cost": 7.381642399999997,
+      "date": "2025-11-14",
+      "duration_ms": 4760295,
+      "lines_added": 207,
+      "lines_removed": 200,
+      "cwd": "/Users/flo/Code/nextjs/gapila/apps/web"
+    },
+    {
+      "id": "407af79b-58a7-4802-ad26-64d665b6158c",
+      "cost": 6.4580258000000015,
+      "date": "2025-11-17",
+      "duration_ms": 8144024,
+      "lines_added": 65,
+      "lines_removed": 10,
+      "cwd": "/Users/flo/Code/nextjs/gapila/apps/web"
+    },
+    {
+      "id": "962a0183-0e15-4a13-a349-a1069c0ad937",
+      "cost": 0.25679620000000003,
+      "date": "2025-11-17",
+      "duration_ms": 161931,
+      "lines_added": 0,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/.claude"
+    },
+    {
+      "id": "27433801-b4db-432e-97cb-67273aa72417",
+      "cost": 46.16661129999995,
+      "date": "2025-11-17",
+      "duration_ms": 27321431,
+      "lines_added": 1575,
+      "lines_removed": 1392,
+      "cwd": "/Users/flo/Code/nextjs/gapila/apps/web"
+    },
+    {
+      "id": "47f80480-4d69-4d6b-bf91-411e9429c897",
+      "cost": 0.21345224999999995,
+      "date": "2025-11-17",
+      "duration_ms": 158596,
+      "lines_added": 0,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/.claude"
+    },
+    {
+      "id": "fcce8923-63ca-424d-8833-80ed6f39446b",
+      "cost": 0.20268005,
+      "date": "2025-11-17",
+      "duration_ms": 47826,
+      "lines_added": 0,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "107ed379-e577-4896-a2e9-c7cc85d09454",
+      "cost": 0.46905315000000003,
+      "date": "2025-11-17",
+      "duration_ms": 601045,
+      "lines_added": 315,
+      "lines_removed": 1,
+      "cwd": "/Users/flo/.claude"
+    },
+    {
+      "id": "d029960b-c11e-4d5b-bf66-c08a0744ec89",
+      "cost": 0.48372634999999997,
+      "date": "2025-11-17",
+      "duration_ms": 224060,
+      "lines_added": 3,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "b47744c3-1b1d-4aa0-a79b-8673fa40ce6d",
+      "cost": 3.1929811000000012,
+      "date": "2025-11-17",
+      "duration_ms": 1363916,
+      "lines_added": 163,
+      "lines_removed": 164,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "f301e4ad-bce3-453c-8de6-4d35006eb73a",
+      "cost": 2.2179779,
+      "date": "2025-11-17",
+      "duration_ms": 924625,
+      "lines_added": 5,
+      "lines_removed": 71,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "673d0de1-fd38-4b2a-b333-75f677fa0516",
+      "cost": 1.1268359,
+      "date": "2025-11-17",
+      "duration_ms": 633643,
+      "lines_added": 0,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/Code/nextjs/gapila/apps/web"
+    },
+    {
+      "id": "6ac629ea-1416-4ed5-ab1a-04d4bdcc1b99",
+      "cost": 0.3019818999999999,
+      "date": "2025-11-18",
+      "duration_ms": 147365,
+      "lines_added": 1,
+      "lines_removed": 1,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "73fda0ce-4f81-4d73-b0a7-6ac66f8e4479",
+      "cost": 0.5954233500000001,
+      "date": "2025-11-18",
+      "duration_ms": 263402,
+      "lines_added": 0,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
+    },
+    {
+      "id": "daa020b4-371a-4787-9f44-bb893fe9821c",
+      "cost": 0.08094399999999999,
+      "date": "2025-11-18",
+      "duration_ms": 19304,
+      "lines_added": 0,
       "lines_removed": 0,
       "cwd": "/Users/flo/.claude"
     }

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "plugins": {
+    "frontend-design@claude-code-plugins": {
+      "version": "1.0.0",
+      "installedAt": "2025-11-19T18:28:06.748Z",
+      "lastUpdated": "2025-11-19T18:28:06.748Z",
+      "installPath": "/Users/flo/.claude/plugins/marketplaces/claude-code-plugins/plugins/frontend-design",
+      "gitCommitSha": "13a258a3feca92a360e9cec5150dc61666429927",
+      "isLocal": true
+    }
+  }
+}

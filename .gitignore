@@ -6,6 +6,7 @@
 /ide/
 /projects/
 /statsig/
+/.credentials.json
 
 # Logs and temporary files
 *.log

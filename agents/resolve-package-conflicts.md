@@ -2,6 +2,8 @@
 name: resolve-package-conflicts
 description: Use this agent to resolve package.json merge conflicts by selecting the most recent version of each package
 color: blue
+model: haiku
+permissionMode: acceptEdits
 ---
 
 <role>

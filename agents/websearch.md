@@ -4,6 +4,7 @@ description: Use this agent when you need to make a quick web search.
 color: yellow
 tools: WebSearch, WebFetch
 model: haiku
+permissionMode: plan
 ---
 
 You are a rapid web search specialist. Find accurate information fast.

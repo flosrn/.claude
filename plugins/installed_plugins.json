@@ -22,6 +22,39 @@
         "gitCommitSha": "6e49adfe7ff00cb42dd610e4ead9b76e4281d7f6",
         "isLocal": true
       }
+    ],
+    "code-review@claude-code-plugins": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-code-plugins/code-review/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2025-12-14T05:53:29.953Z",
+        "lastUpdated": "2025-12-14T05:53:29.953Z",
+        "gitCommitSha": "43c606cf419738302c2ce84f2baaace335235d27",
+        "isLocal": true
+      }
+    ],
+    "plugin-dev@claude-code-plugins": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-code-plugins/plugin-dev/0.1.0",
+        "version": "0.1.0",
+        "installedAt": "2025-12-14T05:54:14.929Z",
+        "lastUpdated": "2025-12-14T05:54:14.929Z",
+        "gitCommitSha": "43c606cf419738302c2ce84f2baaace335235d27",
+        "isLocal": true
+      }
+    ],
+    "makerkit@local": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/local/makerkit/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2025-12-14T06:57:43.824Z",
+        "lastUpdated": "2025-12-14T06:57:43.824Z",
+        "gitCommitSha": "43c606cf419738302c2ce84f2baaace335235d27",
+        "isLocal": true
+      }
     ]
   }
 }

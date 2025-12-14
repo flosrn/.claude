@@ -51,9 +51,20 @@
     "command": "bun /Users/flo/.claude/scripts/statusline/src/index.ts",
     "padding": 0
   },
+  "extraKnownMarketplaces": {
+    "local": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/flo/.claude/plugins/local"
+      }
+    }
+  },
   "enabledPlugins": {
     "frontend-design@claude-code-plugins": true,
-    "wd@wd-marketplace": true
+    "wd@wd-marketplace": true,
+    "code-review@claude-code-plugins": true,
+    "plugin-dev@claude-code-plugins": true,
+    "makerkit@local": true
   },
   "alwaysThinkingEnabled": true
 }

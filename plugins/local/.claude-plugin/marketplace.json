@@ -1,0 +1,13 @@
+{
+  "name": "local",
+  "owner": {
+    "name": "Flo"
+  },
+  "plugins": [
+    {
+      "name": "makerkit",
+      "source": "./makerkit",
+      "description": "Makerkit project management plugin"
+    }
+  ]
+}

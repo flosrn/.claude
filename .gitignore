@@ -66,3 +66,15 @@ backups/
 debug/
 file-history/
 history.jsonl
+
+# Python virtual environment
+skills/.venv/
+
+# Plugin cache (downloaded at runtime)
+plugins/cache/
+
+# Stats and tracking cache
+stats-cache.json
+
+# Task plans (temporary work files)
+plans/

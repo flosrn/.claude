@@ -1,13 +1,27 @@
 {
-  "version": 1,
+  "version": 2,
   "plugins": {
-    "frontend-design@claude-code-plugins": {
-      "version": "1.0.0",
-      "installedAt": "2025-11-19T18:28:06.748Z",
-      "lastUpdated": "2025-11-19T18:28:06.748Z",
-      "installPath": "/Users/flo/.claude/plugins/marketplaces/claude-code-plugins/plugins/frontend-design",
-      "gitCommitSha": "13a258a3feca92a360e9cec5150dc61666429927",
-      "isLocal": true
-    }
+    "frontend-design@claude-code-plugins": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-code-plugins/frontend-design/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2025-12-14T05:10:20.906Z",
+        "lastUpdated": "2025-12-14T05:10:20.906Z",
+        "gitCommitSha": "eb872450105745e9489c6f6d73fa2fb4ff5a1e9a",
+        "isLocal": true
+      }
+    ],
+    "wd@wd-marketplace": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/wd-marketplace/wd/2.1.1",
+        "version": "2.1.1",
+        "installedAt": "2025-12-14T05:30:42.065Z",
+        "lastUpdated": "2025-12-14T05:30:42.065Z",
+        "gitCommitSha": "6e49adfe7ff00cb42dd610e4ead9b76e4281d7f6",
+        "isLocal": true
+      }
+    ]
   }
 }

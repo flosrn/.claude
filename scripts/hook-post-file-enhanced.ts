@@ -1,5 +1,4 @@
 #!/usr/bin/env bun
-// @ts-nocheck
 
 interface HookInput {
   session_id: string;
@@ -48,7 +47,9 @@ function log(message: string, ...args: unknown[]) {
 async function logToolUsage(entry: LogEntry) {
   try {
     const logLine = JSON.stringify(entry) + "\n";
-    await Bun.write(LOG_FILE, logLine, { flags: "a" });
+    const file = Bun.file(LOG_FILE);
+    const existingContent = (await file.exists()) ? await file.text() : "";
+    await Bun.write(LOG_FILE, existingContent + logLine);
   } catch (error) {
     log("Failed to write log:", error);
   }

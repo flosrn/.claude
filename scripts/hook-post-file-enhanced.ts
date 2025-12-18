@@ -102,10 +102,12 @@ async function logToolUsage(entry: LogEntry) {
 }
 
 const COMMAND_TIMEOUT_MS = 10000; // 10 seconds max per command
+const TSC_TIMEOUT_MS = 30000; // 30 seconds for TypeScript (can be slow on large projects)
 
 async function runCommand(
   command: string[],
   cwd?: string,
+  timeoutMs: number = COMMAND_TIMEOUT_MS,
 ): Promise<{ stdout: string; stderr: string; success: boolean }> {
   try {
     const proc = Bun.spawn(command, {
@@ -118,8 +120,8 @@ async function runCommand(
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => {
         proc.kill();
-        reject(new Error(`Command timed out after ${COMMAND_TIMEOUT_MS}ms`));
-      }, COMMAND_TIMEOUT_MS),
+        reject(new Error(`Command timed out after ${timeoutMs}ms`));
+      }, timeoutMs),
     );
 
     const resultPromise = (async () => {
@@ -185,10 +187,12 @@ async function main() {
   // Get local binaries paths
   const prettierBin = join(projectRoot, "node_modules", ".bin", "prettier");
   const eslintBin = join(projectRoot, "node_modules", ".bin", "eslint");
+  const tscBin = join(projectRoot, "node_modules", ".bin", "tsc");
 
   // Check if binaries exist
   const hasPrettier = existsSync(prettierBin);
   const hasEslintBin = existsSync(eslintBin);
+  const hasTscBin = existsSync(tscBin);
 
   // Check if ESLint config exists (ESLint 9+ requires eslint.config.js/mjs/cjs)
   const hasEslintConfig =
@@ -196,9 +200,25 @@ async function main() {
     existsSync(join(projectRoot, "eslint.config.mjs")) ||
     existsSync(join(projectRoot, "eslint.config.cjs"));
 
-  const hasEslint = hasEslintBin && hasEslintConfig;
+  // Find the closest tsconfig.json to the file (might be in apps/web/, packages/ui/, etc.)
+  let tsconfigDir: string | null = null;
+  let searchDir = dirname(filePath);
+  while (searchDir !== projectRoot && searchDir !== "/") {
+    if (existsSync(join(searchDir, "tsconfig.json"))) {
+      tsconfigDir = searchDir;
+      break;
+    }
+    searchDir = dirname(searchDir);
+  }
+  // Fallback to project root
+  if (!tsconfigDir && existsSync(join(projectRoot, "tsconfig.json"))) {
+    tsconfigDir = projectRoot;
+  }
 
-  log("Binaries found:", { hasPrettier, hasEslintBin, hasEslintConfig, hasEslint });
+  const hasEslint = hasEslintBin && hasEslintConfig;
+  const hasTypeScript = hasTscBin && tsconfigDir !== null;
+
+  log("Binaries found:", { hasPrettier, hasEslintBin, hasEslintConfig, hasEslint, hasTscBin, tsconfigDir, hasTypeScript });
 
   // 1. Execute Prettier
   if (hasPrettier) {
@@ -234,6 +254,40 @@ async function main() {
     errors.push(`ESLint errors:\n${eslintErrors}`);
   }
 
+  // 4. Run TypeScript check using the project's tsconfig.json
+  // Run from the directory containing tsconfig.json and filter for the specific file
+  const tsErrors: string[] = [];
+  if (hasTypeScript && tsconfigDir) {
+    log("Running TypeScript check from:", tsconfigDir);
+
+    // Run tsc with the project's tsconfig
+    const tscResult = await runCommand(
+      [tscBin, "--noEmit", "-p", "tsconfig.json", "--pretty", "false"],
+      tsconfigDir,
+      TSC_TIMEOUT_MS,
+    );
+
+    if (!tscResult.success) {
+      const allOutput = (tscResult.stdout + tscResult.stderr).trim();
+      const lines = allOutput.split("\n");
+
+      // Get the file path relative to tsconfigDir for matching
+      const relativeToTsconfig = filePath.replace(tsconfigDir + "/", "");
+
+      for (const line of lines) {
+        // TypeScript error format: path/to/file.ts(line,col): error TS1234: message
+        // Match errors that start with the relative path
+        if (line.startsWith(relativeToTsconfig) && line.includes("error TS")) {
+          tsErrors.push(line.trim());
+        }
+      }
+
+      if (tsErrors.length > 0) {
+        errors.push(`TypeScript errors:\n${tsErrors.join("\n")}`);
+      }
+    }
+  }
+
   // Log tool usage with tool_use_id for traceability
   await logToolUsage({
     timestamp: new Date().toISOString(),
@@ -251,10 +305,13 @@ async function main() {
   if (errors.length > 0) {
     const fileName = filePath.split("/").pop();
 
-    // Count actual errors/warnings from ESLint output (lines with "error" or "warning")
+    // Count ESLint errors/warnings (lines with "error" or "warning")
     const allErrorsText = errors.join("\n");
-    const errorMatches = allErrorsText.match(/\d+:\d+\s+(error|warning)/g);
-    const errorCount = errorMatches ? errorMatches.length : errors.length;
+    const eslintMatches = allErrorsText.match(/\d+:\d+\s+(error|warning)/g);
+    const eslintErrorCount = eslintMatches ? eslintMatches.length : 0;
+
+    // Count TypeScript errors
+    const tsErrorCount = tsErrors.length;
 
     const errorMessage = `Fix NOW the following errors AND warnings detected in ${fileName}:\n\n${errors.join("\n\n")}`;
 
@@ -264,6 +321,7 @@ async function main() {
         // Clean up ESLint output
         let cleaned = e
           .replace(/ESLint errors:\n?/g, '')
+          .replace(/TypeScript errors:\n?/g, '')
           .replace(new RegExp(projectRoot + '/', 'g'), '') // Remove absolute path prefix
           .replace(/✖ \d+ problems? \(\d+ errors?, \d+ warnings?\)\n?/g, '') // Remove summary line
           .trim();
@@ -278,7 +336,15 @@ async function main() {
       .map((line) => `│ ${line}`)
       .join('\n');
 
-    const header = `🔴 ${errorCount} error${errorCount > 1 ? 's' : ''} in ${fileName}`;
+    // Build header with both counts if applicable
+    const headerParts: string[] = [];
+    if (eslintErrorCount > 0) {
+      headerParts.push(`🔴 ${eslintErrorCount} ESLint error${eslintErrorCount > 1 ? 's' : ''}`);
+    }
+    if (tsErrorCount > 0) {
+      headerParts.push(`🔵 ${tsErrorCount} TypeScript error${tsErrorCount > 1 ? 's' : ''}`);
+    }
+    const header = `${headerParts.join(' • ')} in ${fileName}`;
 
     const output: HookOutput = {
       systemMessage: `\n${header}\n${indentedErrors}`,

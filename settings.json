@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay -v 0.1 /Users/flo/.claude/song/finish.mp3"
+            "command": "bun /Users/flo/.claude/scripts/hook-stop.ts"
           }
         ]
       }

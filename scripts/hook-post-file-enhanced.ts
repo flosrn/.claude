@@ -18,6 +18,7 @@ interface HookInput {
 }
 
 interface HookOutput {
+  systemMessage?: string;
   hookSpecificOutput: {
     hookEventName: string;
     additionalContext: string;
@@ -34,9 +35,54 @@ interface LogEntry {
   errors?: string[];
 }
 
+import { dirname, join } from "node:path";
+import { existsSync } from "node:fs";
+
 // Check for debug mode
 const DEBUG = process.env.CLAUDE_HOOK_DEBUG === "1";
 const LOG_FILE = "/Users/flo/.claude/tool-usage.log";
+
+// Find project root by looking for package.json or pnpm-workspace.yaml
+async function findProjectRoot(filePath: string): Promise<string | null> {
+  let dir = dirname(filePath);
+  const root = "/";
+
+  while (dir !== root) {
+    // Check for pnpm-workspace.yaml (monorepo root)
+    const pnpmWorkspace = Bun.file(join(dir, "pnpm-workspace.yaml"));
+    if (await pnpmWorkspace.exists()) {
+      return dir;
+    }
+
+    // Check for package.json with workspaces or as fallback
+    const packageJson = Bun.file(join(dir, "package.json"));
+    if (await packageJson.exists()) {
+      try {
+        const content = await packageJson.json();
+        // If it has workspaces, it's likely a monorepo root
+        if (content.workspaces) {
+          return dir;
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    dir = dirname(dir);
+  }
+
+  // Fallback: find any package.json
+  dir = dirname(filePath);
+  while (dir !== root) {
+    const packageJson = Bun.file(join(dir, "package.json"));
+    if (await packageJson.exists()) {
+      return dir;
+    }
+    dir = dirname(dir);
+  }
+
+  return null;
+}
 
 function log(message: string, ...args: unknown[]) {
   if (DEBUG) {
@@ -55,20 +101,35 @@ async function logToolUsage(entry: LogEntry) {
   }
 }
 
+const COMMAND_TIMEOUT_MS = 10000; // 10 seconds max per command
+
 async function runCommand(
   command: string[],
+  cwd?: string,
 ): Promise<{ stdout: string; stderr: string; success: boolean }> {
   try {
     const proc = Bun.spawn(command, {
       stdout: "pipe",
       stderr: "pipe",
+      cwd,
     });
 
-    const stdout = await new Response(proc.stdout).text();
-    const stderr = await new Response(proc.stderr).text();
-    const success = (await proc.exited) === 0;
+    // Add timeout
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => {
+        proc.kill();
+        reject(new Error(`Command timed out after ${COMMAND_TIMEOUT_MS}ms`));
+      }, COMMAND_TIMEOUT_MS),
+    );
 
-    return { stdout, stderr, success };
+    const resultPromise = (async () => {
+      const stdout = await new Response(proc.stdout).text();
+      const stderr = await new Response(proc.stderr).text();
+      const success = (await proc.exited) === 0;
+      return { stdout, stderr, success };
+    })();
+
+    return await Promise.race([resultPromise, timeoutPromise]);
   } catch (error) {
     return { stdout: "", stderr: String(error), success: false };
   }
@@ -97,15 +158,20 @@ async function main() {
     process.exit(0);
   }
 
-  log("Processing tool use:", { tool_use_id, tool_name, filePath });
-
   // Check that it's a TypeScript file only
   if (!filePath.endsWith(".ts") && !filePath.endsWith(".tsx")) {
     log(`Skipping ${filePath}: not a TypeScript file`);
     process.exit(0);
   }
 
-  log("Processing file:", filePath);
+  // Find project root from file path
+  const projectRoot = await findProjectRoot(filePath);
+  if (!projectRoot) {
+    log("No project root found for:", filePath);
+    process.exit(0);
+  }
+
+  log("Processing tool use:", { tool_use_id, tool_name, filePath, projectRoot });
 
   // Check that the file exists
   const file = Bun.file(filePath);
@@ -116,42 +182,57 @@ async function main() {
 
   const errors: string[] = [];
 
+  // Get local binaries paths
+  const prettierBin = join(projectRoot, "node_modules", ".bin", "prettier");
+  const eslintBin = join(projectRoot, "node_modules", ".bin", "eslint");
+
+  // Check if binaries exist
+  const hasPrettier = existsSync(prettierBin);
+  const hasEslintBin = existsSync(eslintBin);
+
+  // Check if ESLint config exists (ESLint 9+ requires eslint.config.js/mjs/cjs)
+  const hasEslintConfig =
+    existsSync(join(projectRoot, "eslint.config.js")) ||
+    existsSync(join(projectRoot, "eslint.config.mjs")) ||
+    existsSync(join(projectRoot, "eslint.config.cjs"));
+
+  const hasEslint = hasEslintBin && hasEslintConfig;
+
+  log("Binaries found:", { hasPrettier, hasEslintBin, hasEslintConfig, hasEslint });
+
   // 1. Execute Prettier
-  log("Running Prettier formatting");
-  const prettierResult = await runCommand([
-    "bun",
-    "x",
-    "prettier",
-    "--write",
-    filePath,
-  ]);
-  if (!prettierResult.success) {
-    log("Prettier failed:", prettierResult.stderr);
-    errors.push(`Prettier failed: ${prettierResult.stderr}`);
+  if (hasPrettier) {
+    log("Running Prettier formatting");
+    const prettierResult = await runCommand(
+      [prettierBin, "--write", filePath],
+      projectRoot,
+    );
+    if (!prettierResult.success) {
+      log("Prettier failed:", prettierResult.stderr);
+      errors.push(`Prettier failed: ${prettierResult.stderr}`);
+    }
   }
 
   // 2. ESLint --fix
-  log("Running ESLint --fix");
-  await runCommand(["bun", "x", "eslint", "--fix", filePath]);
+  if (hasEslint) {
+    log("Running ESLint --fix");
+    await runCommand([eslintBin, "--fix", filePath], projectRoot);
+  }
 
-  // 3. Run ESLint check and TypeScript check in parallel
-  log("Running ESLint and TypeScript checks in parallel");
-  const [eslintCheckResult, tscResult] = await Promise.all([
-    runCommand(["bun", "x", "eslint", filePath]),
-    runCommand(["bun", "x", "tsc", "--noEmit", "--pretty", "false"]),
-  ]);
+  // 3. Run ESLint check
+  let eslintCheckResult = { stdout: "", stderr: "", success: true };
+  if (hasEslint) {
+    log("Running ESLint check");
+    eslintCheckResult = await runCommand([eslintBin, filePath], projectRoot);
+  }
 
   const eslintErrors = (
     eslintCheckResult.stdout + eslintCheckResult.stderr
   ).trim();
 
-  const tsErrors = tscResult.stderr
-    .split("\n")
-    .filter((line) => line.includes(filePath))
-    .join("\n");
-
-  if (tsErrors) errors.push(`TypeScript errors:\n${tsErrors}`);
-  if (eslintErrors) errors.push(`ESLint errors:\n${eslintErrors}`);
+  if (eslintErrors && !eslintErrors.includes("0 problems")) {
+    errors.push(`ESLint errors:\n${eslintErrors}`);
+  }
 
   // Log tool usage with tool_use_id for traceability
   await logToolUsage({
@@ -168,11 +249,39 @@ async function main() {
 
   // Output the result
   if (errors.length > 0) {
-    const errorMessage = `Fix NOW the following errors AND warning detected in ${filePath
-      .split("/")
-      .pop()}:\n\n${errors.join("\n\n")}`;
+    const fileName = filePath.split("/").pop();
+
+    // Count actual errors/warnings from ESLint output (lines with "error" or "warning")
+    const allErrorsText = errors.join("\n");
+    const errorMatches = allErrorsText.match(/\d+:\d+\s+(error|warning)/g);
+    const errorCount = errorMatches ? errorMatches.length : errors.length;
+
+    const errorMessage = `Fix NOW the following errors AND warnings detected in ${fileName}:\n\n${errors.join("\n\n")}`;
+
+    // Build a pretty error summary for the user
+    const prettyErrors = errors
+      .map((e) => {
+        // Clean up ESLint output
+        let cleaned = e
+          .replace(/ESLint errors:\n?/g, '')
+          .replace(new RegExp(projectRoot + '/', 'g'), '') // Remove absolute path prefix
+          .replace(/✖ \d+ problems? \(\d+ errors?, \d+ warnings?\)\n?/g, '') // Remove summary line
+          .trim();
+        return cleaned;
+      })
+      .filter((e) => e.length > 0)
+      .join('\n');
+
+    // Indent each error line with a bar
+    const indentedErrors = prettyErrors
+      .split('\n')
+      .map((line) => `│ ${line}`)
+      .join('\n');
+
+    const header = `🔴 ${errorCount} error${errorCount > 1 ? 's' : ''} in ${fileName}`;
 
     const output: HookOutput = {
+      systemMessage: `\n${header}\n${indentedErrors}`,
       hookSpecificOutput: {
         hookEventName: "PostToolUse",
         additionalContext: errorMessage,
@@ -181,10 +290,6 @@ async function main() {
 
     log("Output", JSON.stringify(output, null, 2));
     console.log(JSON.stringify(output, null, 2));
-  } else {
-    console.error(
-      `✓ No errors detected in ${filePath.split("/").pop()} [${tool_use_id}]`,
-    );
   }
 }
 

@@ -254,18 +254,53 @@ async function main() {
     errors.push(`ESLint errors:\n${eslintErrors}`);
   }
 
-  // 4. Run TypeScript check using the project's tsconfig.json
-  // Run from the directory containing tsconfig.json and filter for the specific file
+  // 4. Run TypeScript check
+  // Use Turbo if available (much faster with caching), otherwise fallback to tsc
   const tsErrors: string[] = [];
-  if (hasTypeScript && tsconfigDir) {
-    log("Running TypeScript check from:", tsconfigDir);
+  const hasTurbo = existsSync(join(projectRoot, "turbo.json"));
 
-    // Run tsc with the project's tsconfig
-    const tscResult = await runCommand(
-      [tscBin, "--noEmit", "-p", "tsconfig.json", "--pretty", "false"],
-      tsconfigDir,
-      TSC_TIMEOUT_MS,
-    );
+  if (hasTypeScript && tsconfigDir) {
+    log("Running TypeScript check from:", tsconfigDir, "turbo:", hasTurbo);
+
+    let tscResult = { stdout: "", stderr: "", success: true };
+
+    if (hasTurbo) {
+      // Try to get package name from package.json in tsconfigDir
+      let packageName = "";
+      try {
+        const pkgJson = Bun.file(join(tsconfigDir, "package.json"));
+        if (await pkgJson.exists()) {
+          const pkg = await pkgJson.json();
+          packageName = pkg.name || "";
+        }
+      } catch {
+        // Ignore errors
+      }
+
+      if (packageName) {
+        log("Running turbo typecheck for package:", packageName);
+        // Use turbo with filter for much faster cached builds
+        tscResult = await runCommand(
+          ["pnpm", "turbo", "run", "typecheck", `--filter=${packageName}`],
+          projectRoot,
+          TSC_TIMEOUT_MS,
+        );
+      } else {
+        // Fallback to direct tsc if no package name found
+        tscResult = await runCommand(
+          [tscBin, "--noEmit", "-p", "tsconfig.json", "--pretty", "false"],
+          tsconfigDir,
+          TSC_TIMEOUT_MS,
+        );
+      }
+    } else {
+      // No turbo, use tsc directly
+      tscResult = await runCommand(
+        [tscBin, "--noEmit", "-p", "tsconfig.json", "--pretty", "false"],
+        tsconfigDir,
+        TSC_TIMEOUT_MS,
+      );
+    }
 
     if (!tscResult.success) {
       const allOutput = (tscResult.stdout + tscResult.stderr).trim();
@@ -276,9 +311,18 @@ async function main() {
 
       for (const line of lines) {
         // TypeScript error format: path/to/file.ts(line,col): error TS1234: message
-        // Match errors that start with the relative path
-        if (line.startsWith(relativeToTsconfig) && line.includes("error TS")) {
-          tsErrors.push(line.trim());
+        // Turbo format: @pkg:typecheck: path/to/file.ts(line,col): error TS1234: message
+        let cleanLine = line.trim();
+
+        // Remove turbo prefix if present (e.g., "@kit/web:typecheck: ")
+        const turboMatch = cleanLine.match(/^@[^:]+:typecheck:\s*/);
+        if (turboMatch) {
+          cleanLine = cleanLine.slice(turboMatch[0].length);
+        }
+
+        // Match errors that contain the relative path and "error TS"
+        if (cleanLine.startsWith(relativeToTsconfig) && cleanLine.includes("error TS")) {
+          tsErrors.push(cleanLine);
         }
       }
 

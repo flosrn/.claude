@@ -31,14 +31,25 @@ async function checkSessionHadErrors(sessionId: string): Promise<boolean> {
     const content = await file.text();
     const lines = content.trim().split("\n");
 
+    // Track the LAST status for each file in this session
+    // If Claude fixed an error, the last status will be "success"
+    const fileLastStatus = new Map<string, "success" | "error">();
+
     for (const line of lines) {
       try {
         const entry = JSON.parse(line);
-        if (entry.session_id === sessionId && entry.status === "error") {
-          return true;
+        if (entry.session_id === sessionId && entry.file_path) {
+          fileLastStatus.set(entry.file_path, entry.status);
         }
       } catch {
         // Skip invalid JSON lines
+      }
+    }
+
+    // Check if ANY file still has an error as its last status
+    for (const status of fileLastStatus.values()) {
+      if (status === "error") {
+        return true;
       }
     }
 

@@ -8,6 +8,11 @@
       "name": "makerkit",
       "source": "./makerkit",
       "description": "Makerkit project management plugin"
+    },
+    {
+      "name": "next-react-optimizer",
+      "source": "./next-react-optimizer",
+      "description": "Optimization patterns for Next.js 16 and React 19"
     }
   ]
 }

@@ -55,6 +55,17 @@
         "gitCommitSha": "43c606cf419738302c2ce84f2baaace335235d27",
         "isLocal": true
       }
+    ],
+    "next-react-optimizer@local": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/local/next-react-optimizer/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2025-12-15T05:53:56.596Z",
+        "lastUpdated": "2025-12-15T05:53:56.596Z",
+        "gitCommitSha": "e822946bc06d550061cdcc99889a55cafe9850b2",
+        "isLocal": true
+      }
     ]
   }
 }

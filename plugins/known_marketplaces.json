@@ -5,7 +5,7 @@
       "repo": "anthropics/claude-code"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-code-plugins",
-    "lastUpdated": "2025-12-14T07:54:03.635Z"
+    "lastUpdated": "2025-12-18T09:48:09.381Z"
   },
   "wd-marketplace": {
     "source": {
@@ -13,7 +13,7 @@
       "repo": "Para-FR/wd-framework"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/wd-marketplace",
-    "lastUpdated": "2025-12-14T07:04:49.892Z"
+    "lastUpdated": "2025-12-18T04:40:36.213Z"
   },
   "local": {
     "source": {
@@ -21,6 +21,14 @@
       "path": "/Users/flo/.claude/plugins/local"
     },
     "installLocation": "/Users/flo/.claude/plugins/local",
-    "lastUpdated": "2025-12-14T07:00:00.000Z"
+    "lastUpdated": "2025-12-18T04:40:12.804Z"
+  },
+  "claude-plugins-official": {
+    "source": {
+      "source": "github",
+      "repo": "anthropics/claude-plugins-official"
+    },
+    "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-plugins-official",
+    "lastUpdated": "2025-12-18T09:22:18.756Z"
   }
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-
+// Test file for statusline
 import { join } from "node:path";
 import { $ } from "bun";
 
@@ -9,12 +9,12 @@ const fixtureFullPath = join(import.meta.dir, fixtureFile);
 console.log(`\n📝 Testing with fixture: ${fixtureFile}\n`);
 
 try {
-	const content = await Bun.file(fixtureFullPath).text();
-	const result = await $`echo ${content} | bun run src/index.ts`.text();
+  const content = await Bun.file(fixtureFullPath).text();
+  const result = await $`echo ${content} | bun run src/index.ts`.text();
 
-	console.log(result);
-	console.log("\n✅ Test completed successfully!\n");
+  console.log(result);
+  console.log("\n✅ Test completed successfully!\n");
 } catch (error) {
-	console.error("❌ Test failed:", error);
-	process.exit(1);
+  console.error("❌ Test failed:", error);
+  process.exit(1);
 }

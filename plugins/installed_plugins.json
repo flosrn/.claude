@@ -66,6 +66,17 @@
         "gitCommitSha": "1fed2e4a1d83bffc19fd34b79cfece5c9ef86a81",
         "isLocal": true
       }
+    ],
+    "typescript-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/typescript-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2025-12-20T15:57:05.282Z",
+        "lastUpdated": "2025-12-20T15:57:05.282Z",
+        "gitCommitSha": "c69a8a96d1be3df4d97c5001b47b31e37385e301",
+        "isLocal": true
+      }
     ]
   }
 }

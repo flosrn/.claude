@@ -6,9 +6,9 @@
         "scope": "user",
         "installPath": "/Users/flo/.claude/plugins/cache/claude-code-plugins/code-review/1.0.0",
         "version": "1.0.0",
-        "installedAt": "2025-12-20T15:24:54.214Z",
-        "lastUpdated": "2025-12-20T15:24:54.214Z",
-        "gitCommitSha": "1fed2e4a1d83bffc19fd34b79cfece5c9ef86a81",
+        "installedAt": "2025-12-22T11:22:58.193Z",
+        "lastUpdated": "2025-12-22T11:22:58.193Z",
+        "gitCommitSha": "d213a74fc8e3b6efded52729196e0c2d4c3abb3e",
         "isLocal": true
       }
     ],
@@ -17,20 +17,20 @@
         "scope": "user",
         "installPath": "/Users/flo/.claude/plugins/cache/local/makerkit/1.0.0",
         "version": "1.0.0",
-        "installedAt": "2025-12-20T15:24:54.243Z",
-        "lastUpdated": "2025-12-20T15:24:54.243Z",
-        "gitCommitSha": "1fed2e4a1d83bffc19fd34b79cfece5c9ef86a81",
+        "installedAt": "2025-12-22T11:22:58.193Z",
+        "lastUpdated": "2025-12-22T11:22:58.193Z",
+        "gitCommitSha": "d0c1c0a94076cc8a3388b357175cc3244ebd0f70",
         "isLocal": true
       }
     ],
     "wd@wd-marketplace": [
       {
         "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/wd-marketplace/wd/2.1.1",
-        "version": "2.1.1",
-        "installedAt": "2025-12-20T15:24:54.272Z",
-        "lastUpdated": "2025-12-20T15:24:54.272Z",
-        "gitCommitSha": "1fed2e4a1d83bffc19fd34b79cfece5c9ef86a81",
+        "installPath": "/Users/flo/.claude/plugins/cache/wd-marketplace/wd/2.2.0",
+        "version": "2.2.0",
+        "installedAt": "2025-12-22T11:22:58.193Z",
+        "lastUpdated": "2025-12-22T11:22:58.193Z",
+        "gitCommitSha": "a7c6a697a98a71e7342eb87e84370b42dde7cc22",
         "isLocal": true
       }
     ],
@@ -39,9 +39,9 @@
         "scope": "user",
         "installPath": "/Users/flo/.claude/plugins/cache/claude-code-plugins/frontend-design/1.0.0",
         "version": "1.0.0",
-        "installedAt": "2025-12-20T15:24:54.286Z",
-        "lastUpdated": "2025-12-20T15:24:54.286Z",
-        "gitCommitSha": "1fed2e4a1d83bffc19fd34b79cfece5c9ef86a81",
+        "installedAt": "2025-12-22T11:22:58.193Z",
+        "lastUpdated": "2025-12-22T11:22:58.193Z",
+        "gitCommitSha": "d213a74fc8e3b6efded52729196e0c2d4c3abb3e",
         "isLocal": true
       }
     ],
@@ -50,9 +50,9 @@
         "scope": "user",
         "installPath": "/Users/flo/.claude/plugins/cache/claude-code-plugins/plugin-dev/0.1.0",
         "version": "0.1.0",
-        "installedAt": "2025-12-20T15:24:54.322Z",
-        "lastUpdated": "2025-12-20T15:24:54.322Z",
-        "gitCommitSha": "1fed2e4a1d83bffc19fd34b79cfece5c9ef86a81",
+        "installedAt": "2025-12-22T11:22:58.193Z",
+        "lastUpdated": "2025-12-22T11:22:58.193Z",
+        "gitCommitSha": "d213a74fc8e3b6efded52729196e0c2d4c3abb3e",
         "isLocal": true
       }
     ],
@@ -61,9 +61,9 @@
         "scope": "user",
         "installPath": "/Users/flo/.claude/plugins/cache/local/next-react-optimizer/1.0.0",
         "version": "1.0.0",
-        "installedAt": "2025-12-20T15:24:54.353Z",
-        "lastUpdated": "2025-12-20T15:24:54.353Z",
-        "gitCommitSha": "1fed2e4a1d83bffc19fd34b79cfece5c9ef86a81",
+        "installedAt": "2025-12-22T11:22:58.193Z",
+        "lastUpdated": "2025-12-22T11:22:58.193Z",
+        "gitCommitSha": "d0c1c0a94076cc8a3388b357175cc3244ebd0f70",
         "isLocal": true
       }
     ],
@@ -72,9 +72,20 @@
         "scope": "user",
         "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/typescript-lsp/1.0.0",
         "version": "1.0.0",
-        "installedAt": "2025-12-20T15:57:05.282Z",
-        "lastUpdated": "2025-12-20T15:57:05.282Z",
-        "gitCommitSha": "c69a8a96d1be3df4d97c5001b47b31e37385e301",
+        "installedAt": "2025-12-22T11:22:58.193Z",
+        "lastUpdated": "2025-12-22T11:22:58.193Z",
+        "gitCommitSha": "6d3752c000e2b3d0e6137bd7adb04895d6f40f14",
+        "isLocal": true
+      }
+    ],
+    "plugin-dev@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/plugin-dev/6d3752c000e2",
+        "version": "6d3752c000e2",
+        "installedAt": "2025-12-22T11:22:58.193Z",
+        "lastUpdated": "2025-12-22T11:22:58.193Z",
+        "gitCommitSha": "6d3752c000e2b3d0e6137bd7adb04895d6f40f14",
         "isLocal": true
       }
     ]

@@ -17,13 +17,13 @@ Parse the argument for flags:
 
 1. **DETECT ENVIRONMENT**: Find paths and package manager
    ```bash
-   # Check which tasks directory exists
-   ls .claude/tasks 2>/dev/null || ls tasks 2>/dev/null
-   # Check package manager
-   ls pnpm-lock.yaml 2>/dev/null && echo "PM=pnpm"
-   ls yarn.lock 2>/dev/null && echo "PM=yarn"
-   ls bun.lockb 2>/dev/null && echo "PM=bun"
-   ls package-lock.json 2>/dev/null && echo "PM=npm"
+   # Check which tasks directory exists (use /bin/ls to bypass eza alias)
+   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
+   # Check package manager (use [ -f ] for file existence checks)
+   [ -f pnpm-lock.yaml ] && echo "PM=pnpm"
+   [ -f yarn.lock ] && echo "PM=yarn"
+   [ -f bun.lockb ] && echo "PM=bun"
+   [ -f package-lock.json ] && echo "PM=npm"
    ```
    - Use `.claude/tasks` for project directories, `tasks` if in `~/.claude`
    - Detect PM from lock file present

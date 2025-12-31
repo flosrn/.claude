@@ -10,7 +10,7 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
 1. **DETECT ENVIRONMENT**: Find paths
    ```bash
    # Check which tasks directory exists
-   ls .claude/tasks 2>/dev/null || ls tasks 2>/dev/null
+   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
    ```
    - Use `.claude/tasks` for project directories
    - Use `tasks` only if running from `~/.claude` directory
@@ -20,7 +20,7 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
    # If argument provided: FOLDER="<provided-path>"
    # If no argument: find latest folder by number (sort by leading digits)
    # Note: Use /usr/bin/grep and portable sort (no -V flag)
-   FOLDER=$(ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)
+   FOLDER=$(/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)
    echo "FOLDER=$FOLDER"
    ```
 

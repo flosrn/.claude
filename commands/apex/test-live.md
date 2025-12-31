@@ -18,8 +18,8 @@ Parse the argument for flags:
 
 1. **DETECT TASKS DIRECTORY**: Find correct path
    ```bash
-   # Check which tasks directory exists
-   ls .claude/tasks 2>/dev/null || ls tasks 2>/dev/null
+   # Check which tasks directory exists (use /bin/ls to bypass eza alias)
+   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
    ```
    - Use `.claude/tasks` for project directories
    - Use `tasks` only if running from `~/.claude` directory
@@ -248,7 +248,7 @@ Parse the argument for flags:
 
     ### Step 11c: Verify move succeeded
     ```bash
-    ls -la $TASKS_DIR/<task-folder>/recordings/
+    /bin/ls -la $TASKS_DIR/<task-folder>/recordings/
     ```
 
     **Naming convention:**

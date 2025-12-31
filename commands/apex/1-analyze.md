@@ -27,7 +27,7 @@ If the argument is an **existing task folder** (e.g., `84-optimize-flow`):
 ```bash
 # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
 TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
-ls "$TASKS_DIR/<provided-folder>/seed.md" 2>/dev/null && echo "SEED FOUND in $TASKS_DIR" || echo "NO SEED (checked $TASKS_DIR)"
+/bin/ls "$TASKS_DIR/<provided-folder>/seed.md" 2>/dev/null && echo "SEED FOUND in $TASKS_DIR" || echo "NO SEED (checked $TASKS_DIR)"
 ```
 
 **Remember the TASKS_DIR** value from output for all subsequent commands!
@@ -60,7 +60,7 @@ Create organized workspace in **separate steps**:
 # Auto-detect TASKS_DIR and find last folder number
 TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
 echo "TASKS_DIR=$TASKS_DIR" && \
-ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
+/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
 ```
 
 **Step 1b**: Based on output, calculate NEXT number:
@@ -95,7 +95,7 @@ touch <TASKS_DIR>/<NN>-<KEBAB-NAME>/.yolo
 **Step 2b-1**: Check for recent images in Claude Code cache
 ```bash
 # Find images shared in the last 5 minutes
-RECENT_IMAGE=$(/usr/bin/find ~/.claude/image-cache -name "*.png" -type f -mmin -5 -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
+RECENT_IMAGE=$(/usr/bin/find ~/.claude/image-cache -name "*.png" -type f -mmin -5 -print0 2>/dev/null | xargs -0 /bin/ls -t 2>/dev/null | head -1)
 [ -n "$RECENT_IMAGE" ] && echo "IMAGE FOUND: $RECENT_IMAGE" || echo "NO RECENT IMAGE"
 ```
 

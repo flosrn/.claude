@@ -16,8 +16,8 @@ Parse the argument for flags:
 
 1. **DETECT TASKS DIRECTORY**: Find correct path
    ```bash
-   # Default path (use "tasks" if running from ~/.claude)
-   ls .claude/tasks 2>/dev/null || ls tasks 2>/dev/null
+   # Default path (use "tasks" if running from ~/.claude) - use /bin/ls to bypass eza alias
+   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
    ```
    - Use `.claude/tasks` for project directories
    - Use `tasks` only if running from `~/.claude` directory

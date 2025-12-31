@@ -33,8 +33,8 @@ else
   TASKS_DIR=".claude/tasks"
 fi
 
-# Find most recently modified folder
-RECENT_FOLDER=$(ls -1t "$TASKS_DIR" 2>/dev/null | head -1)
+# Find most recently modified folder (use /bin/ls to bypass eza alias)
+RECENT_FOLDER=$(/bin/ls -1t "$TASKS_DIR" 2>/dev/null | head -1)
 echo "Source context: $TASKS_DIR/$RECENT_FOLDER"
 ```
 
@@ -48,8 +48,8 @@ echo "Source context: $TASKS_DIR/$RECENT_FOLDER"
 **Step 2a**: Find next available number
 ```bash
 # Find highest existing number (handles NN-name format)
-# Note: Use /usr/bin/grep to bypass rg alias, sort -t- -k1 -n for portable numeric sort
-HIGHEST=$(ls -1 "$TASKS_DIR" | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)
+# Note: Use /bin/ls to bypass eza alias, /usr/bin/grep to bypass rg alias
+HIGHEST=$(/bin/ls -1 "$TASKS_DIR" | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)
 NEXT=$(expr "$HIGHEST" + 1)
 echo "Next number: $NEXT"
 ```

@@ -9,8 +9,8 @@ You are an APEX status reporter. Display a clear overview of task progress and s
 
 1. **DETECT TASKS DIRECTORY**: Find correct path
    ```bash
-   # Check which tasks directory exists
-   ls .claude/tasks 2>/dev/null || ls tasks 2>/dev/null
+   # Check which tasks directory exists (use /bin/ls to bypass eza alias)
+   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
    ```
    - Use `.claude/tasks` for project directories
    - Use `tasks` only if running from `~/.claude` directory

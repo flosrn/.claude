@@ -1,5 +1,5 @@
 ---
-description: Live browser testing of implemented features with GIF recording
+description: Demo phase - live browser validation with GIF recording
 argument-hint: <task-folder-path> [--url=<url>] [--no-gif] [--parallel]
 allowed-tools: mcp__claude-in-chrome__*, Read, Write, Bash, Task
 ---

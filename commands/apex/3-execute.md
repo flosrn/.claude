@@ -273,6 +273,30 @@ Lint:      ✓ Pass (or ✗ N warnings/errors)
      - Identify potential edge cases
    - **NEVER** make changes without thinking first
 
+   ### Symbol Navigation & Refactoring
+
+   Use cclsp MCP tools for code navigation during implementation:
+
+   | Operation | Tool | Why |
+   |-----------|------|-----|
+   | Find where X is defined | `mcp__cclsp__find_definition` | Semantic accuracy |
+   | Find all usages of X | `mcp__cclsp__find_references` | No false positives |
+   | Rename symbol | `mcp__cclsp__rename_symbol` | Safe cross-file refactor |
+   | Check TypeScript errors | `mcp__cclsp__get_diagnostics` | Full type understanding |
+
+   Before editing code:
+   1. Use `find_definition` to locate the symbol
+   2. Use `find_references` to understand impact
+   3. Use `rename_symbol` for any renaming (not manual find/replace)
+
+   ```
+   // Find where getUserData is defined
+   mcp__cclsp__find_definition(file_path="src/api.ts", symbol_name="getUserData")
+
+   // Find all places using it
+   mcp__cclsp__find_references(file_path="src/api.ts", symbol_name="getUserData")
+   ```
+
 6. **IMPLEMENT STEP BY STEP**: Execute methodically
    - **ONE TODO AT A TIME**: Mark in_progress, complete, then move to next
    - **Follow existing patterns**:

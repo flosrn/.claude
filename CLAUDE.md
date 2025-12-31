@@ -2,9 +2,9 @@
 
 These instructions apply to ALL projects. Project-specific instructions in local CLAUDE.md files take precedence.
 
-## ⚠️ Shell Aliases - CRITICAL
+## Shell Aliases
 
-This system has shell aliases that break standard commands. **ALWAYS use absolute paths:**
+This system has shell aliases that override standard commands. Use absolute paths to avoid compatibility issues:
 
 | Command | Aliased To | Problem | Use Instead |
 |---------|------------|---------|-------------|
@@ -26,11 +26,11 @@ find . -name "*.ts"
 /usr/bin/find . -name "*.ts"
 ```
 
-**Rule:** When generating ANY bash command that uses `ls`, `grep`, or `find`, ALWAYS use the absolute path.
+When generating bash commands with `ls`, `grep`, or `find`, use the absolute path (`/bin/ls`, `/usr/bin/grep`, `/usr/bin/find`).
 
-## LSP Tools (cclsp) - MANDATORY
+## LSP Tools (cclsp)
 
-⚠️ **CRITICAL REQUIREMENT**: You MUST use cclsp MCP tools instead of Grep/Glob for these operations:
+Use cclsp MCP tools for finding symbol definitions and references. LSP provides semantic code understanding rather than text matching:
 
 | Operation | Use This | NOT This |
 |-----------|----------|----------|
@@ -39,7 +39,7 @@ find . -name "*.ts"
 | Rename function/variable/type | `mcp__cclsp__rename_symbol` | ❌ Manual find/replace |
 | Check TypeScript errors | `mcp__cclsp__get_diagnostics` | ❌ Running tsc manually |
 
-### Trigger Patterns - When You MUST Use cclsp
+### Trigger Patterns
 
 Use cclsp when the task involves:
 - "Where is X defined?" → `find_definition`
@@ -49,7 +49,7 @@ Use cclsp when the task involves:
 - Understanding a function's callers → `find_references`
 - Navigating to implementation → `find_definition`
 
-### Why cclsp > Grep (Non-negotiable)
+### Why cclsp > Grep
 
 | Grep Problems | cclsp Solution |
 |---------------|----------------|
@@ -58,7 +58,7 @@ Use cclsp when the task involves:
 | Can't rename safely | Atomic cross-file refactoring |
 | No type awareness | Full TypeScript understanding |
 
-### Mandatory Workflow
+### Workflow
 
 ```
 BEFORE using Grep to find a symbol → STOP → Use mcp__cclsp__find_definition or mcp__cclsp__find_references instead

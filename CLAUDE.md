@@ -28,55 +28,6 @@ find . -name "*.ts"
 
 When generating bash commands with `ls`, `grep`, or `find`, use the absolute path (`/bin/ls`, `/usr/bin/grep`, `/usr/bin/find`).
 
-## LSP Tools (cclsp)
-
-Use cclsp MCP tools for finding symbol definitions and references. LSP provides semantic code understanding rather than text matching:
-
-| Operation | Use This | NOT This |
-|-----------|----------|----------|
-| Find where function/class is defined | `mcp__cclsp__find_definition` | ❌ Grep/Glob |
-| Find all usages of a symbol | `mcp__cclsp__find_references` | ❌ Grep with symbol name |
-| Rename function/variable/type | `mcp__cclsp__rename_symbol` | ❌ Manual find/replace |
-| Check TypeScript errors | `mcp__cclsp__get_diagnostics` | ❌ Running tsc manually |
-
-### Trigger Patterns
-
-Use cclsp when the task involves:
-- "Where is X defined?" → `find_definition`
-- "Where is X used?" / "Find usages of X" → `find_references`
-- "Rename X to Y" / "Refactor X" → `rename_symbol`
-- "Check for errors" / "TypeScript issues" → `get_diagnostics`
-- Understanding a function's callers → `find_references`
-- Navigating to implementation → `find_definition`
-
-### Why cclsp > Grep
-
-| Grep Problems | cclsp Solution |
-|---------------|----------------|
-| Matches text in comments/strings | Understands actual code symbols |
-| False positives (similar names) | Semantic accuracy |
-| Can't rename safely | Atomic cross-file refactoring |
-| No type awareness | Full TypeScript understanding |
-
-### Workflow
-
-```
-BEFORE using Grep to find a symbol → STOP → Use mcp__cclsp__find_definition or mcp__cclsp__find_references instead
-BEFORE doing find/replace refactoring → STOP → Use mcp__cclsp__rename_symbol instead
-```
-
-### Example Usage
-
-```typescript
-// User: "Where is the handleSubmit function defined?"
-// ❌ WRONG: Grep(pattern="handleSubmit", ...)
-// ✅ RIGHT: mcp__cclsp__find_definition(file_path="src/...", symbol_name="handleSubmit")
-
-// User: "Rename getUserById to fetchUserById"
-// ❌ WRONG: Multiple Edit calls with find/replace
-// ✅ RIGHT: mcp__cclsp__rename_symbol(file_path="src/...", symbol_name="getUserById", new_name="fetchUserById")
-```
-
 ## Codebase Exploration
 
 ### Directory Structure Analysis

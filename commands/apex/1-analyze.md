@@ -152,11 +152,6 @@ RECENT_IMAGE=$(/usr/bin/find ~/.claude/image-cache -name "*.png" -type f -mmin -
      )
      ```
 
-   - **Symbol navigation** (cclsp MCP tools):
-     - "Where is X defined?" → `mcp__cclsp__find_definition`
-     - "Where is X used?" → `mcp__cclsp__find_references`
-     - cclsp provides semantic understanding (not text matching), preventing false positives
-
    - **CRITICAL**: Launch ALL agents in parallel in a single message
 
    ### Background Mode (`--background`)

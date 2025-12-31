@@ -1,76 +1,81 @@
-# Implementation: Integrate cclsp into APEX Workflow
+# Implementation: Evaluate cclsp Integration into APEX Workflow
 
 ## Overview
-Embedded cclsp (LSP tools) instructions directly into APEX phase files to ensure semantic code navigation during task execution. Also simplified emphatic language in CLAUDE.md following Claude Opus 4.5 best practices.
+Evaluated whether cclsp (LSP tools) should be integrated into APEX workflow. After research and community feedback analysis, decided to **NOT integrate** and wait for Anthropic's native LSP implementation.
 
-## Status: ✅ Complete
-**Progress**: 3/3 file changes completed
+## Status: ✅ Complete (Rollback)
+**Decision**: Do not integrate cclsp into APEX workflow
 
-## Task Status
+---
 
-| Task | Description | Status | Session |
-|------|-------------|--------|---------|
-| 1 | Add cclsp section to 3-execute.md | ✅ Complete | Session 1 |
-| 2 | Add cclsp section to 1-analyze.md | ✅ Complete | Session 1 |
-| 3 | Simplify CLAUDE.md emphatic language | ✅ Complete | Session 1 |
+## Research Summary
+
+### What We Found
+
+| Factor | Finding | Source |
+|--------|---------|--------|
+| **Performance gain** | 900x faster (50ms vs 45s) | [Issue #5495](https://github.com/anthropics/claude-code/issues/5495) |
+| **Implementation maturity** | "Pretty raw still" - bugs, no docs | [Hacker News](https://news.ycombinator.com/item?id=46355165) |
+| **Claude tool selection** | Claude prefers built-in Grep/Glob | Community reports |
+| **Forcing usage** | Requires hacky hooks with ~50% reliability | [Scott Spence](https://scottspence.com/posts/claude-code-skills-dont-auto-activate) |
+
+### Why We Rolled Back
+
+1. **LSP implementation is immature** - Bugs, no UI indication, unclear when agent uses it
+2. **Forcing usage is hacky** - PreToolUse hooks feel like errors, only ~50% reliable
+3. **Native support coming** - `ENABLE_LSP_TOOL=1` exists, Anthropic is working on it
+4. **Grep is sufficient for most cases** - Claude uses ripgrep (fast), makes multiple searches to confirm
+
+### When LSP Would Be Worth It
+
+- Large refactoring tasks (renaming across 50+ files)
+- Navigating completely unfamiliar codebases
+- Complex TypeScript type hierarchies
+- When Anthropic ships native stable LSP support
 
 ---
 
 ## Session Log
 
-### Session 1 - 2025-12-31
+### Session 1 - 2025-12-31 (Initial Implementation)
 
-**Task(s) Completed**: All tasks (1, 2, 3)
+**Changes Made:**
+- Added cclsp section to `commands/apex/3-execute.md`
+- Added cclsp section to `commands/apex/1-analyze.md`
+- Simplified emphatic language in `CLAUDE.md`
 
-#### Changes Made
+### Session 2 - 2025-12-31 (Rollback)
 
-1. **3-execute.md** - Added "Symbol Navigation & Refactoring" section after "ULTRA THINK" step:
-   - Table with 4 cclsp operations (find_definition, find_references, rename_symbol, get_diagnostics)
-   - 3-step workflow before editing code
-   - Example showing actual tool usage syntax
+**Research Conducted:**
+- Web search on cclsp benchmarks and real-world usage
+- Analyzed Hacker News community opinions
+- Reviewed GitHub issues on LSP integration
+- Investigated hook-based solutions for forcing tool usage
 
-2. **1-analyze.md** - Added "Symbol navigation" bullet point in exploration section:
-   - Decision arrows for find_definition and find_references
-   - Brief explanation of semantic understanding benefit
+**Conclusion:** Rolled back all changes after determining:
+- The integration adds complexity without reliable benefits
+- Native LSP support from Anthropic is the better path forward
 
-3. **CLAUDE.md** - Simplified emphatic language:
-   - `## LSP Tools (cclsp) - MANDATORY` → `## LSP Tools (cclsp)`
-   - Removed "⚠️ CRITICAL REQUIREMENT: You MUST use"
-   - Removed "(Non-negotiable)" and "Mandatory" from section headers
-
-#### Files Changed
-
-**Modified Files:**
-- `commands/apex/3-execute.md:276-298` - Added Symbol Navigation & Refactoring section
-- `commands/apex/1-analyze.md:155-158` - Added Symbol navigation bullet
-- `CLAUDE.md:31-33, 42, 52, 61` - Simplified emphatic headers
-
-#### Test Results
-- Typecheck: N/A (markdown files)
-- Lint: N/A (markdown files)
-- Verification: ✓ cclsp instructions found in both APEX phases
-- Verification: ✓ No emphatic language in LSP section
-
-#### Notes
-- cclsp was tested and confirmed working before implementation
-- Claude Opus 4.5 recommendation from Anthropic: avoid "CRITICAL/MUST" language
-- Expected compliance improvement: ~20% → ~65-90%
+**Changes Rolled Back:**
+- Removed cclsp section from `CLAUDE.md:31-78`
+- Removed "Symbol Navigation & Refactoring" from `3-execute.md:276-298`
+- Removed "Symbol navigation" bullet from `1-analyze.md:155-158`
 
 ---
 
-## Technical Notes
-- cclsp MCP tools provide semantic code understanding (not text matching)
-- Instructions are now embedded in APEX phases for just-in-time visibility
-- lsp-navigation skill remains as fallback trigger
+## Recommendation
 
-## Suggested Commit
+**Wait for Anthropic's native LSP integration.** Monitor:
+- `ENABLE_LSP_TOOL=1` environment variable (already exists)
+- Claude Code changelog for LSP improvements
+- [Issue #5495](https://github.com/anthropics/claude-code/issues/5495) for VSCode LSP API integration
 
-```
-feat: integrate cclsp instructions into APEX workflow
+---
 
-- Add Symbol Navigation & Refactoring section to 3-execute.md
-- Add Symbol navigation guidance to 1-analyze.md
-- Simplify emphatic language in CLAUDE.md (Claude 4.5 best practices)
+## Sources
 
-Expected to improve cclsp tool usage from ~20% to ~65-90% compliance
-```
+- [Enable VSCode LSP APIs - Issue #5495](https://github.com/anthropics/claude-code/issues/5495)
+- [Claude Code gets native LSP support - Hacker News](https://news.ycombinator.com/item?id=46355165)
+- [cclsp GitHub](https://github.com/ktnyt/cclsp)
+- [Claude Code Skills Don't Auto-Activate](https://scottspence.com/posts/claude-code-skills-dont-auto-activate)
+- [Why Is Claude Ignoring Your MCP Prompts?](https://www.arsturn.com/blog/why-is-claude-ignoring-your-mcp-prompts-a-troubleshooting-guide)

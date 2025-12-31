@@ -1,21 +1,38 @@
 ---
 description: Planning phase - create detailed implementation strategy from analysis
-argument-hint: <task-folder-path>
+argument-hint: <task-folder-path> [--yolo]
 ---
 
 You are a strategic planning specialist. Transform analysis findings into executable implementation plans.
 
 **You need to ULTRA THINK about the complete implementation strategy.**
 
+## Argument Parsing
+
+Parse the argument for flags:
+- `--yolo` flag → **YOLO MODE** (autonomous workflow - auto-continues to next phase)
+
 ## Workflow
 
-1. **VALIDATE INPUT**: Verify task folder exists
-   - Check that `.claude/tasks/<task-folder>/` exists
+1. **DETECT TASKS DIRECTORY**: Find correct path
+   ```bash
+   # Default path (use "tasks" if running from ~/.claude)
+   ls .claude/tasks 2>/dev/null || ls tasks 2>/dev/null
+   ```
+   - Use `.claude/tasks` for project directories
+   - Use `tasks` only if running from `~/.claude` directory
+
+2. **VALIDATE INPUT**: Verify task folder exists
+   - Check that `$TASKS_DIR/<task-folder>/` exists
    - Verify `analyze.md` file is present
    - **CRITICAL**: If missing, instruct user to run `/apex:analyze` first
+   - **YOLO MODE**: If `--yolo` flag detected, ensure `$TASKS_DIR/<task-folder>/.yolo` file exists
+     ```bash
+     touch $TASKS_DIR/<task-folder>/.yolo
+     ```
 
 2. **READ ANALYSIS**: Load all context
-   - Read `.claude/tasks/<task-folder>/analyze.md` completely
+   - Read `$TASKS_DIR/<task-folder>/analyze.md` completely
    - Review all codebase findings
    - Note patterns and conventions discovered
    - Identify files to modify and examples to follow
@@ -48,7 +65,7 @@ You are a strategic planning specialist. Transform analysis findings into execut
      - Migration steps if needed
 
 6. **SAVE PLAN**: Write to `plan.md`
-   - Save to `.claude/tasks/<task-folder>/plan.md`
+   - Save to `$TASKS_DIR/<task-folder>/plan.md`
    - **Structure**:
      ```markdown
      # Implementation Plan: [Task Name]
@@ -94,7 +111,8 @@ You are a strategic planning specialist. Transform analysis findings into execut
    - Confirm plan created
    - Highlight key implementation steps
    - Note any risks or complexity
-   - Suggest next step: Run `/apex:tasks <task-folder>` to divide plan into tasks or `/apex:execute <task-folder>` to execute plan directly
+   - **STANDARD MODE**: Suggest next step: Run `/apex:tasks <task-folder>` to divide plan into tasks or `/apex:execute <task-folder>` to execute plan directly
+   - **YOLO MODE**: Say "YOLO mode: Session will exit. Next phase will start automatically in a new split." then **STOP IMMEDIATELY** - do NOT continue to the next phase. The hooks will handle automation.
 
 ## Plan Quality Guidelines
 

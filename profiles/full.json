@@ -1,0 +1,81 @@
+{
+  "name": "full",
+  "description": "Full profile - all plugins and MCPs enabled",
+  "permissions": {
+    "allow": [
+      "mcp__chrome-devtools__*",
+      "mcp__claude-in-chrome__*",
+      "mcp__playwright__*",
+      "mcp__cclsp__*",
+      "Bash(node -e:*)",
+      "Bash(pnpm i)",
+      "Bash(git add:*)",
+      "Bash(pnpm run typecheck:*)",
+      "Bash(tree:*)",
+      "Bash(git :*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "default"
+  },
+  "enabledPlugins": {
+    "code-review@claude-code-plugins": true,
+    "makerkit@local": true,
+    "wd@wd-marketplace": true,
+    "plugin-dev@claude-code-plugins": true,
+    "next-react-optimizer@local": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "compound-engineering@every-marketplace": true
+  },
+  "mcpServers": {
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "/bin/bash",
+      "args": [
+        "-c",
+        "source ~/.nvm/nvm.sh && nvm use 20.19.5 && npx chrome-devtools-mcp@latest --isolated=false"
+      ],
+      "env": {}
+    },
+    "supabase-gapila-prod": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp"
+    },
+    "next-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "next-devtools-mcp@latest"
+      ],
+      "env": {}
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--browser",
+        "webkit",
+        "--device",
+        "iPhone 15"
+      ],
+      "env": {}
+    },
+    "core-memory": {
+      "type": "http",
+      "url": "https://core.heysol.ai/api/v1/mcp?source=Claude-Code"
+    },
+    "cclsp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "cclsp@latest"
+      ],
+      "env": {
+        "CCLSP_CONFIG_PATH": "/Users/flo/.config/claude/cclsp.json"
+      }
+    }
+  }
+}

@@ -1,22 +1,5 @@
 {
   "includeCoAuthoredBy": false,
-  "permissions": {
-    "allow": [
-      "mcp__chrome-devtools__*",
-      "mcp__claude-in-chrome__*",
-      "mcp__playwright__*",
-      "mcp__cclsp__*",
-      "Bash(node -e:*)",
-      "Bash(pnpm i)",
-      "Bash(git add:*)",
-      "Bash(pnpm run typecheck:*)",
-      "Bash(tree:*)",
-      "Bash(git :*)"
-    ],
-    "deny": [],
-    "ask": [],
-    "defaultMode": "default"
-  },
   "hooks": {
     "SessionStart": [
       {
@@ -35,6 +18,15 @@
           {
             "type": "command",
             "command": "bun /Users/flo/.claude/scripts/hook-post-file-enhanced.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun /Users/flo/.claude/scripts/hook-apex-clipboard.ts"
           }
         ]
       }
@@ -57,6 +49,10 @@
           {
             "type": "command",
             "command": "bun /Users/flo/.claude/scripts/hook-stop.ts"
+          },
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Task completed\" with title \"Claude Code\"'"
           }
         ]
       }
@@ -78,16 +74,6 @@
     "command": "bun /Users/flo/.claude/scripts/statusline/src/index.ts",
     "padding": 0
   },
-  "enabledPlugins": {
-    "code-review@claude-code-plugins": true,
-    "makerkit@local": true,
-    "wd@wd-marketplace": true,
-    "frontend-design@claude-code-plugins": true,
-    "plugin-dev@claude-code-plugins": true,
-    "next-react-optimizer@local": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "plugin-dev@claude-plugins-official": true
-  },
   "extraKnownMarketplaces": {
     "local": {
       "source": {
@@ -96,5 +82,32 @@
       }
     }
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "permissions": {
+    "allow": [
+      "mcp__chrome-devtools__*",
+      "mcp__claude-in-chrome__*",
+      "mcp__playwright__*",
+      "mcp__cclsp__*",
+      "Bash(node -e:*)",
+      "Bash(pnpm i)",
+      "Bash(git add:*)",
+      "Bash(pnpm run typecheck:*)",
+      "Bash(tree:*)",
+      "Bash(git :*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "default"
+  },
+  "enabledPlugins": {
+    "code-review@claude-code-plugins": true,
+    "makerkit@local": true,
+    "wd@wd-marketplace": true,
+    "plugin-dev@claude-code-plugins": true,
+    "next-react-optimizer@local": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "compound-engineering@every-marketplace": true
+  }
 }

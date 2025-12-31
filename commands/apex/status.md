@@ -1,0 +1,115 @@
+---
+description: Show status and progress of an APEX task folder
+argument-hint: [task-folder-path]
+---
+
+You are an APEX status reporter. Display a clear overview of task progress and suggest next actions.
+
+## Workflow
+
+1. **DETECT TASKS DIRECTORY**: Find correct path
+   ```bash
+   # Check which tasks directory exists
+   ls .claude/tasks 2>/dev/null || ls tasks 2>/dev/null
+   ```
+   - Use `.claude/tasks` for project directories
+   - Use `tasks` only if running from `~/.claude` directory
+
+2. **FIND TASK FOLDER**: Determine which folder to report on
+
+   ### If argument provided
+   - Use the provided folder path: `$TASKS_DIR/<provided-path>/`
+   - Verify folder exists
+
+   ### If no argument (auto-detect)
+   - List all folders in `$TASKS_DIR/`
+   - Find the most recently modified folder
+   - Use that folder for status
+
+2. **GATHER STATUS**: Check existence and state of all artifacts
+   - Check for `analyze.md` → exists? extract task description?
+   - Check for `plan.md` → exists?
+   - Check for `tasks/` directory → exists?
+   - Check for `tasks/index.md` → parse completion status
+   - Check for `implementation.md` → exists? parse overall status?
+
+3. **DISPLAY STATUS TREE**: Show visual overview
+
+   ```
+   📊 Status: <task-folder-name>
+   ├── analyze.md ✓ [or ✗ if missing]
+   │   └── [Task description from analyze.md if exists]
+   ├── plan.md ✓ [or ✗]
+   ├── tasks/
+   │   ├── index.md ✓
+   │   └── Progress: X/Y tasks (N%)
+   │       ├── ✓ Task 1: [Name]
+   │       ├── ✓ Task 2: [Name]
+   │       ├── ○ Task 3: [Name] ← NEXT
+   │       └── ○ Task 4: [Name]
+   └── implementation.md ✓ [Status from file: In Progress/Complete]
+   ```
+
+4. **SUGGEST NEXT ACTION**: Based on current state
+
+   | State | Suggestion |
+   |-------|------------|
+   | No analyze.md | `/apex:1-analyze "description"` |
+   | No plan.md | `/apex:2-plan <folder>` |
+   | No tasks/ | `/apex:5-tasks <folder>` or `/apex:3-execute <folder>` |
+   | Tasks pending | `/apex:3-execute <folder>` or `/apex:next` |
+   | All tasks complete | `/apex:4-examine <folder>` |
+   | Fully validated | Ready for deployment! |
+
+5. **DISPLAY SUGGESTION**: Show recommended command
+
+   ```
+   📋 Next step:
+      /apex:3-execute <folder> 3
+
+   Or use: /apex:next
+   ```
+
+## Output Format
+
+```
+══════════════════════════════════════════════════
+📊 Status: 01-feature-name
+══════════════════════════════════════════════════
+
+├── analyze.md ✓
+│   └── "Add user authentication with OAuth"
+├── plan.md ✓
+├── tasks/
+│   ├── index.md ✓
+│   └── Progress: 2/5 tasks (40%)
+│       ├── ✓ Task 1: Setup base structure
+│       ├── ✓ Task 2: Add data models
+│       ├── ○ Task 3: Create API endpoints ← NEXT
+│       ├── ○ Task 4: Add validation
+│       └── ○ Task 5: Write tests
+└── implementation.md ✓ (Status: In Progress)
+
+══════════════════════════════════════════════════
+📋 Next step:
+   /apex:3-execute 01-feature-name 3
+══════════════════════════════════════════════════
+```
+
+## Usage Examples
+
+```bash
+# Show status of most recent task folder
+/apex:status
+
+# Show status of a specific folder
+/apex:status 01-apex-workflow-improvements
+```
+
+## Priority
+
+Clarity > Detail. Give users a quick at-a-glance understanding of where they are.
+
+---
+
+User: $ARGUMENTS

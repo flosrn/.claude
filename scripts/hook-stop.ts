@@ -6,9 +6,15 @@
  * Failure: plays Basso.aiff (macOS system sound)
  *
  * Failure is determined by checking tool-usage.log for any errors in the current session
+ *
+ * YOLO Mode: If /tmp/.apex-yolo-continue exists, launches background
+ * automation to continue APEX workflow after Claude exits.
  */
 
 import { $ } from "bun";
+
+const YOLO_CONTINUE_FLAG = "/tmp/.apex-yolo-continue";
+const YOLO_CONTINUE_SCRIPT = "/Users/flo/.claude/scripts/apex-yolo-continue.ts";
 
 interface StopHookInput {
   session_id: string;
@@ -88,9 +94,23 @@ async function main() {
   if (hadErrors) {
     // Play failure sound (louder)
     await playSound(FAILURE_SOUND, "0.3");
+    // Don't continue YOLO if there were errors
+    await $`rm -f ${YOLO_CONTINUE_FLAG}`.quiet();
   } else {
     // Play success sound
     await playSound(SUCCESS_SOUND, VOLUME);
+
+    // Check for YOLO mode continuation
+    const yoloContinueFlag = Bun.file(YOLO_CONTINUE_FLAG);
+    if (await yoloContinueFlag.exists()) {
+      // Launch YOLO continue script in background
+      // This script will wait for Claude to exit, then send keystrokes
+      Bun.spawn(["bun", YOLO_CONTINUE_SCRIPT], {
+        stdout: "inherit",
+        stderr: "inherit",
+        stdin: "ignore",
+      });
+    }
   }
 }
 

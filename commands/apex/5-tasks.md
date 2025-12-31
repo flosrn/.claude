@@ -1,21 +1,38 @@
 ---
 description: Task creation - divide plan into small, actionable task files
-argument-hint: <task-folder-path>
+argument-hint: <task-folder-path> [--yolo]
 ---
 
 You are a task breakdown specialist. Transform implementation plans into small, focused task files.
 
 **You need to ULTRA THINK about how to divide the work effectively.**
 
+## Argument Parsing
+
+Parse the argument for flags:
+- `--yolo` flag → **YOLO MODE** (autonomous workflow - auto-continues to next phase)
+
 ## Workflow
 
-1. **VALIDATE INPUT**: Verify task folder is ready
-   - Check that `.claude/tasks/<task-folder>/` exists
+1. **DETECT TASKS DIRECTORY**: Find correct path
+   ```bash
+   # Check which tasks directory exists
+   ls .claude/tasks 2>/dev/null || ls tasks 2>/dev/null
+   ```
+   - Use `.claude/tasks` for project directories
+   - Use `tasks` only if running from `~/.claude` directory
+
+2. **VALIDATE INPUT**: Verify task folder is ready
+   - Check that `$TASKS_DIR/<task-folder>/` exists
    - Verify `plan.md` file is present
    - **CRITICAL**: If missing, instruct user to run `/apex:plan` first
+   - **YOLO MODE**: If `--yolo` flag detected, ensure `$TASKS_DIR/<task-folder>/.yolo` file exists
+     ```bash
+     touch $TASKS_DIR/<task-folder>/.yolo
+     ```
 
 2. **READ PLAN**: Load implementation strategy
-   - Read `.claude/tasks/<task-folder>/plan.md` completely
+   - Read `$TASKS_DIR/<task-folder>/plan.md` completely
    - Identify all file changes and major implementation steps
    - Look for natural boundaries between tasks
 
@@ -35,7 +52,7 @@ You are a task breakdown specialist. Transform implementation plans into small, 
    - **NO CONCRETE STEPS**: Tasks describe WHAT and WHY, not HOW
 
 5. **CREATE TASK FILES**: Write individual task files
-   - Create `.claude/tasks/<task-folder>/tasks/` subdirectory
+   - Create `$TASKS_DIR/<task-folder>/tasks/` subdirectory
    - Create numbered task files: `task-01.md`, `task-02.md`, etc.
    - **CRITICAL**: Order tasks by dependencies (dependent tasks come after their prerequisites)
    - **Structure for each task file**:
@@ -63,8 +80,9 @@ You are a task breakdown specialist. Transform implementation plans into small, 
      ```
 
 6. **CREATE INDEX**: Generate tasks overview
-   - Create `.claude/tasks/<task-folder>/tasks/index.md`
+   - Create `$TASKS_DIR/<task-folder>/tasks/index.md`
    - List all tasks with status tracking
+   - **CRITICAL**: Include explicit execution strategy with parallel notation
    - **Structure**:
      ```markdown
      # Tasks: [Task Folder Name]
@@ -74,13 +92,41 @@ You are a task breakdown specialist. Transform implementation plans into small, 
 
      ## Task List
 
+     | Task | Name | Dependencies |
+     |------|------|--------------|
+     | 1 | [Task name] | None |
+     | 2 | [Task name] | Task 1 |
+     | 3 | [Task name] | Task 1 |
+     | 4 | [Task name] | Tasks 2, 3 |
+
      - [ ] **Task 1**: [Name] - `task-01.md`
      - [ ] **Task 2**: [Name] - `task-02.md` (depends on Task 1)
-     - [ ] **Task 3**: [Name] - `task-03.md`
+     - [ ] **Task 3**: [Name] - `task-03.md` (depends on Task 1)
+     - [ ] **Task 4**: [Name] - `task-04.md` (depends on Tasks 2, 3)
 
-     ## Execution Order
-     1. Tasks 1 and 3 can be done in parallel
-     2. Task 2 requires Task 1 to be completed first
+     ## Execution Strategy
+
+     Task 1 → [Task 2 ‖ Task 3] → Task 4
+
+     **Parallelization opportunity**: Tasks 2 and 3 can be executed simultaneously after Task 1 completes.
+
+     ## Recommended Commands
+
+     ```bash
+     # Sequential execution
+     /apex:3-execute [folder-name] 1
+     /apex:3-execute [folder-name] 2
+     /apex:3-execute [folder-name] 3
+     /apex:3-execute [folder-name] 4
+
+     # Parallel execution (after Task 1)
+     /apex:3-execute [folder-name] 2,3
+
+     # Auto-detect parallel tasks
+     /apex:3-execute [folder-name] --parallel
+     ```
+
+     **Start with**: Task 1 - it has no dependencies.
      ```
 
 7. **VERIFY QUALITY**: Check task breakdown
@@ -92,9 +138,14 @@ You are a task breakdown specialist. Transform implementation plans into small, 
 
 8. **REPORT**: Summarize to user
    - Confirm number of tasks created
-   - Show task list with dependencies
-   - Highlight which tasks can be done in parallel
-   - Suggest starting with tasks that have no dependencies
+   - Show task list with dependencies table
+   - **Show Execution Strategy** with parallel notation: `Task 1 → [Task 2 ‖ Task 3] → Task 4`
+   - Highlight parallelization opportunities
+   - **STANDARD MODE**: Suggest commands:
+     - Sequential: `/apex:3-execute [folder] 1`
+     - Parallel: `/apex:3-execute [folder] 2,3` or `/apex:3-execute [folder] --parallel`
+     - Suggest starting with tasks that have no dependencies
+   - **YOLO MODE**: Say "YOLO mode: Session will exit. Execute phase requires manual review - run `/apex:3-execute [folder]` to start." then **STOP IMMEDIATELY**. YOLO stops at execute phase for safety.
 
 ## Task Quality Guidelines
 

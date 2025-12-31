@@ -1,0 +1,75 @@
+{
+  "settings": {
+    "includeCoAuthoredBy": false,
+    "hooks": {
+      "SessionStart": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "bun /Users/flo/.claude/scripts/hook-session-start.ts"
+            }
+          ]
+        }
+      ],
+      "PostToolUse": [
+        {
+          "matcher": "Edit|Write|MultiEdit",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "bun /Users/flo/.claude/scripts/hook-post-file-enhanced.ts"
+            }
+          ]
+        }
+      ],
+      "PreToolUse": [
+        {
+          "matcher": "Bash",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "bun /Users/flo/.claude/scripts/command-validator/src/cli.ts"
+            }
+          ]
+        }
+      ],
+      "Stop": [
+        {
+          "matcher": "",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "bun /Users/flo/.claude/scripts/hook-stop.ts"
+            }
+          ]
+        }
+      ],
+      "Notification": [
+        {
+          "matcher": "",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "afplay -v 0.1 /Users/flo/.claude/song/need-human.mp3"
+            }
+          ]
+        }
+      ]
+    },
+    "statusLine": {
+      "type": "command",
+      "command": "bun /Users/flo/.claude/scripts/statusline/src/index.ts",
+      "padding": 0
+    },
+    "extraKnownMarketplaces": {
+      "local": {
+        "source": {
+          "source": "directory",
+          "path": "/Users/flo/.claude/plugins/local"
+        }
+      }
+    },
+    "alwaysThinkingEnabled": true
+  }
+}

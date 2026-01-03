@@ -1,7 +1,7 @@
 ---
 description: Generate seed.md for next APEX workflow with context transfer
 allowed-tools: Read, Write, Bash, AskUserQuestion, Glob, Grep
-argument-hint: "next-task-description" [--from <source-folder>] [--edit]
+argument-hint: "task-description" [--vision] [--brainstorm]
 ---
 
 You are a session context transfer specialist. Generate a `seed.md` that captures session learnings and seeds the next APEX workflow.
@@ -11,9 +11,9 @@ You are a session context transfer specialist. Generate a `seed.md` that capture
 ## Argument Parsing
 
 Parse `$ARGUMENTS` for:
-- **Task description**: Free text describing the next task (required, in quotes recommended)
-- **`--from <folder>`**: Optional source folder for context (default: auto-detect most recent)
-- **`--edit`**: Open seed.md in Zed for editing before finalizing
+- **Task description**: Free text describing the next task (required)
+- **`--vision`**: Detect shared image and include in seed for deep analysis
+- **`--brainstorm`**: Ask clarifying questions before generating seed (for vague tasks)
 
 If no task description provided, use `AskUserQuestion` to gather it.
 
@@ -21,21 +21,12 @@ If no task description provided, use `AskUserQuestion` to gather it.
 
 ### 1. DETECT CONTEXT SOURCE
 
-**If `--from <folder>` provided:**
-- Use the specified folder as context source
-
-**If no folder specified (auto-detect most recent):**
 ```bash
-# Detect tasks directory
-if [ -d "tasks" ] && [ "$(basename "$PWD")" = ".claude" ]; then
-  TASKS_DIR="tasks"
-else
-  TASKS_DIR=".claude/tasks"
-fi
-
-# Find most recently modified folder (use /bin/ls to bypass eza alias)
-RECENT_FOLDER=$(/bin/ls -1t "$TASKS_DIR" 2>/dev/null | head -1)
-echo "Source context: $TASKS_DIR/$RECENT_FOLDER"
+# Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
+# Note: Quotes around $() are required for zsh compatibility with pipes
+TASKS_DIR="$(if [ -d 'tasks' ] && [ "$(basename $(pwd))" = '.claude' ]; then echo 'tasks'; else echo '.claude/tasks'; fi)" && \
+RECENT_FOLDER="$(/bin/ls -1t "$TASKS_DIR" 2>/dev/null | head -1)" && \
+echo "Source: $TASKS_DIR/$RECENT_FOLDER"
 ```
 
 **Read available artifacts from source:**
@@ -49,8 +40,9 @@ echo "Source context: $TASKS_DIR/$RECENT_FOLDER"
 ```bash
 # Find highest existing number (handles NN-name format)
 # Note: Use /bin/ls to bypass eza alias, /usr/bin/grep to bypass rg alias
-HIGHEST=$(/bin/ls -1 "$TASKS_DIR" | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)
-NEXT=$(expr "$HIGHEST" + 1)
+# Note: Quotes around $() are required for zsh compatibility with pipes
+HIGHEST="$(/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)" && \
+NEXT="$(expr "$HIGHEST" + 1)" && \
 echo "Next number: $NEXT"
 ```
 
@@ -95,9 +87,85 @@ From `implementation.md`:
 - **📋 Spécifications** ← Requirements, decisions made, constraints
 - **🔍 Contexte technique** ← Architectural decisions, patterns discovered (OPTIONAL)
 
+### 3b. DETECT SHARED IMAGE (only if `--vision` flag)
+
+Skip this step if no `--vision` flag.
+
+```bash
+# Find images shared in the last hour
+# Note: Quotes around $() are required for zsh compatibility with pipes
+RECENT_IMAGE="$(/usr/bin/find ~/.claude/image-cache -name '*.png' -type f -mmin -60 -print0 2>/dev/null | xargs -0 /bin/ls -t 2>/dev/null | head -1)" && \
+([ -n "$RECENT_IMAGE" ] && echo "IMAGE FOUND: $RECENT_IMAGE" || echo "NO IMAGE")
+```
+
+Include `📷 Image de référence` section in seed.md only if image found.
+
+### 3c. GATHER CLARIFICATIONS (only if `--brainstorm` flag)
+
+Skip this step if no `--brainstorm` flag.
+
+**ULTRA THINK**: Analyze the task description to identify what needs clarification:
+- **Vague adjectives** ("better", "faster", "improved") → Ask for specific metrics or outcomes
+- **Multiple aspects** mentioned without priority → Ask which is most critical
+- **Missing scope** → Ask what's explicitly excluded
+- **Missing audience** → Ask who will use/benefit from this
+- **Unclear approach** → Ask for preferred implementation style
+
+**Ask 2-4 contextual questions** using `AskUserQuestion`:
+
+Use collaborative "What/How" framing (not accusatory "Why"). Questions should be **specific to the task description**, not generic.
+
+**Good questions** (contextual):
+- "You mentioned X, Y, and Z. Which aspect is most critical to get right first?"
+- "Should this include [potential scope item] or is that out of scope?"
+- "Is this for [user type A] or [user type B]?"
+
+**Bad questions** (generic):
+- "What are your requirements?" (too vague)
+- "Why do you want this?" (accusatory framing)
+- "Can you describe the feature?" (already have description)
+
+**Max 3-4 questions** - clarify, don't interrogate.
+
+### 3d. SYNTHESIZE & CONFIRM (only if `--brainstorm` flag)
+
+**After receiving answers**, provide a detailed synthesis of each point:
+
+1. **Reformulate each response** with your interpretation
+2. **Give a concrete example** of what you understood (ASCII mockup, pseudo-code, workflow)
+3. **Highlight implications** for implementation
+4. **Ask for confirmation**: "Est-ce bien ce que tu avais en tête ?"
+
+**Example synthesis format:**
+
+```
+**[Topic from question]** - Je l'ai interprété comme :
+
+[Detailed explanation of what you understood]
+
+[Concrete example: ASCII mockup, pseudo-code, or workflow description]
+
+**Implications pour l'implémentation:**
+- [What this means for the technical approach]
+- [Constraints or patterns this suggests]
+
+Est-ce bien ça ? Ou tu voyais les choses différemment ?
+```
+
+**Why this step matters:**
+- Prevents misalignment before seed generation
+- Surfaces misunderstandings early
+- Gives user chance to course-correct
+
+**If user corrects understanding**: Update interpretation and re-confirm before proceeding.
+
+**Store final confirmed responses** for inclusion in seed.md under `💬 Clarifications` section.
+
 ### 4. STRUCTURE SEED CONTENT (BLUF Pattern)
 
-Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line Up Front)**:
+Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line Up Front)**.
+
+**If `--brainstorm` was used**: Incorporate clarification responses into the relevant seed sections (Objectif, Spécifications) and include the `💬 Clarifications` section.
 
 ```markdown
 # 🔄 [Task Name from argument] - Seed
@@ -128,6 +196,22 @@ Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line U
 
 [Brief technical context - patterns discovered, architectural decisions]
 
+## 📷 Image de référence (si applicable)
+
+> **Note**: Image partagée pendant `/apex:handoff`. Sera analysée par `vision-analyzer` lors de `/apex:1-analyze`.
+
+| Image | Path |
+|-------|------|
+| Screenshot partagé | `[PATH_FROM_STEP_3b]` |
+
+## 💬 Clarifications (si applicable)
+
+> Questions posées via `--brainstorm` flag
+
+| Question | Réponse |
+|----------|---------|
+| [Question posée] | [Réponse utilisateur] |
+
 ## 📚 Artifacts source
 
 > **Lazy Load**: Ces fichiers sont disponibles pour référence. Ne les lire que si nécessaire.
@@ -151,19 +235,12 @@ mkdir -p .claude/tasks/NN-task-name
 - Path: `.claude/tasks/NN-task-name/seed.md`
 - Content: The generated seed from step 4
 
-**Step 5c**: Copy to clipboard
+**Step 5c**: Copy next command to clipboard
 ```bash
-pbcopy < .claude/tasks/NN-task-name/seed.md
+echo "/apex:1-analyze NN-task-name" | pbcopy
 ```
 
-### 6. OPTIONAL: EDIT IN ZED
-
-If `--edit` flag provided, open in editor:
-```bash
-zed .claude/tasks/NN-task-name/seed.md
-```
-
-### 7. REPORT RESULT
+### 6. REPORT RESULT
 
 Display APEX-style output:
 
@@ -172,9 +249,8 @@ Display APEX-style output:
 ✓ SEED CREATED
 ══════════════════════════════════════════════════
 📁 Created: .claude/tasks/84-optimize-ai-flow/seed.md
-📋 Copied to clipboard
 
-## Next step
+## Next step (copied to clipboard)
 
 /apex:1-analyze 84-optimize-ai-flow
 
@@ -223,14 +299,17 @@ When to **include inline** (in main sections):
 ## Usage Examples
 
 ```bash
-# Basic: generate seed for next task (auto-detects source context)
+# Standard
 /apex:handoff "Optimize the AI conversation flow"
 
-# With specific source folder
-/apex:handoff "Add error handling" --from 15-api-refactor
+# With image for deep vision analysis (share image before running)
+/apex:handoff "Implement this design" --vision
 
-# Edit seed before finalizing
-/apex:handoff "Implement dashboard widgets" --edit
+# With brainstorm for vague task descriptions
+/apex:handoff "améliorer le système de tracking" --brainstorm
+
+# Both flags together
+/apex:handoff "implement the new design" --vision --brainstorm
 ```
 
 ---

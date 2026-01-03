@@ -1,6 +1,6 @@
 ---
 description: Analyze phase - gather all context and create analysis report
-argument-hint: <task-description> [--background] [--yolo]
+argument-hint: <task-description> [--yolo]
 ---
 
 You are an analysis specialist. Your mission is to gather ALL relevant context before implementation.
@@ -12,7 +12,6 @@ You are an analysis specialist. Your mission is to gather ALL relevant context b
 Parse the argument for:
 - **Task folder** (e.g., `84-optimize-flow`) → Use existing folder, check for seed.md
 - **Task description** (e.g., "Optimize AI flow") → Create new folder
-- `--background` flag → **BACKGROUND MODE** (agents run async while you ask clarifying questions)
 - `--yolo` flag → **YOLO MODE** (autonomous workflow - auto-continues to next phase after completion)
 
 **Detection rule**: If argument starts with a number followed by `-`, it's a folder name.
@@ -40,13 +39,16 @@ TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo
    - ⚠️ Pièges à éviter (gotchas - don't repeat these mistakes)
    - 📋 Spécifications (requirements and decisions)
    - 🔍 Contexte technique (optional background - read if needed)
-3. **Handle Artifacts section** (📚 Artifacts source):
+3. **Handle Image section** (📷 Image de référence) - if present:
+   - Extract the image path from the table
+   - This image will be passed to `vision-analyzer` in Step 3
+4. **Handle Artifacts section** (📚 Artifacts source):
    - Note the artifact paths but **DON'T read them automatically**
    - Only read referenced artifacts if needed during analysis
    - This is **lazy loading** - saves tokens until content is required
-4. **Use this context** to inform your ULTRA THINK and agent prompts
-5. **Skip folder creation** (folder already exists)
-6. → Continue to Step 2 (ULTRA THINK)
+5. **Use this context** to inform your ULTRA THINK and agent prompts
+6. **Skip folder creation** (folder already exists)
+7. → Continue to Step 2 (ULTRA THINK)
 
 **If no seed.md or new description provided:**
 → Continue to Step 1 (SETUP TASK FOLDER)
@@ -88,104 +90,94 @@ touch <TASKS_DIR>/<NN>-<KEBAB-NAME>/.yolo
    - Determine which sources need analysis (codebase/docs/web)
    - List specific questions each agent should answer
 
-### 2b. VISION DETECTION (automatic from image cache)
-
-**How it works**: When the user shares an image (drag & drop or Ctrl+V), Claude Code stores it in `~/.claude/image-cache/<uuid>/N.png`. We detect recent images automatically.
-
-**Step 2b-1**: Check for recent images in Claude Code cache
-```bash
-# Find images shared in the last 5 minutes
-RECENT_IMAGE=$(/usr/bin/find ~/.claude/image-cache -name "*.png" -type f -mmin -5 -print0 2>/dev/null | xargs -0 /bin/ls -t 2>/dev/null | head -1)
-[ -n "$RECENT_IMAGE" ] && echo "IMAGE FOUND: $RECENT_IMAGE" || echo "NO RECENT IMAGE"
-```
-
-**Step 2b-2**: Also check for explicit image paths in user message
-- Look for paths: `/tmp/`, `/var/folders/`, `/Users/*/Desktop/`, `~/.claude/image-cache/`
-- Look for extensions: `.png`, `.jpg`, `.jpeg`, `.webp`, `.heic`, `.heif`
-- User mentions: "screenshot", "image", "mockup", "photo", "picture"
-
-**If images detected** (either from cache or explicit path):
-- Add `vision-analyzer` to the parallel agent launch (Step 3)
-- Pass the detected image path to the agent
-- The vision analysis will be merged into the final analyze.md
-
-**Priority order**:
-1. Explicit path in user message (if provided)
-2. Most recent image in `~/.claude/image-cache/` (if < 5 min old)
-
 3. **LAUNCH PARALLEL ANALYSIS**: Gather context from all sources
 
-   ### Standard Mode (default)
+   **Launch ALL agents in background** with `run_in_background: true`:
+
    - **Codebase exploration** (`explore-codebase` agent):
      - Find similar implementations to use as examples
      - Locate files that need modification
      - Identify existing patterns and conventions
-     - Search for related utilities and helpers
 
    - **Documentation exploration** (`explore-docs` agent):
      - Search library docs for APIs and patterns
      - Find best practices for tools being used
-     - Gather code examples from official docs
 
    - **Web research** (`websearch` agent):
      - Research latest approaches and solutions
      - Find community examples and patterns
-     - Gather architectural guidance
 
-   - **Vision analysis** (`vision-analyzer` agent) - **ONLY if images detected in Step 2b**:
+   - **Vision analysis** (`vision-analyzer` agent) - **ONLY if image provided**:
+     - From seed.md `📷 Image de référence` section (via `--vision` flag)
+     - Or drag & drop with the `/apex:1-analyze` command
      - Analyze UI screenshots for debugging context
-     - Extract page state and visible elements
-     - Identify visual issues or design patterns
-     - Uses Claude Opus 4.5 for superior visual understanding
-     ```
-     Task(
-       subagent_type="vision-analyzer",
-       model="opus",
-       prompt="Analyze this UI screenshot.
 
-       **Image path**: [path from Step 2b - either explicit or from ~/.claude/image-cache/]
+   ```
+   Task(subagent_type="explore-codebase", run_in_background=true, ...)
+   Task(subagent_type="explore-docs", run_in_background=true, ...)
+   Task(subagent_type="websearch", run_in_background=true, ...)
+   ```
 
-       Context: [user's task description]
+   - **CRITICAL**: Launch ALL agents in a SINGLE message
 
-       Provide analysis focusing on: page identification, visible elements, potential issues.",
-       run_in_background=true  // or false depending on mode
-     )
-     ```
+   **While agents run**:
+   - Wait for agent completion using `TaskOutput`
+   - Do NOT ask generic questions here (they belong in step 4)
 
-   - **CRITICAL**: Launch ALL agents in parallel in a single message
+4. **CLARIFICATION**: Ask questions based on context
 
-   ### Background Mode (`--background`)
-   When `--background` flag is detected:
+   **Behavior depends on seed.md presence:**
 
-   1. **Launch agents with `run_in_background: true`**:
-      ```
-      Task(subagent_type="explore-codebase", run_in_background=true, ...)
-      Task(subagent_type="explore-docs", run_in_background=true, ...)
-      Task(subagent_type="websearch", run_in_background=true, ...)
-      ```
+   ### If seed.md EXISTS (from `/apex:handoff`)
 
-   2. **Immediately ask clarifying questions** using `AskUserQuestion`:
-      - "What specific problem are you trying to solve?"
-      - "Are there existing patterns or code you'd like me to follow?"
-      - "Any constraints or preferences I should know about?"
-      - Customize questions based on the task description
+   The seed already contains answers to basic questions (Objectif, Spécifications, Clarifications).
 
-   3. **Store user responses** for synthesis step
+   **Only ask about NEW discoveries from agents:**
 
-   4. **Check agent status** periodically with `TaskOutput`:
-      - If still running: continue conversation or wait
-      - When complete: proceed to synthesis
+   Based on **codebase exploration**:
+   - "J'ai trouvé un pattern similaire dans `path/file.ts:42`. Tu veux suivre cette approche ou faire différemment ?"
+   - "Il existe déjà une solution partielle dans `module/`. On l'étend ou on repart de zéro ?"
 
-4. **SYNTHESIZE FINDINGS**: Create comprehensive analysis report
+   Based on **web research**:
+   - "La doc recommande [approach A], mais j'ai aussi trouvé [approach B] qui semble plus adapté à ton cas. Préférence ?"
+   - "Il y a un gotcha connu avec cette lib : [issue]. Tu veux qu'on le contourne comment ?"
+
+   **Rules for seed.md present**:
+   - Skip generic questions (already in seed)
+   - Only ask about discoveries that contradict or extend the seed
+   - Max 1-2 questions focused on new findings
+   - If discoveries align with seed → skip this step entirely
+
+   ### If NO seed.md (new task description)
+
+   Ask initial clarifying questions AND discovery-based questions:
+
+   **Initial questions** (pick 2-3 relevant ones):
+   - "What specific problem are you trying to solve?"
+   - "Are there existing patterns or code you'd like me to follow?"
+   - "Any constraints or preferences I should know about?"
+
+   **Discovery-based questions** (from agent findings):
+   - "En analysant le code, je vois une opportunité d'améliorer [X] en même temps. Ça t'intéresse ?"
+   - "Le pattern actuel a [limitation]. Tu veux qu'on en profite pour refactorer ?"
+
+   **Rules for no seed.md**:
+   - Max 3-4 questions total
+   - Mix of initial + discovery-based
+   - Questions must include concrete file paths or findings
+
+   **Store all responses** for final synthesis.
+
+5. **SYNTHESIZE FINDINGS**: Create comprehensive analysis report
    - Combine findings from all agents
    - Organize by topic/concern
    - Include file paths with line numbers (e.g., `src/auth.ts:42`)
    - List relevant examples found in codebase
    - Document key patterns and conventions to follow
    - Note any dependencies or prerequisites
-   - **Background Mode**: Include user clarifications gathered during agent execution
+   - Include user clarifications gathered during agent execution
 
-5. **SAVE ANALYSIS**: Write to `analyze.md`
+6. **SAVE ANALYSIS**: Write to `analyze.md`
    - Save to `$TASKS_DIR/nn-task-name/analyze.md`
    - **Note**: This file is consumed via **lazy loading** from seed.md
    - Keep "Quick Summary (TL;DR)" at TOP for optimal LLM consumption
@@ -226,7 +218,7 @@ RECENT_IMAGE=$(/usr/bin/find ~/.claude/image-cache -name "*.png" -type f -mmin -
      ## Research Findings
      [Web research results]
 
-     ## User Clarifications (if --background used)
+     ## User Clarifications
      - Q: [Question asked]
        A: [User's answer]
 
@@ -245,7 +237,7 @@ RECENT_IMAGE=$(/usr/bin/find ~/.claude/image-cache -name "*.png" -type f -mmin -
      [Prerequisites and related systems]
      ```
 
-6. **REPORT**: Summarize to user
+7. **REPORT**: Summarize to user
    - Confirm task folder created
    - Highlight key findings
    - Note any concerns or blockers discovered

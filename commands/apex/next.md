@@ -9,27 +9,31 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
 
 1. **DETECT ENVIRONMENT**: Find paths
    ```bash
-   # Check which tasks directory exists
-   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
+   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
+   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
+   echo "TASKS_DIR=$TASKS_DIR"
    ```
+   - Use `tasks` if running from `~/.claude` directory
    - Use `.claude/tasks` for project directories
-   - Use `tasks` only if running from `~/.claude` directory
+   - **Remember the TASKS_DIR** value for all subsequent commands!
 
 2. **FIND TASK FOLDER**: Determine which task folder to use
    ```bash
    # If argument provided: FOLDER="<provided-path>"
    # If no argument: find latest folder by number (sort by leading digits)
    # Note: Use /usr/bin/grep and portable sort (no -V flag)
-   FOLDER=$(/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)
+   # Note: Quotes around $() are required for zsh compatibility with pipes
+   FOLDER="$(/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)" && \
    echo "FOLDER=$FOLDER"
    ```
 
 3. **FIND NEXT TASK**: Get first incomplete task + progress (ONE command)
    ```bash
    # Note: Use /usr/bin/grep to bypass rg alias
-   NEXT_TASK=$(/usr/bin/grep "^- \[ \]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/')
-   TOTAL=$(/usr/bin/grep -c "^- \[" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null)
-   DONE=$(/usr/bin/grep -c "^- \[x\]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null)
+   # Note: Quotes around $() are required for zsh compatibility with pipes
+   NEXT_TASK="$(/usr/bin/grep "^- \[ \]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/')" && \
+   TOTAL="$(/usr/bin/grep -c "^- \[" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null)" && \
+   DONE="$(/usr/bin/grep -c "^- \[x\]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null)" && \
    echo "NEXT=$NEXT_TASK PROGRESS=$DONE/$TOTAL"
    ```
    - If `NEXT_TASK` is empty → all tasks complete!
@@ -56,7 +60,7 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
 ### No tasks folder
 ```
 No tasks/ directory found in $TASKS_DIR/<folder>/
-Run `/apex:5-tasks <folder>` to generate individual tasks first.
+Run `/apex:tasks <folder>` to generate individual tasks first.
 ```
 
 ### All tasks complete

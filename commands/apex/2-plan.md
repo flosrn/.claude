@@ -16,11 +16,13 @@ Parse the argument for flags:
 
 1. **DETECT TASKS DIRECTORY**: Find correct path
    ```bash
-   # Default path (use "tasks" if running from ~/.claude) - use /bin/ls to bypass eza alias
-   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
+   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
+   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
+   echo "TASKS_DIR=$TASKS_DIR"
    ```
+   - Use `tasks` if running from `~/.claude` directory
    - Use `.claude/tasks` for project directories
-   - Use `tasks` only if running from `~/.claude` directory
+   - **Remember the TASKS_DIR** value for all subsequent commands!
 
 2. **VALIDATE INPUT**: Verify task folder exists
    - Check that `$TASKS_DIR/<task-folder>/` exists

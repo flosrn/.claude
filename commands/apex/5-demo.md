@@ -18,11 +18,13 @@ Parse the argument for flags:
 
 1. **DETECT TASKS DIRECTORY**: Find correct path
    ```bash
-   # Check which tasks directory exists (use /bin/ls to bypass eza alias)
-   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
+   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
+   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
+   echo "TASKS_DIR=$TASKS_DIR"
    ```
+   - Use `tasks` if running from `~/.claude` directory
    - Use `.claude/tasks` for project directories
-   - Use `tasks` only if running from `~/.claude` directory
+   - **Remember the TASKS_DIR** value for all subsequent commands!
 
 2. **VALIDATE INPUT**: Check task folder exists
    - Verify `$TASKS_DIR/<task-folder>/` exists
@@ -268,7 +270,7 @@ Parse the argument for flags:
     ## Test Live Results
 
     **Tested**: [YYYY-MM-DD]
-    **Command**: `/apex:test-live <task-folder>`
+    **Command**: `/apex:5-demo <task-folder>`
     **URL**: [test URL]
 
     ### Test Scenarios
@@ -361,19 +363,19 @@ When tests fail:
 
 ```bash
 # Test implemented feature (auto-detect URL)
-/apex:test-live 68-ai-template-creator
+/apex:5-demo 68-ai-template-creator
 
 # Test with specific URL
-/apex:test-live my-feature --url=http://localhost:3000/dashboard
+/apex:5-demo my-feature --url=http://localhost:3000/dashboard
 
 # Test without GIF recording (faster)
-/apex:test-live my-feature --no-gif
+/apex:5-demo my-feature --no-gif
 
 # Run test scenarios in parallel (fastest, for regression testing)
-/apex:test-live my-feature --parallel
+/apex:5-demo my-feature --parallel
 
 # Combined: specific URL, no GIF
-/apex:test-live my-feature --url=http://localhost:5173 --no-gif
+/apex:5-demo my-feature --url=http://localhost:5173 --no-gif
 ```
 
 ## Integration with APEX Workflow
@@ -383,7 +385,7 @@ When tests fail:
 /apex:2-plan feature        # Create implementation plan
 /apex:3-execute feature     # Implement the feature
 /apex:4-examine feature     # Validate build/lint/types
-/apex:test-live feature     # Live browser testing ← YOU ARE HERE
+/apex:5-demo feature     # Live browser testing ← YOU ARE HERE
 ```
 
 **Note**: This command is optional but recommended for user-facing features. It provides visual proof that the implementation works as expected.

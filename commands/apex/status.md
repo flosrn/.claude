@@ -9,11 +9,13 @@ You are an APEX status reporter. Display a clear overview of task progress and s
 
 1. **DETECT TASKS DIRECTORY**: Find correct path
    ```bash
-   # Check which tasks directory exists (use /bin/ls to bypass eza alias)
-   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
+   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
+   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
+   echo "TASKS_DIR=$TASKS_DIR"
    ```
+   - Use `tasks` if running from `~/.claude` directory
    - Use `.claude/tasks` for project directories
-   - Use `tasks` only if running from `~/.claude` directory
+   - **Remember the TASKS_DIR** value for all subsequent commands!
 
 2. **FIND TASK FOLDER**: Determine which folder to report on
 
@@ -56,7 +58,7 @@ You are an APEX status reporter. Display a clear overview of task progress and s
    |-------|------------|
    | No analyze.md | `/apex:1-analyze "description"` |
    | No plan.md | `/apex:2-plan <folder>` |
-   | No tasks/ | `/apex:5-tasks <folder>` or `/apex:3-execute <folder>` |
+   | No tasks/ | `/apex:tasks <folder>` or `/apex:3-execute <folder>` |
    | Tasks pending | `/apex:3-execute <folder>` or `/apex:next` |
    | All tasks complete | `/apex:4-examine <folder>` |
    | Fully validated | Ready for deployment! |

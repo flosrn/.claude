@@ -11,15 +11,18 @@ You are an implementation specialist. Execute plans precisely while maintaining 
 
 1. **DETECT ENVIRONMENT**: Find paths and package manager
    ```bash
-   # Check which tasks directory exists (use /bin/ls to bypass eza alias)
-   /bin/ls .claude/tasks 2>/dev/null || /bin/ls tasks 2>/dev/null
+   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
+   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
+   echo "TASKS_DIR=$TASKS_DIR"
    # Check package manager (use [ -f ] for file existence checks)
    [ -f pnpm-lock.yaml ] && echo "PM=pnpm"
    [ -f yarn.lock ] && echo "PM=yarn"
    [ -f bun.lockb ] && echo "PM=bun"
    [ -f package-lock.json ] && echo "PM=npm"
    ```
-   - Use `.claude/tasks` for project directories, `tasks` if in `~/.claude`
+   - Use `tasks` if running from `~/.claude` directory
+   - Use `.claude/tasks` for project directories
+   - **Remember the TASKS_DIR** value for all subsequent commands!
    - Detect PM from lock file present
 
 2. **VALIDATE INPUT**: Verify task folder is ready
@@ -36,11 +39,13 @@ You are an implementation specialist. Execute plans precisely while maintaining 
    - `--parallel` flag → **PARALLEL AUTO-DETECT MODE**
    - `--dry-run` flag → **DRY-RUN MODE** (preview only, no changes)
    - `--quick` flag → **QUICK VALIDATION MODE** (run typecheck+lint after task)
+   - `--force-sonnet` flag → **Override Smart Model Selection** (always use Sonnet)
+   - `--force-opus` flag → **Override Smart Model Selection** (always use Opus)
    - Comma-separated numbers (e.g., `3,4`) → **PARALLEL EXPLICIT MODE**
    - Single number (e.g., `3`) → **SEQUENTIAL MODE** (single task)
    - No number → **SEQUENTIAL MODE** (next incomplete task)
 
-   **Note**: `--dry-run` and `--quick` can combine with sequential mode (e.g., `3 --dry-run`)
+   **Note**: Flags can combine (e.g., `3 --dry-run`, `3,4 --force-opus`)
 
    **IMPORTANT**: Task-by-task mode is preferred when available because:
    - Individual tasks are smaller and more focused (~50 lines vs 400+ lines)
@@ -65,7 +70,8 @@ You are an implementation specialist. Execute plans precisely while maintaining 
    - **IF no task number provided** (find next incomplete task):
      ```bash
      # Note: Use /usr/bin/grep to bypass rg alias, sed for portable extraction
-     NEXT_TASK=$(/usr/bin/grep "^- \[ \]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/') && \
+     # Note: Quotes around $() are required for zsh compatibility with pipes
+     NEXT_TASK="$(/usr/bin/grep "^- \[ \]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/')" && \
      echo "Next incomplete task: $NEXT_TASK"
      ```
      - Read that specific task file (e.g., `task-$NEXT_TASK.md`)
@@ -108,6 +114,68 @@ You are an implementation specialist. Execute plans precisely while maintaining 
 
 ---
 
+## 3A. SMART MODEL SELECTION
+
+**CRITICAL**: Before launching any agent, analyze task complexity to select the optimal model.
+
+### Skip Conditions
+- If `--force-sonnet` flag → Use Sonnet, skip analysis
+- If `--force-opus` flag → Use Opus, skip analysis
+- Otherwise → Perform complexity analysis below
+
+### Complexity Scoring
+
+For EACH task file, calculate a complexity score:
+
+| Criterion | Points | Detection Method |
+|-----------|--------|------------------|
+| Modifies **existing** files | +2 | Look for files without "(new)" in plan/task |
+| Modifies **3+ existing** files | +1 | Count files without "(new)" |
+| Contains "integration" or "integrate" | +2 | Grep task file |
+| Contains "API", "SDK", "callback" | +1 | Grep task file |
+| Contains "refactor" or "migration" | +1 | Grep task file |
+| Contains "breaking change" | +2 | Grep task file |
+| Has 3+ dependencies | +1 | Check Dependencies section |
+| Mentions gotchas/risks/warnings | +1 | Look for ⚠️ or "gotcha" or "risk" |
+
+### Model Selection Threshold
+
+| Score | Model | Reasoning |
+|-------|-------|-----------|
+| 0-2 | **Sonnet** | Simple task, clear patterns, new files |
+| 3-4 | **Opus** | Moderate complexity, some integration |
+| 5+ | **Opus** | High complexity, critical integration |
+
+### Display Selection
+
+Before launching agent(s), display:
+
+```
+┌─────────────────────────────────────────────────┐
+│ MODEL SELECTION                                 │
+├─────────────────────────────────────────────────┤
+│ Task 3: Add token tracking                      │
+│ Score: 4/10 → Opus                              │
+│ Reasons:                                        │
+│   • Modifies existing files (+2)                │
+│   • Contains "integration" (+2)                 │
+├─────────────────────────────────────────────────┤
+│ Task 4: Create UI component                     │
+│ Score: 1/10 → Sonnet                            │
+│ Reasons:                                        │
+│   • New files only                              │
+│   • Clear patterns to follow                    │
+└─────────────────────────────────────────────────┘
+```
+
+### Store Selection
+
+Remember the selected model for each task:
+- `task_models = { 3: "opus", 4: "sonnet", ... }`
+- Use this mapping when launching agents in step 3B or sequential execution
+
+---
+
 ## 3B. PARALLEL EXECUTION (only if parallel mode detected)
 
 **CRITICAL**: This step REPLACES steps 4-9 for parallel execution.
@@ -140,13 +208,15 @@ Execute Task [N]: [Task Name]
 
 **USE TASK TOOL**: Launch ALL agents in a SINGLE message with multiple Task tool calls.
 
-Example for tasks 3 and 4:
+**CRITICAL**: Use the model selected in step 3A for each task.
+
+Example for tasks 3 (Opus) and 4 (Sonnet):
 
 ```
 Use the Task tool TWICE in the same message:
 
-Task 1: subagent_type="apex-executor", description="Execute Task 3", prompt="[Task 3 prompt]"
-Task 2: subagent_type="apex-executor", description="Execute Task 4", prompt="[Task 4 prompt]"
+Task 1: subagent_type="apex-executor", model="opus", description="Execute Task 3", prompt="[Task 3 prompt]"
+Task 2: subagent_type="apex-executor", model="sonnet", description="Execute Task 4", prompt="[Task 4 prompt]"
 ```
 
 **IMPORTANT**:
@@ -154,7 +224,9 @@ Task 2: subagent_type="apex-executor", description="Execute Task 4", prompt="[Ta
 - This enables true parallel execution
 - Each agent works independently
 - Use `subagent_type: "apex-executor"` for full task execution capability
-- apex-executor uses Sonnet model with validation built-in (typecheck/lint)
+- **Use `model` parameter from Smart Model Selection** (step 3A)
+- If `--force-sonnet`: all tasks use `model="sonnet"`
+- If `--force-opus`: all tasks use `model="opus"`
 
 ### Step 3: Wait for All Agents
 
@@ -566,6 +638,7 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 
 ```bash
 # Execute next pending task (auto-detects from index.md)
+# Smart Model Selection chooses Sonnet or Opus based on complexity
 /apex:3-execute 68-ai-template-creator
 
 # Execute specific task by number
@@ -575,6 +648,7 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 /apex:3-execute 10-advent-won-prize-id-bug
 
 # PARALLEL: Execute specific tasks simultaneously
+# Each task gets its own model based on complexity score
 /apex:3-execute 72-rename-feature 3,4
 
 # PARALLEL: Execute 3 tasks at once
@@ -588,6 +662,13 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 
 # QUICK: Execute task with immediate typecheck/lint validation
 /apex:3-execute 68-ai-template-creator 3 --quick
+
+# FORCE MODEL: Override Smart Model Selection
+/apex:3-execute 68-ai-template-creator 5 --force-opus    # Complex integration
+/apex:3-execute 68-ai-template-creator 2 --force-sonnet  # Keep simple even if scored high
+
+# COMBINED: Parallel with forced model
+/apex:3-execute 72-rename-feature 3,4 --force-opus       # All tasks use Opus
 ```
 
 ## Parallel Execution Example

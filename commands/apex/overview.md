@@ -10,11 +10,11 @@
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:3-execute` | Implement changes | `--parallel`, `--dry-run`, `--quick` |
 | `/apex:4-examine` | Validate & fix issues | `--skip-patterns`, `--background` |
-| `/apex:5-tasks` | Divide plan into tasks | `--yolo` |
+| `/apex:tasks` | Divide plan into tasks | `--yolo` |
 | `/apex:next` | Run next pending task | - |
 | `/apex:status` | Show progress tree | - |
 | `/apex:handoff` | Transfer context to new workflow | `--from`, `--edit` |
-| `/apex:test-live` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
+| `/apex:5-demo` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 
 ---
 
@@ -55,7 +55,7 @@
             ▼                             ▼
 ┌─────────────────────────────┐   ┌─────────────────────────────┐
 │  OPTIONAL: TASK DIVISION    │   │  DIRECT EXECUTION            │
-│  /apex:5-tasks              │   │  (skip to Phase 3)           │
+│  /apex:tasks                │   │  (skip to Phase 3)           │
 │  • ≥6 files → divide        │   │  • <6 files → execute        │
 │  • Create tasks/index.md    │   └─────────────────────────────┘
 │  • Output: task-01.md, etc  │
@@ -136,7 +136,7 @@
 **Flags**:
 | Flag | Behavior |
 |------|----------|
-| `--yolo` | Auto-continue to `/apex:5-tasks` or `/apex:3-execute` |
+| `--yolo` | Auto-continue to `/apex:tasks` or `/apex:3-execute` |
 
 **Example**:
 ```bash
@@ -208,7 +208,7 @@
 
 ---
 
-### Phase 5: Tasks (`/apex:5-tasks`)
+### Phase 5: Tasks (`/apex:tasks`)
 
 **Purpose**: Divide plan into granular, parallelizable tasks
 
@@ -233,7 +233,7 @@
 
 **Example**:
 ```bash
-/apex:5-tasks 08-auth-feature
+/apex:tasks 08-auth-feature
 ```
 
 ---
@@ -300,7 +300,7 @@ Next: /apex:3-execute 08-auth-feature 3
 
 ---
 
-### `/apex:test-live`
+### `/apex:5-demo`
 
 **Purpose**: Browser testing with GIF recording
 
@@ -319,8 +319,8 @@ Next: /apex:3-execute 08-auth-feature 3
 
 **Example**:
 ```bash
-/apex:test-live 08-auth-feature
-/apex:test-live 08-auth-feature --url=http://localhost:3000/login
+/apex:5-demo 08-auth-feature
+/apex:5-demo 08-auth-feature --url=http://localhost:3000/login
 ```
 
 ---
@@ -363,7 +363,7 @@ User runs: /apex:1-analyze "task" --yolo
    User must manually review and execute tasks
 ```
 
-**Supported commands**: `1-analyze`, `2-plan`, `5-tasks`
+**Supported commands**: `1-analyze`, `2-plan`, `tasks`
 
 ---
 
@@ -378,7 +378,7 @@ tasks/NN-kebab-name/
 ├── plan.md              # Phase 2 output
 ├── implementation.md    # Phase 3/4 output (session log)
 ├── .yolo                # Marker file for YOLO mode
-└── tasks/               # Optional: from /apex:5-tasks
+└── tasks/               # Optional: from /apex:tasks
     ├── index.md         # Task list with dependencies
     ├── task-01.md       # Individual task
     ├── task-02.md
@@ -392,7 +392,7 @@ tasks/NN-kebab-name/
 | `seed.md` | `/apex:handoff` | Prior context transfer |
 | `analyze.md` | `/apex:1-analyze` | Research findings |
 | `plan.md` | `/apex:2-plan` | Implementation strategy |
-| `tasks/` | `/apex:5-tasks` | Granular task breakdown |
+| `tasks/` | `/apex:tasks` | Granular task breakdown |
 | `implementation.md` | `/apex:3-execute` | Session log, changes made |
 
 ---
@@ -477,8 +477,8 @@ Suggested enhancements from audit:
 - [2-plan](./2-plan.md) - Planning phase details
 - [3-execute](./3-execute.md) - Execution phase details
 - [4-examine](./4-examine.md) - Validation phase details
-- [5-tasks](./5-tasks.md) - Task division details
+- [tasks](./tasks.md) - Task division details
+- [5-demo](./5-demo.md) - Browser testing with GIF
 - [handoff](./handoff.md) - Context transfer
 - [next](./next.md) - Auto-execute next task
 - [status](./status.md) - Progress display
-- [test-live](./test-live.md) - Browser testing

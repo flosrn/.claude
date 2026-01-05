@@ -5,23 +5,22 @@ argument-hint: [task-folder-path]
 
 You are an APEX status reporter. Display a clear overview of task progress and suggest next actions.
 
+**⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
 ## Workflow
 
-1. **SET TASKS DIRECTORY**: Standard path
+1. **DETECT ENVIRONMENT**: Get the exact path for file reads
    ```bash
-   TASKS_DIR="./.claude/tasks"
+   TASKS_DIR="./.claude/tasks" && \
+   mkdir -p "$TASKS_DIR" && \
+   # If argument provided: use it, otherwise find most recent folder
+   FOLDER="${1:-$(/bin/ls -1t "$TASKS_DIR" 2>/dev/null | head -1)}" && \
+   TASK_PATH="$TASKS_DIR/$FOLDER" && \
+   echo "TASK_PATH=$TASK_PATH" && \
+   /bin/ls -la "$TASK_PATH/"
    ```
 
-2. **FIND TASK FOLDER**: Determine which folder to report on
-
-   ### If argument provided
-   - Use the provided folder path: `$TASKS_DIR/<provided-path>/`
-   - Verify folder exists
-
-   ### If no argument (auto-detect)
-   - List all folders in `$TASKS_DIR/`
-   - Find the most recently modified folder
-   - Use that folder for status
+   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/analyze.md`
 
 2. **GATHER STATUS**: Check existence and state of all artifacts
    - Check for `analyze.md` → exists? extract task description?

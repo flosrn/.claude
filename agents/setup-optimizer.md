@@ -1,3 +1,11 @@
+---
+name: setup-optimizer
+description: Analyze and optimize Claude Code configurations. Audits ~/.claude structure, detects unused features, and suggests performance improvements.
+color: green
+model: haiku
+permissionMode: plan
+---
+
 # Setup Optimizer Agent
 
 Specialized agent for analyzing and optimizing Claude Code configurations.

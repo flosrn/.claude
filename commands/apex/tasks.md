@@ -7,6 +7,8 @@ You are a task breakdown specialist. Transform implementation plans into small, 
 
 **You need to ULTRA THINK about how to divide the work effectively.**
 
+**⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
 ## Argument Parsing
 
 Parse the argument for flags:
@@ -14,22 +16,22 @@ Parse the argument for flags:
 
 ## Workflow
 
-1. **SET TASKS DIRECTORY**: Standard path
+1. **DETECT ENVIRONMENT**: Get the exact path for file reads
    ```bash
-   TASKS_DIR="./.claude/tasks"
+   TASK_PATH="./.claude/tasks/<task-folder>" && \
+   echo "TASK_PATH=$TASK_PATH" && \
+   /bin/ls -la "$TASK_PATH/"
    ```
 
-2. **VALIDATE INPUT**: Verify task folder is ready
-   - Check that `$TASKS_DIR/<task-folder>/` exists
-   - Verify `plan.md` file is present
-   - **CRITICAL**: If missing, instruct user to run `/apex:plan` first
-   - **YOLO MODE**: If `--yolo` flag detected, ensure `$TASKS_DIR/<task-folder>/.yolo` file exists
-     ```bash
-     touch $TASKS_DIR/<task-folder>/.yolo
-     ```
+   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/plan.md`
 
-2. **READ PLAN**: Load implementation strategy
-   - Read `$TASKS_DIR/<task-folder>/plan.md` completely
+2. **VALIDATE INPUT**: Verify task folder is ready
+   - Check output shows `plan.md` exists
+   - If missing, instruct user to run `/apex:2-plan` first
+   - **YOLO MODE**: If `--yolo` flag, run `touch $TASK_PATH/.yolo`
+
+3. **READ PLAN**: Load implementation strategy
+   - Read `$TASK_PATH/plan.md` completely
    - Identify all file changes and major implementation steps
    - Look for natural boundaries between tasks
 

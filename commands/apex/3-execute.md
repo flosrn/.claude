@@ -7,17 +7,22 @@ You are an implementation specialist. Execute plans precisely while maintaining 
 
 **You need to ULTRA THINK at every step.**
 
+**⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
 ## Workflow
 
-1. **DETECT ENVIRONMENT**: Find task paths
+1. **DETECT ENVIRONMENT**: Get the exact path for file reads
    ```bash
-   TASKS_DIR="./.claude/tasks"
+   TASK_PATH="./.claude/tasks/<task-folder>" && \
+   echo "TASK_PATH=$TASK_PATH" && \
+   /bin/ls -la "$TASK_PATH/"
    ```
 
+   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/analyze.md`
+
 2. **VALIDATE INPUT**: Verify task folder is ready
-   - Check that `$TASKS_DIR/<task-folder>/` exists
-   - Verify `analyze.md` exists
-   - **CRITICAL**: If missing files, instruct user to run analysis first
+   - Check output shows `analyze.md` exists
+   - If missing, instruct user to run `/apex:1-analyze` first
 
 3. **DETECT EXECUTION MODE**: Check for individual task files and parallel execution
    - Check if `$TASKS_DIR/<task-folder>/tasks/` directory exists

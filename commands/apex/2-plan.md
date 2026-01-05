@@ -7,6 +7,8 @@ You are a strategic planning specialist. Transform analysis findings into execut
 
 **You need to ULTRA THINK about the complete implementation strategy.**
 
+**⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
 ## Argument Parsing
 
 Parse the argument for flags:
@@ -14,22 +16,22 @@ Parse the argument for flags:
 
 ## Workflow
 
-1. **SET TASKS DIRECTORY**: Standard path
+1. **DETECT ENVIRONMENT**: Get the exact path for file reads
    ```bash
-   TASKS_DIR="./.claude/tasks"
+   TASK_PATH="./.claude/tasks/<task-folder>" && \
+   echo "TASK_PATH=$TASK_PATH" && \
+   /bin/ls -la "$TASK_PATH/"
    ```
 
-2. **VALIDATE INPUT**: Verify task folder exists
-   - Check that `$TASKS_DIR/<task-folder>/` exists
-   - Verify `analyze.md` file is present
-   - **CRITICAL**: If missing, instruct user to run `/apex:analyze` first
-   - **YOLO MODE**: If `--yolo` flag detected, ensure `$TASKS_DIR/<task-folder>/.yolo` file exists
-     ```bash
-     touch $TASKS_DIR/<task-folder>/.yolo
-     ```
+   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/analyze.md`
 
-2. **READ ANALYSIS**: Load all context
-   - Read `$TASKS_DIR/<task-folder>/analyze.md` completely
+2. **VALIDATE INPUT**: Verify task folder exists
+   - Check output shows `analyze.md` exists
+   - If missing, instruct user to run `/apex:1-analyze` first
+   - **YOLO MODE**: If `--yolo` flag, run `touch $TASK_PATH/.yolo`
+
+3. **READ ANALYSIS**: Load all context
+   - Read `$TASK_PATH/analyze.md` completely
    - Review all codebase findings
    - Note patterns and conventions discovered
    - Identify files to modify and examples to follow

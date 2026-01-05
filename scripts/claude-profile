@@ -1,5 +1,0 @@
-#!/bin/bash
-# Claude Code Profile Switcher - Shell wrapper
-# Add to your shell: alias claude-profile="~/.claude/scripts/claude-profile"
-
-bun ~/.claude/scripts/switch-profile.ts "$@"

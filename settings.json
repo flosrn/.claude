@@ -23,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-tool-router.ts"
+            "command": "bun /Users/flo/.claude/scripts/hook-skill-suggester.ts"
           }
         ]
       }
@@ -33,7 +33,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-session-start.ts"
+            "command": "bun /Users/flo/.claude/scripts/hook-git-context.ts"
           }
         ]
       }
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-post-file-enhanced.ts"
+            "command": "bun /Users/flo/.claude/scripts/hook-ts-quality-gate.ts"
           }
         ]
       },
@@ -53,7 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-apex-clipboard.ts"
+            "command": "bun /Users/flo/.claude/scripts/apex/hook-clipboard.ts"
           }
         ]
       }
@@ -75,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-stop.ts"
+            "command": "bun /Users/flo/.claude/scripts/hook-completion-handler.ts"
           },
           {
             "type": "command",

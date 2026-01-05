@@ -21,7 +21,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 ## Task Folder Structure
 
 ```
-tasks/NN-kebab-name/
+.claude/tasks/NN-kebab-name/
 ├── seed.md              # Context from /apex:handoff (optional)
 ├── analyze.md           # Phase 1: research findings
 ├── plan.md              # Phase 2: file-centric changes
@@ -31,6 +31,8 @@ tasks/NN-kebab-name/
     ├── task-01.md       # Individual task
     └── ...
 ```
+
+**Path**: `./.claude/tasks/<folder>/`
 
 ## Mode Flags
 
@@ -114,6 +116,7 @@ The system uses portable constructs to avoid alias and shell compatibility issue
 
 | Issue | Solution |
 |-------|----------|
+| File not found errors | Use `./.claude/tasks/<folder>/file.md` (NOT `tasks/<folder>/...`) |
 | YOLO doesn't continue | Verify `.yolo` file exists in task folder |
 | Parallel tasks conflict | Check `index.md` for dependency violations |
 | Hook not triggering | Verify hook registration in settings.json |

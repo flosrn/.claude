@@ -8,6 +8,8 @@ You are a session context transfer specialist. Generate a `seed.md` that capture
 
 **You need to ULTRA THINK to extract valuable, non-redundant context.**
 
+**⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
 ## Argument Parsing
 
 Parse `$ARGUMENTS` for:
@@ -23,9 +25,14 @@ If no task description provided, use `AskUserQuestion` to gather it.
 
 ```bash
 TASKS_DIR="./.claude/tasks" && \
+mkdir -p "$TASKS_DIR" && \
 RECENT_FOLDER="$(/bin/ls -1t "$TASKS_DIR" 2>/dev/null | head -1)" && \
-echo "Source: $TASKS_DIR/$RECENT_FOLDER"
+TASK_PATH="$TASKS_DIR/$RECENT_FOLDER" && \
+echo "TASK_PATH=$TASK_PATH" && \
+/bin/ls -la "$TASK_PATH/"
 ```
+
+**Then read files using the printed TASK_PATH**: `Read $TASK_PATH/analyze.md`
 
 **Read available artifacts from source:**
 - `analyze.md` - Task analysis and discoveries
@@ -39,6 +46,7 @@ echo "Source: $TASKS_DIR/$RECENT_FOLDER"
 # Find highest existing number (handles NN-name format)
 # Note: Use /bin/ls to bypass eza alias, /usr/bin/grep to bypass rg alias
 # Note: Quotes around $() are required for zsh compatibility with pipes
+TASKS_DIR="./.claude/tasks" && \
 HIGHEST="$(/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)" && \
 NEXT="$(expr "$HIGHEST" + 1)" && \
 echo "Next number: $NEXT"

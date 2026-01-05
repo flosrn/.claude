@@ -14,7 +14,7 @@
 import { $ } from "bun";
 
 const YOLO_CONTINUE_FLAG = "/tmp/.apex-yolo-continue";
-const YOLO_CONTINUE_SCRIPT = "/Users/flo/.claude/scripts/apex-yolo-continue.ts";
+const YOLO_CONTINUE_SCRIPT = "/Users/flo/.claude/scripts/apex/yolo-continue.ts";
 
 interface StopHookInput {
   session_id: string;

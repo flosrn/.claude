@@ -5,30 +5,31 @@ argument-hint: [task-folder-path]
 
 You are an APEX workflow assistant. Your job is to find and execute the next pending task.
 
+**⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
 ## Workflow
 
-1. **SET TASKS DIRECTORY**: Standard path
+1. **DETECT ENVIRONMENT**: Get the exact path for file reads
    ```bash
-   TASKS_DIR="./.claude/tasks"
-   ```
-
-2. **FIND TASK FOLDER**: Determine which task folder to use
-   ```bash
+   TASKS_DIR="./.claude/tasks" && \
+   mkdir -p "$TASKS_DIR" && \
    # If argument provided: FOLDER="<provided-path>"
    # If no argument: find latest folder by number (sort by leading digits)
-   # Note: Use /usr/bin/grep and portable sort (no -V flag)
-   # Note: Quotes around $() are required for zsh compatibility with pipes
    FOLDER="$(/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)" && \
-   echo "FOLDER=$FOLDER"
+   TASK_PATH="$TASKS_DIR/$FOLDER" && \
+   echo "TASK_PATH=$TASK_PATH" && \
+   /bin/ls -la "$TASK_PATH/"
    ```
 
-3. **FIND NEXT TASK**: Get first incomplete task + progress (ONE command)
+   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/tasks/index.md`
+
+2. **FIND NEXT TASK**: Get first incomplete task + progress (use TASK_PATH from step 1)
    ```bash
    # Note: Use /usr/bin/grep to bypass rg alias
-   # Note: Quotes around $() are required for zsh compatibility with pipes
-   NEXT_TASK="$(/usr/bin/grep "^- \[ \]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/')" && \
-   TOTAL="$(/usr/bin/grep -c "^- \[" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null)" && \
-   DONE="$(/usr/bin/grep -c "^- \[x\]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null)" && \
+   # Use the TASK_PATH from step 1
+   NEXT_TASK="$(/usr/bin/grep "^- \[ \]" "$TASK_PATH/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/')" && \
+   TOTAL="$(/usr/bin/grep -c "^- \[" "$TASK_PATH/tasks/index.md" 2>/dev/null)" && \
+   DONE="$(/usr/bin/grep -c "^- \[x\]" "$TASK_PATH/tasks/index.md" 2>/dev/null)" && \
    echo "NEXT=$NEXT_TASK PROGRESS=$DONE/$TOTAL"
    ```
    - If `NEXT_TASK` is empty → all tasks complete!

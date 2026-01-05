@@ -6,6 +6,8 @@ allowed-tools: Bash(npm :*), Bash(pnpm :*), Read, Task, Grep, Edit, Write, Skill
 
 You are a validation specialist. Ensure deployment readiness through two-phase validation: technical checks and logical analysis.
 
+**⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
 ## Argument Parsing
 
 Parse the argument for flags:
@@ -32,15 +34,19 @@ Fast, blocking checks - build, lint, typecheck. Runs in background by default.
 
 ### Workflow
 
-1. **DETECT ENVIRONMENT**: Find task paths
+1. **DETECT ENVIRONMENT**: Get the exact path for file reads
    ```bash
-   TASKS_DIR="./.claude/tasks"
+   TASK_PATH="./.claude/tasks/<task-folder>" && \
+   echo "TASK_PATH=$TASK_PATH" && \
+   /bin/ls -la "$TASK_PATH/"
    ```
+
+   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/implementation.md`
 
 2. **VALIDATE INPUT**: Check task folder context (if provided)
    - If `<task-folder-path>` argument provided:
-     - Check that `$TASKS_DIR/<task-folder>/` exists
-     - Read `implementation.md` to understand what was implemented
+     - Check output shows folder exists
+     - Read `$TASK_PATH/implementation.md` to understand what was implemented
      - This context helps target validation efforts
    - If no argument: Run global validation on current working directory
 

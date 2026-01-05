@@ -16,6 +16,8 @@ Parse the argument for:
 
 **Detection rule**: If argument starts with a number followed by `-`, it's a folder name.
 
+**⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
 ## Workflow
 
 ### 0. CHECK FOR SEED CONTEXT (if folder provided)
@@ -24,8 +26,12 @@ If the argument is an **existing task folder** (e.g., `84-optimize-flow`):
 
 **Step 0a**: Check for seed.md
 ```bash
-TASKS_DIR="./.claude/tasks" && \
-/bin/ls "$TASKS_DIR/<provided-folder>/seed.md" 2>/dev/null && echo "SEED FOUND" || echo "NO SEED"
+/bin/ls -la "./.claude/tasks/<provided-folder>/"
+```
+
+**Step 0b**: Read the seed file (use FULL path)
+```
+Read ./.claude/tasks/<provided-folder>/seed.md
 ```
 
 **If `seed.md` exists:**
@@ -57,6 +63,7 @@ Create organized workspace in **separate steps**:
 **Step 1a**: Find next folder number
 ```bash
 TASKS_DIR="./.claude/tasks" && \
+mkdir -p "$TASKS_DIR" && \
 /bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
 ```
 
@@ -64,11 +71,12 @@ TASKS_DIR="./.claude/tasks" && \
 - If last folder is `06-something` → NEXT is `07`
 - If empty → NEXT is `01`
 
-**Step 1c**: Create the folder using the detected TASKS_DIR
+**Step 1c**: Create the folder
 ```bash
-# Use the TASKS_DIR from Step 1a output (replace <NN> and <KEBAB-NAME>)
-mkdir -p <TASKS_DIR>/<NN>-<KEBAB-NAME>
+mkdir -p ./.claude/tasks/<NN>-<KEBAB-NAME>
 ```
+
+**⚠️ CRITICAL PATH RULE**: ALL subsequent file operations use `./.claude/tasks/<NN>-<KEBAB-NAME>/`
 
 **KEBAB-CASE RULE**: Convert task description to lowercase, replace spaces/special chars with `-`
 - "Add user authentication" → `add-user-authentication`

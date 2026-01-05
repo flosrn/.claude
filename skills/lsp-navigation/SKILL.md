@@ -1,6 +1,6 @@
 ---
 name: lsp-navigation
-description: Code navigation using cclsp LSP tools. Use for finding definitions, references, renaming symbols, or checking TypeScript diagnostics.
+description: Semantic code navigation using LSP (Language Server Protocol). Find where functions/variables are defined, find all usages across the codebase, rename symbols safely, and get TypeScript diagnostics. ALWAYS use this instead of Grep for semantic operations. Use when the user says "rename variable", "find all usages", "where is this used", "go to definition", "find references", "rename function", "refactor name", or asks "où est utilisé", "renommer", "trouver les références". Much faster and more accurate than manual Grep searches.
 ---
 
 # LSP Navigation (cclsp)

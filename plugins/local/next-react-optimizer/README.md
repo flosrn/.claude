@@ -10,8 +10,10 @@ Skills activate automatically when you ask about relevant topics:
 
 | Skill | Triggers | Topics Covered |
 |-------|----------|----------------|
+| **nextjs-migration** | "upgrade Next.js", "migrate to Next 16", "breaking changes" | Complete 15→16 migration guide, proxy.ts, codemods |
 | **cache-components** | "use cache", "cacheLife", "cacheTag", "cache invalidation" | Next.js 16 Cache Components, migration from old patterns |
 | **react-compiler** | "React Compiler", "automatic memoization", "remove useMemo" | React 19 auto-memoization, CannotPreserveMemoization errors |
+| **react19-patterns** | "useContext", "use() hook", "Context.Provider", "ViewTransition" | React 19 new patterns: use() hook, Context shorthand, ViewTransition |
 | **performance-patterns** | "Server Components", "Suspense", "streaming", "PPR" | RSC patterns, data fetching, loading states |
 | **code-splitting** | "dynamic imports", "barrel files", "bundle size" | next/dynamic, tree shaking, optimizePackageImports |
 

@@ -1,6 +1,6 @@
 ---
 name: databases
-description: Work with MongoDB (document database, BSON documents, aggregation pipelines, Atlas cloud) and PostgreSQL (relational database, SQL queries, psql CLI, pgAdmin). Use when designing database schemas, writing queries and aggregations, optimizing indexes for performance, performing database migrations, configuring replication and sharding, implementing backup and restore strategies, managing database users and permissions, analyzing query performance, or administering production databases.
+description: PostgreSQL and MongoDB patterns, queries, and optimization. ALWAYS use when the user mentions "SQL", "query", "database", "table", "schema", "migration", "index", "slow query", "Postgres", "Mongo", "base de données", "requête", "optimiser". Provides best practices for schema design, query optimization, indexing strategies, migrations, and performance tuning. Use when writing complex queries, debugging slow performance, designing schemas, or setting up database infrastructure.
 license: MIT
 ---
 

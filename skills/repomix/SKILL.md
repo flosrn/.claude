@@ -1,6 +1,6 @@
 ---
 name: repomix
-description: Package entire code repositories into single AI-friendly files using Repomix. Capabilities include pack codebases with customizable include/exclude patterns, generate multiple output formats (XML, Markdown, plain text), preserve file structure and context, optimize for AI consumption with token counting, filter by file types and directories, add custom headers and summaries. Use when packaging codebases for AI analysis, creating repository snapshots for LLM context, analyzing third-party libraries, preparing for security audits, generating documentation context, or evaluating unfamiliar codebases.
+description: Package external repositories into AI-friendly files for deep analysis. ALWAYS use when the user shares a github.com URL, mentions "third-party library", "external repo", "analyze this repository", "security audit", or wants to understand unfamiliar codebases. Supports remote repos (npx repomix --remote owner/repo) without cloning. Use when the user says "look at this repo", "analyze github.com/...", "check this library's code", "audit externe", "analyser ce repo". Do NOT manually clone or browse external repos - use this skill instead.
 ---
 
 # Repomix Skill

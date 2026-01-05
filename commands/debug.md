@@ -1,5 +1,5 @@
 ---
-description: Systematic bug debugging with deep analysis and resolution
+description: Systematic bug debugging with deep analysis and resolution. Use when seeing errors, exceptions, "ça marche pas", "bug", "crash", or unexpected behavior. Follows ULTRA THINK approach for root cause analysis.
 argument-hint: <log|error|problem-description>
 allowed-tools: Bash, Read, Edit, MultiEdit, Write, Grep, Glob, Task, WebSearch, WebFetch
 ---

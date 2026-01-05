@@ -1,6 +1,6 @@
 ---
 name: vision-analyzer
-description: Analyze UI screenshots and design mockups using Claude Opus 4.5 vision. Extracts visual context for debugging, page state understanding, and design inspiration.
+description: Analyze UI screenshots and design mockups using Claude Opus 4.5 vision. Extracts visual context for debugging, page state understanding, and design inspiration. ALWAYS use when user shares "screenshot", "capture d'écran", mentions "UI bug", "visual issue", "looks wrong", "ça s'affiche mal", or needs to debug visual problems. Uses Opus for best vision analysis.
 color: pink
 model: opus
 permissionMode: default

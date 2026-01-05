@@ -1,6 +1,6 @@
 ---
 name: explore-codebase
-description: Use this agent whenever you need to explore the codebase to realize a feature.
+description: Deep codebase exploration to answer specific questions. ALWAYS use when the user asks "how does X work", "where is the code for", "find all files related to", "où est le code", "comment ça marche", or needs to understand existing patterns before implementing. Do NOT answer from memory - explore the actual code.
 color: yellow
 model: haiku
 permissionMode: plan

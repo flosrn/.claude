@@ -1,6 +1,6 @@
 ---
 name: Snipper
-description: Use this agent when you need to modify code. This agent is specialized to be fast. The output is small and optimized to code as fast as agent can.
+description: Ultra-fast code modifications with minimal output. ALWAYS use for "quick fix", "small change", "just change this", "modify this line", "petite modif", "change rapide". Faster than main Claude for simple edits. Do NOT use for complex multi-file refactors.
 color: blue
 model: haiku
 permissionMode: acceptEdits

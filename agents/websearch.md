@@ -1,6 +1,6 @@
 ---
 name: websearch
-description: Use this agent when you need to make a quick web search.
+description: Quick web search for current information. Use when user asks "what's the latest", "search for", "find online", "cherche sur le web", "c'est quoi", needs recent news, current best practices, or external documentation not in codebase.
 color: yellow
 tools: WebSearch, WebFetch
 model: haiku

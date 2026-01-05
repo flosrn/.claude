@@ -1,3 +1,8 @@
+---
+name: claude-code
+description: Expert guidance on Claude Code features and customization. ALWAYS use when the user mentions "hook", "skill", "command", "agent", "subagent", "MCP", "slash command", "Task tool", "CLAUDE.md", "settings.json", or asks about Claude Code configuration, workflows, or capabilities. Covers hooks, skills, commands, agents, plugins, IDE integration, and enterprise features.
+---
+
 # Claude Code Expert
 
 Claude Code is Anthropic's agentic coding tool that lives in the terminal and helps turn ideas into code faster. It combines autonomous planning, execution, and validation with extensibility through skills, plugins, MCP servers, and hooks.
@@ -25,6 +30,8 @@ Use when users need help with:
 - "Create a new skill for X"
 - "Fix Claude Code authentication issues"
 - "Deploy Claude Code in enterprise environment"
+- "Comment créer un hook?"
+- "C'est quoi un agent?"
 
 ## Core Architecture
 

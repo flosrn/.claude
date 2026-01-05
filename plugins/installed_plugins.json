@@ -1,17 +1,6 @@
 {
   "version": 2,
   "plugins": {
-    "code-review@claude-code-plugins": [
-      {
-        "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-code-plugins/code-review/1.0.0",
-        "version": "1.0.0",
-        "installedAt": "2025-12-29T20:45:14.758Z",
-        "lastUpdated": "2025-12-29T20:45:14.758Z",
-        "gitCommitSha": "d213a74fc8e3b6efded52729196e0c2d4c3abb3e",
-        "isLocal": true
-      }
-    ],
     "makerkit@local": [
       {
         "scope": "user",
@@ -20,28 +9,6 @@
         "installedAt": "2025-12-29T20:45:14.758Z",
         "lastUpdated": "2025-12-29T20:45:14.758Z",
         "gitCommitSha": "30506c9bf360fa3f4d5c1e5009644335c6df8852",
-        "isLocal": true
-      }
-    ],
-    "wd@wd-marketplace": [
-      {
-        "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/wd-marketplace/wd/2.2.0",
-        "version": "2.2.0",
-        "installedAt": "2025-12-29T20:45:14.758Z",
-        "lastUpdated": "2025-12-29T20:45:14.758Z",
-        "gitCommitSha": "a7c6a697a98a71e7342eb87e84370b42dde7cc22",
-        "isLocal": true
-      }
-    ],
-    "plugin-dev@claude-code-plugins": [
-      {
-        "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-code-plugins/plugin-dev/0.1.0",
-        "version": "0.1.0",
-        "installedAt": "2025-12-29T20:45:14.758Z",
-        "lastUpdated": "2025-12-29T20:45:14.758Z",
-        "gitCommitSha": "d213a74fc8e3b6efded52729196e0c2d4c3abb3e",
         "isLocal": true
       }
     ],
@@ -64,28 +31,6 @@
         "installedAt": "2025-12-29T20:45:14.758Z",
         "lastUpdated": "2025-12-29T20:45:14.758Z",
         "gitCommitSha": "6d3752c000e2b3d0e6137bd7adb04895d6f40f14",
-        "isLocal": true
-      }
-    ],
-    "plugin-dev@claude-plugins-official": [
-      {
-        "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/plugin-dev/6d3752c000e2",
-        "version": "6d3752c000e2",
-        "installedAt": "2025-12-29T20:45:14.758Z",
-        "lastUpdated": "2025-12-29T20:45:14.758Z",
-        "gitCommitSha": "6d3752c000e2b3d0e6137bd7adb04895d6f40f14",
-        "isLocal": true
-      }
-    ],
-    "compound-engineering@every-marketplace": [
-      {
-        "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/every-marketplace/compound-engineering/2.18.0",
-        "version": "2.18.0",
-        "installedAt": "2025-12-29T20:45:14.758Z",
-        "lastUpdated": "2025-12-29T20:45:14.758Z",
-        "gitCommitSha": "1bc6bd916404c1954cb8e26e22ba2ab317fb0ef2",
         "isLocal": true
       }
     ]

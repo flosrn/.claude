@@ -1,6 +1,6 @@
 ---
 name: docs-seeker
-description: "Searching internet for technical documentation using llms.txt standard, GitHub repositories via Repomix, and parallel exploration. Use when user needs: (1) Latest documentation for libraries/frameworks, (2) Documentation in llms.txt format, (3) GitHub repository analysis, (4) Documentation without direct llms.txt support, (5) Multiple documentation sources in parallel"
+description: Search internet for technical documentation using llms.txt standard (context7.com) and parallel exploration. ALWAYS use when user asks "how to use X library", "documentation for Y", "docs for Z", needs latest docs for any library/framework, or mentions "context7", "llms.txt". Searches official docs, GitHub repos via Repomix, and uses parallel Explorer agents.
 version: 1.0.0
 ---
 

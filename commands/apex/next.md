@@ -7,15 +7,10 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
 
 ## Workflow
 
-1. **DETECT ENVIRONMENT**: Find paths
+1. **SET TASKS DIRECTORY**: Standard path
    ```bash
-   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
-   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
-   echo "TASKS_DIR=$TASKS_DIR"
+   TASKS_DIR="./.claude/tasks"
    ```
-   - Use `tasks` if running from `~/.claude` directory
-   - Use `.claude/tasks` for project directories
-   - **Remember the TASKS_DIR** value for all subsequent commands!
 
 2. **FIND TASK FOLDER**: Determine which task folder to use
    ```bash

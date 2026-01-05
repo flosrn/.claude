@@ -1,5 +1,5 @@
 ---
-description: Demo phase - live browser validation with GIF recording
+description: Browser test phase - live browser validation with GIF recording
 argument-hint: <task-folder-path> [--url=<url>] [--no-gif] [--parallel]
 allowed-tools: mcp__claude-in-chrome__*, Read, Write, Bash, Task
 ---
@@ -16,15 +16,10 @@ Parse the argument for flags:
 
 ## Workflow
 
-1. **DETECT TASKS DIRECTORY**: Find correct path
+1. **SET TASKS DIRECTORY**: Standard path
    ```bash
-   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
-   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
-   echo "TASKS_DIR=$TASKS_DIR"
+   TASKS_DIR="./.claude/tasks"
    ```
-   - Use `tasks` if running from `~/.claude` directory
-   - Use `.claude/tasks` for project directories
-   - **Remember the TASKS_DIR** value for all subsequent commands!
 
 2. **VALIDATE INPUT**: Check task folder exists
    - Verify `$TASKS_DIR/<task-folder>/` exists
@@ -63,8 +58,36 @@ Parse the argument for flags:
    - **If `--url` provided**: Use that URL directly
    - **If not provided**:
      - Look for URL hints in `analyze.md` or `implementation.md`
-     - Check for common dev server URLs: `localhost:3000`, `localhost:5173`, `localhost:8080`
+     - Detect port using step 3a below
      - **Ask user** if URL cannot be determined
+
+3a. **DETECT DEV SERVER PORT**: Find the correct port
+   ```bash
+   # Try multiple sources in priority order (BSD grep compatible)
+   # 1. Check root package.json for --port flag (supports --port 3000 and --port=3000)
+   PORT=$(/usr/bin/grep -oE 'port[= ]+[0-9]+' package.json 2>/dev/null | /usr/bin/grep -oE '[0-9]+' | head -1)
+
+   # 2. Monorepo: Check apps/web first (main app), then other apps
+   [ -z "$PORT" ] && PORT=$(/usr/bin/grep -oE 'port[= ]+[0-9]+' apps/web/package.json 2>/dev/null | /usr/bin/grep -oE '[0-9]+' | head -1)
+
+   # 3. Check vite.config.* for server.port setting
+   [ -z "$PORT" ] && PORT=$(/usr/bin/grep -oE 'port:[[:space:]]*[0-9]+' vite.config.* 2>/dev/null | /usr/bin/grep -oE '[0-9]+' | head -1)
+
+   # 4. Check next.config.* for port setting
+   [ -z "$PORT" ] && PORT=$(/usr/bin/grep -oE 'port:[[:space:]]*[0-9]+' next.config.* 2>/dev/null | /usr/bin/grep -oE '[0-9]+' | head -1)
+
+   # 5. Apply framework-specific defaults
+   [ -z "$PORT" ] && [ -f "vite.config.ts" -o -f "vite.config.js" ] && PORT=5173
+   [ -z "$PORT" ] && [ -f "next.config.js" -o -f "next.config.mjs" -o -d "apps/web" ] && PORT=3000
+
+   # 6. Final fallback
+   PORT="${PORT:-3000}"
+
+   echo "Detected port: $PORT"
+   ```
+
+   - Use detected port in URL: `http://localhost:${PORT}`
+   - **If detection fails**: Ask user for correct port
 
 4. **CHECK DEV SERVER**: Verify server is running
    - Attempt to fetch the test URL
@@ -99,7 +122,7 @@ Parse the argument for flags:
    - Call `mcp__claude-in-chrome__navigate`:
      ```json
      {
-       "url": "<test-url>",
+       "url": "http://localhost:${PORT}/<path>",
        "tabId": <tabId>
      }
      ```
@@ -122,7 +145,7 @@ Parse the argument for flags:
       Task(subagent_type="apex-executor", description="Test scenario 1", prompt="
         Test: Login flow
         Tab ID: <tabId1>
-        URL: http://localhost:3000/login
+        URL: http://localhost:${PORT}/login
 
         Steps:
         1. Navigate to URL
@@ -138,6 +161,7 @@ Parse the argument for flags:
       Task(subagent_type="apex-executor", description="Test scenario 2", prompt="
         Test: Form submission
         Tab ID: <tabId2>
+        URL: http://localhost:${PORT}/form
         ...
       ")
       ```
@@ -270,7 +294,7 @@ Parse the argument for flags:
     ## Test Live Results
 
     **Tested**: [YYYY-MM-DD]
-    **Command**: `/apex:5-demo <task-folder>`
+    **Command**: `/apex:5-browser-test <task-folder>`
     **URL**: [test URL]
 
     ### Test Scenarios
@@ -363,19 +387,19 @@ When tests fail:
 
 ```bash
 # Test implemented feature (auto-detect URL)
-/apex:5-demo 68-ai-template-creator
+/apex:5-browser-test 68-ai-template-creator
 
 # Test with specific URL
-/apex:5-demo my-feature --url=http://localhost:3000/dashboard
+/apex:5-browser-test my-feature --url=http://localhost:3000/dashboard
 
 # Test without GIF recording (faster)
-/apex:5-demo my-feature --no-gif
+/apex:5-browser-test my-feature --no-gif
 
 # Run test scenarios in parallel (fastest, for regression testing)
-/apex:5-demo my-feature --parallel
+/apex:5-browser-test my-feature --parallel
 
 # Combined: specific URL, no GIF
-/apex:5-demo my-feature --url=http://localhost:5173 --no-gif
+/apex:5-browser-test my-feature --url=http://localhost:5173 --no-gif
 ```
 
 ## Integration with APEX Workflow
@@ -385,7 +409,7 @@ When tests fail:
 /apex:2-plan feature        # Create implementation plan
 /apex:3-execute feature     # Implement the feature
 /apex:4-examine feature     # Validate build/lint/types
-/apex:5-demo feature     # Live browser testing ← YOU ARE HERE
+/apex:5-browser-test feature     # Live browser testing ← YOU ARE HERE
 ```
 
 **Note**: This command is optional but recommended for user-facing features. It provides visual proof that the implementation works as expected.

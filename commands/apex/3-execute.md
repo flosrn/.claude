@@ -9,21 +9,10 @@ You are an implementation specialist. Execute plans precisely while maintaining 
 
 ## Workflow
 
-1. **DETECT ENVIRONMENT**: Find paths and package manager
+1. **DETECT ENVIRONMENT**: Find task paths
    ```bash
-   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
-   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
-   echo "TASKS_DIR=$TASKS_DIR"
-   # Check package manager (use [ -f ] for file existence checks)
-   [ -f pnpm-lock.yaml ] && echo "PM=pnpm"
-   [ -f yarn.lock ] && echo "PM=yarn"
-   [ -f bun.lockb ] && echo "PM=bun"
-   [ -f package-lock.json ] && echo "PM=npm"
+   TASKS_DIR="./.claude/tasks"
    ```
-   - Use `tasks` if running from `~/.claude` directory
-   - Use `.claude/tasks` for project directories
-   - **Remember the TASKS_DIR** value for all subsequent commands!
-   - Detect PM from lock file present
 
 2. **VALIDATE INPUT**: Verify task folder is ready
    - Check that `$TASKS_DIR/<task-folder>/` exists
@@ -239,8 +228,8 @@ Task 2: subagent_type="apex-executor", model="sonnet", description="Execute Task
 After all agents complete:
 1. Collect files changed from each agent
 2. Merge any conflicts (should be rare if tasks are independent)
-3. Run global typecheck: `$PM run typecheck`
-4. Run global lint: `$PM run lint`
+3. Run global typecheck: `pnpm run typecheck`
+4. Run global lint: `pnpm run lint`
 5. If errors: fix them or report to user
 
 ### Step 5: Update Documentation
@@ -287,8 +276,8 @@ Would create:
   - [new files if any]
 
 Would run:
-  - $PM run typecheck
-  - $PM run lint
+  - pnpm run typecheck
+  - pnpm run lint
 
 ══════════════════════════════════════════════════
 Run without --dry-run to execute
@@ -304,8 +293,8 @@ Run without --dry-run to execute
 **Note**: `--quick` modifies normal execution, not a separate mode.
 
 After completing task implementation (Step 9):
-1. Run `$PM run typecheck` (or npm equivalent)
-2. Run `$PM run lint` (or npm equivalent)
+1. Run `pnpm run typecheck`
+2. Run `pnpm run lint`
 3. Display results:
 
 ```
@@ -369,7 +358,7 @@ Lint:      ✓ Pass (or ✗ N warnings/errors)
 
 8. **FORMAT AND LINT**: Clean up code
    - Check `package.json` for available scripts
-   - Run formatting: `npm run format` or similar
+   - Run formatting: `pnpm run format`
    - Fix linter warnings if reasonable
    - **CRITICAL**: Don't skip this step
 
@@ -377,9 +366,9 @@ Lint:      ✓ Pass (or ✗ N warnings/errors)
    - **Check `package.json`** for available test commands:
      - Look for: `lint`, `typecheck`, `test`, `format`, `build`
    - **Run relevant checks**:
-     - `npm run typecheck` - MUST pass
-     - `npm run lint` - MUST pass
-     - `npm run test` - Run ONLY tests related to changes
+     - `pnpm run typecheck` - MUST pass
+     - `pnpm run lint` - MUST pass
+     - `pnpm run test` - Run ONLY tests related to changes
    - **STAY IN SCOPE**: Don't run entire test suite unless necessary
    - **If tests fail**:
      - Debug and fix issues

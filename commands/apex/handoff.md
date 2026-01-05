@@ -22,9 +22,7 @@ If no task description provided, use `AskUserQuestion` to gather it.
 ### 1. DETECT CONTEXT SOURCE
 
 ```bash
-# Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
-# Note: Quotes around $() are required for zsh compatibility with pipes
-TASKS_DIR="$(if [ -d 'tasks' ] && [ "$(basename $(pwd))" = '.claude' ]; then echo 'tasks'; else echo '.claude/tasks'; fi)" && \
+TASKS_DIR="./.claude/tasks" && \
 RECENT_FOLDER="$(/bin/ls -1t "$TASKS_DIR" 2>/dev/null | head -1)" && \
 echo "Source: $TASKS_DIR/$RECENT_FOLDER"
 ```
@@ -110,8 +108,13 @@ Skip this step if no `--brainstorm` flag.
 - **Missing scope** → Ask what's explicitly excluded
 - **Missing audience** → Ask who will use/benefit from this
 - **Unclear approach** → Ask for preferred implementation style
+- **Technical gaps** → Ask about error handling, edge cases, constraints
+- **UX implications** → Ask about expected behavior, user feedback, loading states
+- **Tradeoffs** → Ask about preferences between competing approaches
 
-**Ask 2-4 contextual questions** using `AskUserQuestion`:
+**Interview until complete** using `AskUserQuestion`:
+
+Continue asking questions in rounds until the user signals satisfaction ("c'est bon", "let's proceed", "that's all", etc.). Each round should ask 2-3 focused questions, then wait for responses before continuing.
 
 Use collaborative "What/How" framing (not accusatory "Why"). Questions should be **specific to the task description**, not generic.
 
@@ -119,13 +122,30 @@ Use collaborative "What/How" framing (not accusatory "Why"). Questions should be
 - "You mentioned X, Y, and Z. Which aspect is most critical to get right first?"
 - "Should this include [potential scope item] or is that out of scope?"
 - "Is this for [user type A] or [user type B]?"
+- "How should [component] handle [specific error case]?"
+- "What's the expected behavior when [edge case] happens?"
+- "Would you prefer [approach A] (faster) or [approach B] (more maintainable)?"
+- "Should [feature] provide visual feedback during [async operation]?"
 
 **Bad questions** (generic):
 - "What are your requirements?" (too vague)
 - "Why do you want this?" (accusatory framing)
 - "Can you describe the feature?" (already have description)
 
-**Max 3-4 questions** - clarify, don't interrogate.
+**FORBIDDEN questions** (NEVER ask these):
+- "What's the priority of this task?"
+- "When should this be completed?"
+- "What order should we tackle these in?"
+- "What's the deadline?"
+- "Should we do this before or after [other task]?"
+
+**Rationale**: APEX handles task ordering automatically via dependency analysis. Project management questions are irrelevant and waste the user's time.
+
+**Continuation loop**:
+1. Ask 2-3 contextual questions
+2. Wait for user responses
+3. If user signals completion → proceed to Step 3d
+4. If more clarity needed → ask 2-3 more questions and repeat
 
 ### 3d. SYNTHESIZE & CONFIRM (only if `--brainstorm` flag)
 
@@ -227,12 +247,12 @@ Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line U
 
 **Step 5a**: Create the folder
 ```bash
-mkdir -p .claude/tasks/NN-task-name
+mkdir -p $TASKS_DIR/NN-task-name
 ```
 (Replace `NN-task-name` with the actual folder name from step 2)
 
 **Step 5b**: Use the **Write tool** to create `seed.md`
-- Path: `.claude/tasks/NN-task-name/seed.md`
+- Path: `$TASKS_DIR/NN-task-name/seed.md`
 - Content: The generated seed from step 4
 
 **Step 5c**: Copy next command to clipboard
@@ -248,7 +268,7 @@ Display APEX-style output:
 ══════════════════════════════════════════════════
 ✓ SEED CREATED
 ══════════════════════════════════════════════════
-📁 Created: .claude/tasks/84-optimize-ai-flow/seed.md
+📁 Created: $TASKS_DIR/84-optimize-ai-flow/seed.md
 
 ## Next step (copied to clipboard)
 

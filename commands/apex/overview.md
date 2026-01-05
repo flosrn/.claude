@@ -14,7 +14,7 @@
 | `/apex:next` | Run next pending task | - |
 | `/apex:status` | Show progress tree | - |
 | `/apex:handoff` | Transfer context to new workflow | `--from`, `--edit` |
-| `/apex:5-demo` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
+| `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 
 ---
 
@@ -300,7 +300,7 @@ Next: /apex:3-execute 08-auth-feature 3
 
 ---
 
-### `/apex:5-demo`
+### `/apex:5-browser-test`
 
 **Purpose**: Browser testing with GIF recording
 
@@ -319,8 +319,8 @@ Next: /apex:3-execute 08-auth-feature 3
 
 **Example**:
 ```bash
-/apex:5-demo 08-auth-feature
-/apex:5-demo 08-auth-feature --url=http://localhost:3000/login
+/apex:5-browser-test 08-auth-feature
+/apex:5-browser-test 08-auth-feature --url=http://localhost:3000/login
 ```
 
 ---
@@ -473,12 +473,13 @@ Suggested enhancements from audit:
 
 ## Related Documentation
 
+- [CLAUDE.md](./CLAUDE.md) - Quick reference guide
 - [1-analyze](./1-analyze.md) - Analysis phase details
 - [2-plan](./2-plan.md) - Planning phase details
 - [3-execute](./3-execute.md) - Execution phase details
 - [4-examine](./4-examine.md) - Validation phase details
 - [tasks](./tasks.md) - Task division details
-- [5-demo](./5-demo.md) - Browser testing with GIF
+- [5-browser-test](./5-browser-test.md) - Browser testing with GIF
 - [handoff](./handoff.md) - Context transfer
 - [next](./next.md) - Auto-execute next task
 - [status](./status.md) - Progress display

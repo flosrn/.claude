@@ -32,21 +32,10 @@ Fast, blocking checks - build, lint, typecheck. Runs in background by default.
 
 ### Workflow
 
-1. **DETECT ENVIRONMENT**: Find paths and package manager
+1. **DETECT ENVIRONMENT**: Find task paths
    ```bash
-   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
-   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
-   echo "TASKS_DIR=$TASKS_DIR"
-   # Check package manager (use [ -f ] for file existence checks)
-   [ -f pnpm-lock.yaml ] && echo "PM=pnpm"
-   [ -f yarn.lock ] && echo "PM=yarn"
-   [ -f bun.lockb ] && echo "PM=bun"
-   [ -f package-lock.json ] && echo "PM=npm"
+   TASKS_DIR="./.claude/tasks"
    ```
-   - Use `tasks` if running from `~/.claude` directory
-   - Use `.claude/tasks` for project directories
-   - **Remember the TASKS_DIR** value for all subsequent commands!
-   - Detect PM from lock file present
 
 2. **VALIDATE INPUT**: Check task folder context (if provided)
    - If `<task-folder-path>` argument provided:
@@ -67,9 +56,9 @@ Fast, blocking checks - build, lint, typecheck. Runs in background by default.
    Launch ALL validation commands in background with `run_in_background: true`:
 
    ```
-   Bash(command="$PM run build 2>&1", run_in_background=true)
-   Bash(command="$PM run typecheck 2>&1", run_in_background=true)
-   Bash(command="$PM run lint 2>&1", run_in_background=true)
+   Bash(command="pnpm run build 2>&1", run_in_background=true)
+   Bash(command="pnpm run typecheck 2>&1", run_in_background=true)
+   Bash(command="pnpm run lint 2>&1", run_in_background=true)
    ```
 
    **Immediate Response** (while background tasks run):
@@ -275,13 +264,13 @@ Deep analysis of implementation quality - coherence, edge cases, patterns. Only 
 
 8. **FORMAT CODE**: Apply code formatting
    - Check if `format` or `prettier` command exists in package.json
-   - Run `$PM run format` or `$PM run prettier` (or discovered equivalent)
+   - Run `pnpm run format` or `pnpm run prettier` (or discovered equivalent)
    - **If no format command**: Skip this step
 
 9. **VERIFICATION**: Re-run all checks to confirm fixes
    - Re-run build command
-   - Re-run `$PM run lint`
-   - Re-run `$PM run typecheck`
+   - Re-run `pnpm run lint`
+   - Re-run `pnpm run typecheck`
    - **CAPTURE RESULTS**: Note pass/fail status for each check
    - **If errors remain**: Report which files still have issues
 
@@ -355,7 +344,7 @@ Deep analysis of implementation quality - coherence, edge cases, patterns. Only 
     - **If Phase 1 failures remain**: List remaining technical issues
     - **If Phase 2 issues found**: List recommended improvements
     - **If task folder provided**: Confirm implementation.md was updated
-    - **Next step**: Suggest `/apex:5-demo` for browser testing or deployment
+    - **Next step**: Suggest `/apex:5-browser-test` for browser testing or deployment
 
 ## Area Creation Rules
 

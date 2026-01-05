@@ -14,15 +14,10 @@ Parse the argument for flags:
 
 ## Workflow
 
-1. **DETECT TASKS DIRECTORY**: Find correct path
+1. **SET TASKS DIRECTORY**: Standard path
    ```bash
-   # Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
-   TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
-   echo "TASKS_DIR=$TASKS_DIR"
+   TASKS_DIR="./.claude/tasks"
    ```
-   - Use `tasks` if running from `~/.claude` directory
-   - Use `.claude/tasks` for project directories
-   - **Remember the TASKS_DIR** value for all subsequent commands!
 
 2. **VALIDATE INPUT**: Verify task folder exists
    - Check that `$TASKS_DIR/<task-folder>/` exists

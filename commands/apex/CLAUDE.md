@@ -2,6 +2,8 @@
 
 Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute → e**X**amine
 
+> See [overview.md](./overview.md) for detailed phase walkthroughs and comprehensive examples.
+
 ## Quick Reference
 
 | Command | Purpose | Key Flags |
@@ -11,7 +13,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
 | `/apex:3-execute` | Implement changes | `--parallel`, `--dry-run`, `--quick`, `--force-sonnet`, `--force-opus` |
 | `/apex:4-examine` | Two-phase validation (technical + logical) | `--foreground`, `--global`, `--skip-patterns` |
-| `/apex:5-demo` | Browser testing with GIF | `--url=`, `--no-gif` |
+| `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif` |
 | `/apex:next` | Run next pending task | - |
 | `/apex:status` | Show progress tree | - |
 | `/apex:handoff` | Transfer context to new workflow | `--vision`, `--brainstorm` |

@@ -22,14 +22,11 @@ Parse the argument for:
 
 If the argument is an **existing task folder** (e.g., `84-optimize-flow`):
 
-**Step 0a**: Detect tasks directory and check for seed.md in ONE command
+**Step 0a**: Check for seed.md
 ```bash
-# Auto-detect TASKS_DIR: use 'tasks' if in ~/.claude, else '.claude/tasks'
-TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
-/bin/ls "$TASKS_DIR/<provided-folder>/seed.md" 2>/dev/null && echo "SEED FOUND in $TASKS_DIR" || echo "NO SEED (checked $TASKS_DIR)"
+TASKS_DIR="./.claude/tasks" && \
+/bin/ls "$TASKS_DIR/<provided-folder>/seed.md" 2>/dev/null && echo "SEED FOUND" || echo "NO SEED"
 ```
-
-**Remember the TASKS_DIR** value from output for all subsequent commands!
 
 **If `seed.md` exists:**
 1. **Read it** - This contains context from a previous session via `/apex:handoff`
@@ -57,11 +54,9 @@ TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo
 
 Create organized workspace in **separate steps**:
 
-**Step 1a**: Detect TASKS_DIR and find next folder number
+**Step 1a**: Find next folder number
 ```bash
-# Auto-detect TASKS_DIR and find last folder number
-TASKS_DIR=$(if [ -d "tasks" ] && [ "$(basename $(pwd))" = ".claude" ]; then echo "tasks"; else echo ".claude/tasks"; fi) && \
-echo "TASKS_DIR=$TASKS_DIR" && \
+TASKS_DIR="./.claude/tasks" && \
 /bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
 ```
 

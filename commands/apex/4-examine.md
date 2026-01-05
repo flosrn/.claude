@@ -41,12 +41,12 @@ Fast, blocking checks - build, lint, typecheck. Runs in background by default.
    /bin/ls -la "$TASK_PATH/"
    ```
 
-   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/implementation.md`
+   **Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/implementation.md`
 
 2. **VALIDATE INPUT**: Check task folder context (if provided)
    - If `<task-folder-path>` argument provided:
      - Check output shows folder exists
-     - Read `$TASK_PATH/implementation.md` to understand what was implemented
+     - Read `./.claude/tasks/<folder>/implementation.md` to understand what was implemented
      - This context helps target validation efforts
    - If no argument: Run global validation on current working directory
 
@@ -155,9 +155,9 @@ Deep analysis of implementation quality - coherence, edge cases, patterns. Only 
 ### Workflow
 
 1. **GATHER CONTEXT**: Load task information
-   - Read `$TASKS_DIR/<task-folder>/analyze.md` for original requirements
-   - Read `$TASKS_DIR/<task-folder>/implementation.md` for what was built
-   - Read `$TASKS_DIR/<task-folder>/plan.md` for intended design (if exists)
+   - Read `./.claude/tasks/<task-folder>/analyze.md` for original requirements
+   - Read `./.claude/tasks/<task-folder>/implementation.md` for what was built
+   - Read `./.claude/tasks/<task-folder>/plan.md` for intended design (if exists)
    - Identify files in scope (based on scope mode)
 
 2. **READ FILES**: Load relevant source code
@@ -284,7 +284,7 @@ Deep analysis of implementation quality - coherence, edge cases, patterns. Only 
 
     **CRITICAL**: Only if `<task-folder-path>` was provided
 
-    Check if `$TASKS_DIR/<task-folder>/implementation.md` exists:
+    Check if `./.claude/tasks/<task-folder>/implementation.md` exists:
     - If **EXISTS**: Update or append validation results
     - If **NOT EXISTS**: Skip this step
 

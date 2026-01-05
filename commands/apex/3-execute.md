@@ -18,14 +18,14 @@ You are an implementation specialist. Execute plans precisely while maintaining 
    /bin/ls -la "$TASK_PATH/"
    ```
 
-   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/analyze.md`
+   **Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/analyze.md`
 
 2. **VALIDATE INPUT**: Verify task folder is ready
    - Check output shows `analyze.md` exists
    - If missing, instruct user to run `/apex:1-analyze` first
 
 3. **DETECT EXECUTION MODE**: Check for individual task files and parallel execution
-   - Check if `$TASKS_DIR/<task-folder>/tasks/` directory exists
+   - Check if `./.claude/tasks/<task-folder>/tasks/` directory exists
    - If `tasks/` exists AND contains `task-XX.md` files → **USE TASK-BY-TASK MODE**
    - If `tasks/` does NOT exist → **USE PLAN MODE** (fallback to plan.md)
 
@@ -51,21 +51,21 @@ You are an implementation specialist. Execute plans precisely while maintaining 
 3. **LOAD CONTEXT**: Read planning artifacts based on mode
 
    ### Task-by-Task Mode (PREFERRED)
-   - Read `$TASKS_DIR/<task-folder>/analyze.md` for overall context
-   - Read `$TASKS_DIR/<task-folder>/tasks/index.md` to understand:
+   - Read `./.claude/tasks/<task-folder>/analyze.md` for overall context
+   - Read `./.claude/tasks/<task-folder>/tasks/index.md` to understand:
      - Complete task list with dependencies
      - Execution order (which tasks can be parallel)
      - Overall progress tracking
 
    #### Sequential Mode (default)
    - **IF specific task number provided** (e.g., `/apex:3-execute feature-name 3`):
-     - Read ONLY `$TASKS_DIR/<task-folder>/tasks/task-03.md`
+     - Read ONLY `./.claude/tasks/<task-folder>/tasks/task-03.md`
      - Focus exclusively on that single task
    - **IF no task number provided** (find next incomplete task):
      ```bash
      # Note: Use /usr/bin/grep to bypass rg alias, sed for portable extraction
      # Note: Quotes around $() are required for zsh compatibility with pipes
-     NEXT_TASK="$(/usr/bin/grep "^- \[ \]" "$TASKS_DIR/$FOLDER/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/')" && \
+     NEXT_TASK="$(/usr/bin/grep "^- \[ \]" "./.claude/tasks/$FOLDER/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/')" && \
      echo "Next incomplete task: $NEXT_TASK"
      ```
      - Read that specific task file (e.g., `task-$NEXT_TASK.md`)
@@ -102,8 +102,8 @@ You are an implementation specialist. Execute plans precisely while maintaining 
    - → **GO TO STEP 3B: PARALLEL EXECUTION**
 
    ### Plan Mode (FALLBACK)
-   - Read `$TASKS_DIR/<task-folder>/analyze.md` for context
-   - Read `$TASKS_DIR/<task-folder>/plan.md` for implementation steps
+   - Read `./.claude/tasks/<task-folder>/analyze.md` for context
+   - Read `./.claude/tasks/<task-folder>/plan.md` for implementation steps
    - Note dependencies and execution order
 
 ---
@@ -382,7 +382,7 @@ Lint:      ✓ Pass (or ✗ N warnings/errors)
 10. **UPDATE TASK STATUS**: Mark completion in index.md
 
     ### Task-by-Task Mode
-    - Edit `$TASKS_DIR/<task-folder>/tasks/index.md`
+    - Edit `./.claude/tasks/<task-folder>/tasks/index.md`
     - Change the completed task from `- [ ]` to `- [x]`
     - This tracks progress across sessions
 
@@ -397,7 +397,7 @@ Lint:      ✓ Pass (or ✗ N warnings/errors)
 
     ### If `implementation.md` does NOT exist (CREATE)
 
-    Create `$TASKS_DIR/<task-folder>/implementation.md` with this template:
+    Create `./.claude/tasks/<task-folder>/implementation.md` with this template:
 
     ```markdown
     # Implementation: [Feature Name]

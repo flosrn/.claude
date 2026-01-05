@@ -24,15 +24,14 @@ If no task description provided, use `AskUserQuestion` to gather it.
 ### 1. DETECT CONTEXT SOURCE
 
 ```bash
-TASKS_DIR="./.claude/tasks" && \
-mkdir -p "$TASKS_DIR" && \
-RECENT_FOLDER="$(/bin/ls -1t "$TASKS_DIR" 2>/dev/null | head -1)" && \
-TASK_PATH="$TASKS_DIR/$RECENT_FOLDER" && \
+mkdir -p "./.claude/tasks" && \
+RECENT_FOLDER="$(/bin/ls -1t "./.claude/tasks" 2>/dev/null | head -1)" && \
+TASK_PATH="./.claude/tasks/$RECENT_FOLDER" && \
 echo "TASK_PATH=$TASK_PATH" && \
 /bin/ls -la "$TASK_PATH/"
 ```
 
-**Then read files using the printed TASK_PATH**: `Read $TASK_PATH/analyze.md`
+**Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/analyze.md`
 
 **Read available artifacts from source:**
 - `analyze.md` - Task analysis and discoveries
@@ -46,8 +45,7 @@ echo "TASK_PATH=$TASK_PATH" && \
 # Find highest existing number (handles NN-name format)
 # Note: Use /bin/ls to bypass eza alias, /usr/bin/grep to bypass rg alias
 # Note: Quotes around $() are required for zsh compatibility with pipes
-TASKS_DIR="./.claude/tasks" && \
-HIGHEST="$(/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)" && \
+HIGHEST="$(/bin/ls -1 "./.claude/tasks" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)" && \
 NEXT="$(expr "$HIGHEST" + 1)" && \
 echo "Next number: $NEXT"
 ```
@@ -246,21 +244,21 @@ Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line U
 
 | Artifact | Path | Quand lire |
 |----------|------|------------|
-| Analyse initiale | `$TASKS_DIR/NN-name/analyze.md` | Pour comprendre le contexte complet |
-| Plan détaillé | `$TASKS_DIR/NN-name/plan.md` | Pour voir la stratégie d'implémentation |
-| Implémentation | `$TASKS_DIR/NN-name/implementation.md` | Pour les décisions techniques passées |
+| Analyse initiale | `./.claude/tasks/NN-name/analyze.md` | Pour comprendre le contexte complet |
+| Plan détaillé | `./.claude/tasks/NN-name/plan.md` | Pour voir la stratégie d'implémentation |
+| Implémentation | `./.claude/tasks/NN-name/implementation.md` | Pour les décisions techniques passées |
 ```
 
 ### 5. CREATE TASK FOLDER AND SAVE SEED
 
 **Step 5a**: Create the folder
 ```bash
-mkdir -p $TASKS_DIR/NN-task-name
+mkdir -p ./.claude/tasks/NN-task-name
 ```
 (Replace `NN-task-name` with the actual folder name from step 2)
 
 **Step 5b**: Use the **Write tool** to create `seed.md`
-- Path: `$TASKS_DIR/NN-task-name/seed.md`
+- Path: `./.claude/tasks/NN-task-name/seed.md`
 - Content: The generated seed from step 4
 
 **Step 5c**: Copy next command to clipboard
@@ -276,7 +274,7 @@ Display APEX-style output:
 ══════════════════════════════════════════════════
 ✓ SEED CREATED
 ══════════════════════════════════════════════════
-📁 Created: $TASKS_DIR/84-optimize-ai-flow/seed.md
+📁 Created: ./.claude/tasks/84-optimize-ai-flow/seed.md
 
 ## Next step (copied to clipboard)
 

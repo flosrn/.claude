@@ -11,16 +11,15 @@ You are an APEX status reporter. Display a clear overview of task progress and s
 
 1. **DETECT ENVIRONMENT**: Get the exact path for file reads
    ```bash
-   TASKS_DIR="./.claude/tasks" && \
-   mkdir -p "$TASKS_DIR" && \
+   mkdir -p "./.claude/tasks" && \
    # If argument provided: use it, otherwise find most recent folder
-   FOLDER="${1:-$(/bin/ls -1t "$TASKS_DIR" 2>/dev/null | head -1)}" && \
-   TASK_PATH="$TASKS_DIR/$FOLDER" && \
+   FOLDER="${1:-$(/bin/ls -1t "./.claude/tasks" 2>/dev/null | head -1)}" && \
+   TASK_PATH="./.claude/tasks/$FOLDER" && \
    echo "TASK_PATH=$TASK_PATH" && \
    /bin/ls -la "$TASK_PATH/"
    ```
 
-   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/analyze.md`
+   **Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/analyze.md`
 
 2. **GATHER STATUS**: Check existence and state of all artifacts
    - Check for `analyze.md` → exists? extract task description?

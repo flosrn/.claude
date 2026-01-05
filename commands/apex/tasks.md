@@ -23,15 +23,15 @@ Parse the argument for flags:
    /bin/ls -la "$TASK_PATH/"
    ```
 
-   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/plan.md`
+   **Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/plan.md`
 
 2. **VALIDATE INPUT**: Verify task folder is ready
    - Check output shows `plan.md` exists
    - If missing, instruct user to run `/apex:2-plan` first
-   - **YOLO MODE**: If `--yolo` flag, run `touch $TASK_PATH/.yolo`
+   - **YOLO MODE**: If `--yolo` flag, run `touch ./.claude/tasks/<folder>/.yolo`
 
 3. **READ PLAN**: Load implementation strategy
-   - Read `$TASK_PATH/plan.md` completely
+   - Read `./.claude/tasks/<folder>/plan.md` completely
    - Identify all file changes and major implementation steps
    - Look for natural boundaries between tasks
 
@@ -51,7 +51,7 @@ Parse the argument for flags:
    - **NO CONCRETE STEPS**: Tasks describe WHAT and WHY, not HOW
 
 5. **CREATE TASK FILES**: Write individual task files
-   - Create `$TASKS_DIR/<task-folder>/tasks/` subdirectory
+   - Create `./.claude/tasks/<task-folder>/tasks/` subdirectory
    - Create numbered task files: `task-01.md`, `task-02.md`, etc.
    - **CRITICAL**: Order tasks by dependencies (dependent tasks come after their prerequisites)
    - **Structure for each task file**:
@@ -79,7 +79,7 @@ Parse the argument for flags:
      ```
 
 6. **CREATE INDEX**: Generate tasks overview
-   - Create `$TASKS_DIR/<task-folder>/tasks/index.md`
+   - Create `./.claude/tasks/<task-folder>/tasks/index.md`
    - List all tasks with status tracking
    - **CRITICAL**: Include explicit execution strategy with parallel notation
    - **Structure**:

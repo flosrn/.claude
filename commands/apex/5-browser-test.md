@@ -18,11 +18,10 @@ Parse the argument for flags:
 
 1. **SET TASKS DIRECTORY**: Standard path
    ```bash
-   TASKS_DIR="./.claude/tasks"
    ```
 
 2. **VALIDATE INPUT**: Check task folder exists
-   - Verify `$TASKS_DIR/<task-folder>/` exists
+   - Verify `./.claude/tasks/<task-folder>/` exists
    - Read `analyze.md` to understand what was implemented
    - Read `implementation.md` to see current status and changes
    - **If missing**: Ask user to specify task folder
@@ -42,7 +41,7 @@ Parse the argument for flags:
    - Launch `explore-codebase` agent to analyze implementation:
      ```
      Task(subagent_type="explore-codebase", prompt="
-       Analyze the implementation in $TASKS_DIR/<task-folder>/ and identify
+       Analyze the implementation in ./.claude/tasks/<task-folder>/ and identify
        all testable user flows. For each flow, provide:
        1. Flow name (e.g., 'Login form submission')
        2. Starting URL or component
@@ -256,8 +255,8 @@ Parse the argument for flags:
 
     ### Step 11a: Create folder structure
     ```bash
-    mkdir -p $TASKS_DIR/<task-folder>/recordings/success
-    mkdir -p $TASKS_DIR/<task-folder>/recordings/errors
+    mkdir -p ./.claude/tasks/<task-folder>/recordings/success
+    mkdir -p ./.claude/tasks/<task-folder>/recordings/errors
     ```
 
     ### Step 11b: Move GIF from Downloads
@@ -266,15 +265,15 @@ Parse the argument for flags:
     GIF_NAME="<feature-name>-test.gif"
 
     # If test passed:
-    mv ~/Downloads/$GIF_NAME $TASKS_DIR/<task-folder>/recordings/success/001-<feature>.gif
+    mv ~/Downloads/$GIF_NAME ./.claude/tasks/<task-folder>/recordings/success/001-<feature>.gif
 
     # If errors found:
-    mv ~/Downloads/$GIF_NAME $TASKS_DIR/<task-folder>/recordings/errors/001-<bug>.gif
+    mv ~/Downloads/$GIF_NAME ./.claude/tasks/<task-folder>/recordings/errors/001-<bug>.gif
     ```
 
     ### Step 11c: Verify move succeeded
     ```bash
-    /bin/ls -la $TASKS_DIR/<task-folder>/recordings/
+    /bin/ls -la ./.claude/tasks/<task-folder>/recordings/
     ```
 
     **Naming convention:**

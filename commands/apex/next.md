@@ -11,17 +11,16 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
 
 1. **DETECT ENVIRONMENT**: Get the exact path for file reads
    ```bash
-   TASKS_DIR="./.claude/tasks" && \
-   mkdir -p "$TASKS_DIR" && \
+   mkdir -p "./.claude/tasks" && \
    # If argument provided: FOLDER="<provided-path>"
    # If no argument: find latest folder by number (sort by leading digits)
-   FOLDER="$(/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)" && \
-   TASK_PATH="$TASKS_DIR/$FOLDER" && \
+   FOLDER="$(/bin/ls -1 "./.claude/tasks" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)" && \
+   TASK_PATH="./.claude/tasks/$FOLDER" && \
    echo "TASK_PATH=$TASK_PATH" && \
    /bin/ls -la "$TASK_PATH/"
    ```
 
-   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/tasks/index.md`
+   **Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/tasks/index.md`
 
 2. **FIND NEXT TASK**: Get first incomplete task + progress (use TASK_PATH from step 1)
    ```bash
@@ -55,7 +54,7 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
 
 ### No tasks folder
 ```
-No tasks/ directory found in $TASKS_DIR/<folder>/
+No tasks/ directory found in ./.claude/tasks/<folder>/
 Run `/apex:tasks <folder>` to generate individual tasks first.
 ```
 
@@ -68,7 +67,7 @@ Run `/apex:4-examine <folder>` for final validation.
 
 ### No task folders found
 ```
-No task folders found in $TASKS_DIR/
+No task folders found in ./.claude/tasks/
 
 Start a new task with `/apex:1-analyze "your task description"`
 ```

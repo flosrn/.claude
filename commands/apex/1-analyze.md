@@ -62,9 +62,8 @@ Create organized workspace in **separate steps**:
 
 **Step 1a**: Find next folder number
 ```bash
-TASKS_DIR="./.claude/tasks" && \
-mkdir -p "$TASKS_DIR" && \
-/bin/ls -1 "$TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
+mkdir -p "./.claude/tasks" && \
+/bin/ls -1 "./.claude/tasks" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
 ```
 
 **Step 1b**: Based on output, calculate NEXT number:
@@ -84,7 +83,7 @@ mkdir -p ./.claude/tasks/<NN>-<KEBAB-NAME>
 
 **YOLO MODE**: If `--yolo` flag, also run:
 ```bash
-touch <TASKS_DIR>/<NN>-<KEBAB-NAME>/.yolo
+touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
 ```
 
 2. **ULTRA THINK**: Plan analysis strategy
@@ -181,7 +180,7 @@ touch <TASKS_DIR>/<NN>-<KEBAB-NAME>/.yolo
    - Include user clarifications gathered during agent execution
 
 6. **SAVE ANALYSIS**: Write to `analyze.md`
-   - Save to `$TASKS_DIR/nn-task-name/analyze.md`
+   - Save to `./.claude/tasks/nn-task-name/analyze.md`
    - **Note**: This file is consumed via **lazy loading** from seed.md
    - Keep "Quick Summary (TL;DR)" at TOP for optimal LLM consumption
    - **Structure**:

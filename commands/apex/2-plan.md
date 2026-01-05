@@ -23,15 +23,15 @@ Parse the argument for flags:
    /bin/ls -la "$TASK_PATH/"
    ```
 
-   **Then read files using the printed TASK_PATH**: `Read $TASK_PATH/analyze.md`
+   **Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/analyze.md`
 
 2. **VALIDATE INPUT**: Verify task folder exists
    - Check output shows `analyze.md` exists
    - If missing, instruct user to run `/apex:1-analyze` first
-   - **YOLO MODE**: If `--yolo` flag, run `touch $TASK_PATH/.yolo`
+   - **YOLO MODE**: If `--yolo` flag, run `touch ./.claude/tasks/<folder>/.yolo`
 
 3. **READ ANALYSIS**: Load all context
-   - Read `$TASK_PATH/analyze.md` completely
+   - Read `./.claude/tasks/<folder>/analyze.md` completely
    - Review all codebase findings
    - Note patterns and conventions discovered
    - Identify files to modify and examples to follow
@@ -64,7 +64,7 @@ Parse the argument for flags:
      - Migration steps if needed
 
 6. **SAVE PLAN**: Write to `plan.md`
-   - Save to `$TASKS_DIR/<task-folder>/plan.md`
+   - Save to `./.claude/tasks/<task-folder>/plan.md`
    - **Structure**:
      ```markdown
      # Implementation Plan: [Task Name]

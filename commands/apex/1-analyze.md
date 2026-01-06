@@ -20,7 +20,57 @@ Parse the argument for:
 
 ## Workflow
 
-### 0. CHECK FOR SEED CONTEXT (if folder provided)
+### 0. CLARITY CHECK (before everything)
+
+**Analyze `$ARGUMENTS` for vagueness indicators:**
+
+Vague patterns to detect:
+- **Vague adjectives**: "améliorer", "optimiser", "mieux", "better", "improve", "enhance"
+- **Missing specifics**: No file paths, no concrete outcome mentioned
+- **Exploratory language**: "explorer", "réfléchir", "brainstorm", "explore", "investigate"
+- **Question framing**: "comment faire", "quelle approche", "how to", "what's the best way"
+
+**If 2+ vagueness indicators detected:**
+
+Use `AskUserQuestion`:
+- **Question**: "Cette tâche semble exploratoire. Veux-tu clarifier l'approche d'abord ?"
+- **Header**: "Clarify?"
+- **Options**:
+  1. **Label**: "Lancer /apex:0-brainstorm"
+     **Description**: "Phase d'exploration interactive avant l'analyse"
+  2. **Label**: "Q&A rapide (2-3 questions)"
+     **Description**: "Quelques questions de clarification inline"
+  3. **Label**: "Continuer directement"
+     **Description**: "Passer à l'analyse sans clarification"
+
+**Based on user's choice:**
+
+- **Option 1 (Brainstorm)**: Display:
+  ```
+  ══════════════════════════════════════════════════
+  💡 Pour explorer cette tâche en profondeur, lance :
+
+     /apex:0-brainstorm $ARGUMENTS
+
+  Cela générera un seed.md que tu pourras ensuite
+  analyser avec /apex:1-analyze <folder>
+  ══════════════════════════════════════════════════
+  ```
+  Then **STOP** - do not continue to Step 0a.
+
+- **Option 2 (Q&A rapide)**: Ask 2-3 focused clarifying questions using `AskUserQuestion`:
+  - Questions should target the vague aspects detected
+  - Adapt to context (tech vs product vs problem-solving)
+  - After receiving answers, store them and continue to Step 0a
+  - Include answers in the "User Clarifications" section of analyze.md
+
+- **Option 3 (Continue)**: Skip directly to Step 0a
+
+**If task is CLEAR (fewer than 2 indicators):** Skip this step, proceed to Step 0a.
+
+---
+
+### 0a. CHECK FOR SEED CONTEXT (if folder provided)
 
 If the argument is an **existing task folder** (e.g., `84-optimize-flow`):
 
@@ -69,12 +119,18 @@ mkdir -p "./.claude/tasks" && \
 - If last folder is `06-something` → NEXT is `07`
 - If empty → NEXT is `01`
 
-**Step 1c**: Create the folder
+**Step 1c**: Create folder AND capture absolute path
 ```bash
-mkdir -p ./.claude/tasks/<NN>-<KEBAB-NAME>
+TASK_FOLDER="./.claude/tasks/<NN>-<KEBAB-NAME>" && \
+mkdir -p "$TASK_FOLDER" && \
+TASK_PATH="$(cd "$TASK_FOLDER" && pwd)" && \
+echo "═══════════════════════════════════════════════" && \
+echo "📁 TASK FOLDER: $TASK_PATH" && \
+echo "📝 WRITE TO:    $TASK_PATH/analyze.md" && \
+echo "═══════════════════════════════════════════════"
 ```
 
-**⚠️ CRITICAL PATH RULE**: ALL subsequent file operations use `./.claude/tasks/<NN>-<KEBAB-NAME>/`
+**⚠️ CRITICAL PATH RULE**: Use the **EXACT path** from the output above (starts with `/Users/...`) for ALL file operations. Do NOT use `tasks/...` - always use the FULL absolute path displayed.
 
 **KEBAB-CASE RULE**: Convert task description to lowercase, replace spaces/special chars with `-`
 - "Add user authentication" → `add-user-authentication`
@@ -179,7 +235,8 @@ touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
    - Include user clarifications gathered during agent execution
 
 6. **SAVE ANALYSIS**: Write to `analyze.md`
-   - Save to `./.claude/tasks/nn-task-name/analyze.md`
+   - **⚠️ Use the EXACT path from Step 1c output** (starts with `/Users/...`)
+   - Path format: `<TASK_PATH>/analyze.md` where TASK_PATH was displayed earlier
    - **Note**: This file is consumed via **lazy loading** from seed.md
    - Keep "Quick Summary (TL;DR)" at TOP for optimal LLM consumption
    - **Structure**:

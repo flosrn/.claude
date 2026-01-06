@@ -251,15 +251,21 @@ Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line U
 
 ### 5. CREATE TASK FOLDER AND SAVE SEED
 
-**Step 5a**: Create the folder
+**Step 5a**: Create folder AND capture absolute path
 ```bash
-mkdir -p ./.claude/tasks/NN-task-name
+TASK_FOLDER="./.claude/tasks/NN-task-name" && \
+mkdir -p "$TASK_FOLDER" && \
+SEED_PATH="$(cd "$TASK_FOLDER" && pwd)/seed.md" && \
+echo "═══════════════════════════════════════════════" && \
+echo "📝 WRITE SEED TO: $SEED_PATH" && \
+echo "═══════════════════════════════════════════════"
 ```
 (Replace `NN-task-name` with the actual folder name from step 2)
 
 **Step 5b**: Use the **Write tool** to create `seed.md`
-- Path: `./.claude/tasks/NN-task-name/seed.md`
-- Content: The generated seed from step 4
+
+**⚠️ CRITICAL**: Use the **EXACT path** from the output above (starts with `/Users/...`).
+Do NOT use `tasks/...` or any relative path - use the FULL absolute path displayed.
 
 **Step 5c**: Copy next command to clipboard
 ```bash

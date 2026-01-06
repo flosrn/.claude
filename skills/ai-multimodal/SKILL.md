@@ -70,6 +70,13 @@ Process audio, images, videos, documents, and generate images using Google Gemin
 
 ## Model Selection Guide
 
+### Gemini 3.0 Series (Latest)
+- **gemini-3-pro-image-preview**: Best for image generation with text labels
+  - Superior text rendering in generated images
+  - Ideal for: architecture diagrams, infographics, technical illustrations
+  - Supports: 1:1, 16:9, 21:9, 3:4, 4:3, 9:16 aspect ratios
+  - Max prompt: 480 tokens
+
 ### Gemini 2.5 Series (Recommended)
 - **gemini-2.5-pro**: Highest quality, all features, 1M-2M context
 - **gemini-2.5-flash**: Best balance, all features, 1M-2M context
@@ -115,16 +122,19 @@ export VERTEX_PROJECT_ID=your-gcp-project-id
 export VERTEX_LOCATION=us-central1  # Optional
 ```
 
-**Install SDK**:
+**Install SDK** (auto-managed via venv):
 ```bash
-pip install google-genai python-dotenv pillow
+# The wrapper script auto-creates and manages a virtual environment
+# No manual installation needed - just run the scripts via run.sh
 ```
 
 ### Common Patterns
 
+**Use the wrapper script** `scripts/run.sh` which auto-manages the venv:
+
 **Transcribe Audio**:
 ```bash
-python scripts/gemini_batch_process.py \
+./scripts/run.sh gemini_batch_process.py \
   --files audio.mp3 \
   --task transcribe \
   --model gemini-2.5-flash
@@ -132,7 +142,7 @@ python scripts/gemini_batch_process.py \
 
 **Analyze Image**:
 ```bash
-python scripts/gemini_batch_process.py \
+./scripts/run.sh gemini_batch_process.py \
   --files image.jpg \
   --task analyze \
   --prompt "Describe this image" \
@@ -142,7 +152,7 @@ python scripts/gemini_batch_process.py \
 
 **Process Video**:
 ```bash
-python scripts/gemini_batch_process.py \
+./scripts/run.sh gemini_batch_process.py \
   --files video.mp4 \
   --task analyze \
   --prompt "Summarize key points with timestamps" \
@@ -152,7 +162,7 @@ python scripts/gemini_batch_process.py \
 
 **Extract from PDF**:
 ```bash
-python scripts/gemini_batch_process.py \
+./scripts/run.sh gemini_batch_process.py \
   --files document.pdf \
   --task extract \
   --prompt "Extract table data as JSON" \
@@ -162,13 +172,32 @@ python scripts/gemini_batch_process.py \
 
 **Generate Image**:
 ```bash
-python scripts/gemini_batch_process.py \
+./scripts/run.sh gemini_batch_process.py \
   --task generate \
   --prompt "A futuristic city at sunset" \
   --output docs/assets/<output-file-name> \
   --model gemini-2.5-flash-image \
   --aspect-ratio 16:9
 ```
+
+**Generate Architecture Diagram** (best with `gemini-3-pro-image-preview`):
+```bash
+./scripts/run.sh gemini_batch_process.py \
+  --task generate \
+  --prompt "Create an architecture diagram showing [system name] for developers.
+
+Topic: [What to visualize]
+Layout: Isometric view with clear layers
+Visual Style: Flat vector art, modern tech aesthetic
+Format: 16:9
+Key Elements: [Component list with icons]
+Text Labels: [Exact labels to include]
+Color Coding: Blue=core, Green=data, Orange=external" \
+  --output docs/assets/architecture-diagram \
+  --model gemini-3-pro-image-preview \
+  --aspect-ratio 16:9
+```
+**Tip**: For best text label results, keep labels short (max 15 chars) and generate a legend backup.
 
 **Optimize Media**:
 ```bash

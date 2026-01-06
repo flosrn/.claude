@@ -76,9 +76,11 @@ If the argument is an **existing task folder** (e.g., `84-optimize-flow`):
 
 **Step 0a**: Check for seed.md and get ABSOLUTE path
 ```bash
-ABSOLUTE_PATH="$(pwd)/.claude/tasks/<provided-folder>" && \
-echo "📁 READ FROM: $ABSOLUTE_PATH" && \
-/bin/ls -la "$ABSOLUTE_PATH/"
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+TASK_FOLDER="$APEX_TASKS_DIR/<provided-folder>" && \
+echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
+echo "📁 READ FROM: $TASK_FOLDER" && \
+/bin/ls -la "$TASK_FOLDER/"
 ```
 
 **Step 0b**: Read seed.md using the FULL path from output (starts with /Users/...)
@@ -111,26 +113,28 @@ Create organized workspace in **separate steps**:
 
 **Step 1a**: Find next folder number
 ```bash
-mkdir -p "./.claude/tasks" && \
-/bin/ls -1 "./.claude/tasks" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+mkdir -p "$APEX_TASKS_DIR" && \
+echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
+/bin/ls -1 "$APEX_TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
 ```
 
 **Step 1b**: Based on output, calculate NEXT number:
 - If last folder is `06-something` → NEXT is `07`
 - If empty → NEXT is `01`
 
-**Step 1c**: Create folder AND capture absolute path
+**Step 1c**: Create folder AND get path for Write
 ```bash
-TASK_FOLDER="./.claude/tasks/<NN>-<KEBAB-NAME>" && \
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+TASK_FOLDER="$APEX_TASKS_DIR/<NN>-<KEBAB-NAME>" && \
 mkdir -p "$TASK_FOLDER" && \
-TASK_PATH="$(cd "$TASK_FOLDER" && pwd)" && \
 echo "═══════════════════════════════════════════════" && \
-echo "📁 TASK FOLDER: $TASK_PATH" && \
-echo "📝 WRITE TO:    $TASK_PATH/analyze.md" && \
+echo "📁 TASK FOLDER: $TASK_FOLDER" && \
+echo "📝 WRITE TO:    $TASK_FOLDER/analyze.md" && \
 echo "═══════════════════════════════════════════════"
 ```
 
-**⚠️ CRITICAL PATH RULE**: Use the **EXACT path** from the output above (starts with `/Users/...`) for ALL file operations. Do NOT use `tasks/...` - always use the FULL absolute path displayed.
+**⚠️ COPY THE EXACT PATH shown above for the Write tool.**
 
 **KEBAB-CASE RULE**: Convert task description to lowercase, replace spaces/special chars with `-`
 - "Add user authentication" → `add-user-authentication`

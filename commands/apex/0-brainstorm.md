@@ -191,21 +191,25 @@ After completing all rounds, create a seed file for APEX workflow continuation.
 
 **Step 5a-i**: Find next folder number
 ```bash
-mkdir -p "./.claude/tasks" && \
-/bin/ls -1 "./.claude/tasks" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+mkdir -p "$APEX_TASKS_DIR" && \
+echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
+/bin/ls -1 "$APEX_TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1
 ```
 
 Calculate next folder number (if last is `06-something` → next is `07`).
 
-**Step 5a-ii**: Create folder AND capture absolute path
+**Step 5a-ii**: Create folder AND get path for Write
 ```bash
-TASK_FOLDER="./.claude/tasks/<NN>-brainstorm-<topic-slug>" && \
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+TASK_FOLDER="$APEX_TASKS_DIR/<NN>-brainstorm-<topic-slug>" && \
 mkdir -p "$TASK_FOLDER" && \
-SEED_PATH="$(cd "$TASK_FOLDER" && pwd)/seed.md" && \
 echo "═══════════════════════════════════════════════" && \
-echo "📝 WRITE SEED TO: $SEED_PATH" && \
+echo "📝 WRITE SEED TO: $TASK_FOLDER/seed.md" && \
 echo "═══════════════════════════════════════════════"
 ```
+
+**⚠️ COPY THE EXACT PATH shown above for the Write tool.**
 
 ### Step 5b: Write seed.md
 

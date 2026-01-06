@@ -24,11 +24,12 @@ If no task description provided, use `AskUserQuestion` to gather it.
 ### 1. DETECT CONTEXT SOURCE
 
 ```bash
-mkdir -p "./.claude/tasks" && \
-RECENT_FOLDER="$(/bin/ls -1t "./.claude/tasks" 2>/dev/null | head -1)" && \
-ABSOLUTE_PATH="$(pwd)/.claude/tasks/$RECENT_FOLDER" && \
-echo "📁 READ FROM: $ABSOLUTE_PATH" && \
-/bin/ls -la "$ABSOLUTE_PATH/"
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+mkdir -p "$APEX_TASKS_DIR" && \
+RECENT_FOLDER="$(/bin/ls -1t "$APEX_TASKS_DIR" 2>/dev/null | head -1)" && \
+echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
+echo "📁 READ FROM: $APEX_TASKS_DIR/$RECENT_FOLDER" && \
+/bin/ls -la "$APEX_TASKS_DIR/$RECENT_FOLDER/"
 ```
 
 **⚠️ Use the FULL path from output (starts with /Users/...) for Read calls.**
@@ -42,11 +43,10 @@ echo "📁 READ FROM: $ABSOLUTE_PATH" && \
 
 **Step 2a**: Find next available number
 ```bash
-# Find highest existing number (handles NN-name format)
-# Note: Use /bin/ls to bypass eza alias, /usr/bin/grep to bypass rg alias
-# Note: Quotes around $() are required for zsh compatibility with pipes
-HIGHEST="$(/bin/ls -1 "./.claude/tasks" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)" && \
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+HIGHEST="$(/bin/ls -1 "$APEX_TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)" && \
 NEXT="$(expr "$HIGHEST" + 1)" && \
+echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
 echo "Next number: $NEXT"
 ```
 
@@ -251,21 +251,22 @@ Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line U
 
 ### 5. CREATE TASK FOLDER AND SAVE SEED
 
-**Step 5a**: Create folder AND capture absolute path
+**Step 5a**: Create folder AND get path for Write
 ```bash
-TASK_FOLDER="./.claude/tasks/NN-task-name" && \
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+TASK_FOLDER="$APEX_TASKS_DIR/NN-task-name" && \
 mkdir -p "$TASK_FOLDER" && \
-SEED_PATH="$(cd "$TASK_FOLDER" && pwd)/seed.md" && \
 echo "═══════════════════════════════════════════════" && \
-echo "📝 WRITE SEED TO: $SEED_PATH" && \
+echo "📝 WRITE SEED TO: $TASK_FOLDER/seed.md" && \
 echo "═══════════════════════════════════════════════"
 ```
 (Replace `NN-task-name` with the actual folder name from step 2)
 
+**⚠️ COPY THE EXACT PATH shown above for the Write tool.**
+
 **Step 5b**: Use the **Write tool** to create `seed.md`
 
-**⚠️ CRITICAL**: Use the **EXACT path** from the output above (starts with `/Users/...`).
-Do NOT use `tasks/...` or any relative path - use the FULL absolute path displayed.
+Use the **EXACT path** from the output above (starts with `/Users/...`).
 
 **Step 5c**: Copy next command to clipboard
 ```bash

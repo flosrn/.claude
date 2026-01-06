@@ -191,6 +191,7 @@ After completing all rounds, create a seed file for APEX workflow continuation.
 
 **Step 5a-i**: Find next folder number
 ```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
 mkdir -p "$APEX_TASKS_DIR" && \
 echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
@@ -201,6 +202,7 @@ Calculate next folder number (if last is `06-something` → next is `07`).
 
 **Step 5a-ii**: Create folder AND get path for Write
 ```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
 TASK_FOLDER="$APEX_TASKS_DIR/<NN>-brainstorm-<topic-slug>" && \
 mkdir -p "$TASK_FOLDER" && \

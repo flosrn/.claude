@@ -34,6 +34,10 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 
 **Path**: `./.claude/tasks/<folder>/`
 
+> ⚠️ **CRITICAL**: This path is INTENTIONALLY `.claude/.claude/tasks/` when working dir is `~/.claude`.
+> This is NOT a typo. The project root IS the `.claude` config folder, and tasks go in a NESTED `.claude/tasks/` subfolder.
+> **NEVER "simplify" or "correct" this path.** Always use `./.claude/tasks/` exactly as written.
+
 ## Mode Flags
 
 **YOLO Mode** (`--yolo`): Auto-continues to next phase via hooks. Creates `.yolo` marker file. Stops at execute phase for safety.

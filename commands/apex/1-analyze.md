@@ -76,6 +76,7 @@ If the argument is an **existing task folder** (e.g., `84-optimize-flow`):
 
 **Step 0a**: Check for seed.md and get ABSOLUTE path
 ```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
 TASK_FOLDER="$APEX_TASKS_DIR/<provided-folder>" && \
 echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
@@ -113,6 +114,7 @@ Create organized workspace in **separate steps**:
 
 **Step 1a**: Find next folder number
 ```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
 mkdir -p "$APEX_TASKS_DIR" && \
 echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
@@ -125,6 +127,7 @@ echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
 
 **Step 1c**: Create folder AND get path for Write
 ```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
 TASK_FOLDER="$APEX_TASKS_DIR/<NN>-<KEBAB-NAME>" && \
 mkdir -p "$TASK_FOLDER" && \

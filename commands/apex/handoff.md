@@ -24,6 +24,7 @@ If no task description provided, use `AskUserQuestion` to gather it.
 ### 1. DETECT CONTEXT SOURCE
 
 ```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
 mkdir -p "$APEX_TASKS_DIR" && \
 RECENT_FOLDER="$(/bin/ls -1t "$APEX_TASKS_DIR" 2>/dev/null | head -1)" && \
@@ -43,6 +44,7 @@ echo "📁 READ FROM: $APEX_TASKS_DIR/$RECENT_FOLDER" && \
 
 **Step 2a**: Find next available number
 ```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
 HIGHEST="$(/bin/ls -1 "$APEX_TASKS_DIR" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sed 's/-.*//' | sort -n | tail -1)" && \
 NEXT="$(expr "$HIGHEST" + 1)" && \
@@ -253,6 +255,7 @@ Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line U
 
 **Step 5a**: Create folder AND get path for Write
 ```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
 TASK_FOLDER="$APEX_TASKS_DIR/NN-task-name" && \
 mkdir -p "$TASK_FOLDER" && \

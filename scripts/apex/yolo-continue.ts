@@ -66,30 +66,38 @@ async function openNewTab(
       await $`tmux new-window -n "YOLO" ${fullCommand}`.quiet();
       break;
 
-    case "ghostty":
+    case "ghostty": {
       // Ghostty: Use split pane (Cmd+Shift+D) - works in fullscreen!
-      // Tabs don't work in fullscreen because macOS native tabs require titlebar
-      const ghosttyScript = `
-tell application "Ghostty"
+      // IMPORTANT: Direct keystroke + return does NOT work in Ghostty!
+      // Workaround from alfred-ghostty-script: use clipboard + Cmd+V + return
+      // This is the only proven method that works with Ghostty.
+
+      // Step 1: Copy command to clipboard
+      const proc = Bun.spawn(["pbcopy"], {
+        stdin: new TextEncoder().encode(fullCommand),
+      });
+      await proc.exited;
+
+      // Step 2: AppleScript to create split, paste from clipboard, press return
+      const scriptContent = `tell application "Ghostty"
     activate
 end tell
 delay 0.5
 tell application "System Events" to tell process "Ghostty"
-    -- Cmd+Shift+D for new vertical split (works in fullscreen!)
     keystroke "d" using {command down, shift down}
 end tell
 delay 1.0
--- Send keys explicitly to Ghostty process (important!)
 tell application "System Events" to tell process "Ghostty"
-    keystroke "${fullCommand.replace(/"/g, '\\"')}"
-end tell
-delay 0.5
-tell application "System Events" to tell process "Ghostty"
-    key code 36 -- Return key
-end tell
-`;
-      await $`osascript -e ${ghosttyScript}`.quiet();
+    keystroke "v" using {command down}
+    delay 0.1
+    keystroke return
+end tell`;
+      const scriptPath = "/tmp/.apex-yolo-applescript.scpt";
+      await Bun.write(scriptPath, scriptContent);
+      await $`osascript ${scriptPath}`.quiet();
+      await $`rm -f ${scriptPath}`.quiet();
       break;
+    }
 
     case "iterm":
       // iTerm2: Use AppleScript to open new tab

@@ -24,15 +24,18 @@ Parse the argument for:
 
 If the argument is an **existing task folder** (e.g., `84-optimize-flow`):
 
-**Step 0a**: Check for seed.md
+**Step 0a**: Check for seed.md and get ABSOLUTE path
 ```bash
-/bin/ls -la "./.claude/tasks/<provided-folder>/"
+ABSOLUTE_PATH="$(pwd)/.claude/tasks/<provided-folder>" && \
+echo "══════════════════════════════════════════" && \
+echo "USE THIS EXACT PATH FOR ALL READ OPERATIONS:" && \
+echo "$ABSOLUTE_PATH" && \
+echo "══════════════════════════════════════════" && \
+/bin/ls -la "$ABSOLUTE_PATH/"
 ```
 
-**Step 0b**: Read the seed file (use FULL path)
-```
-Read ./.claude/tasks/<provided-folder>/seed.md
-```
+**Step 0b**: Read the seed file using the EXACT path from output above
+**⚠️ CRITICAL: Use the FULL ABSOLUTE path, NOT 'tasks/<folder>'**
 
 **If `seed.md` exists:**
 1. **Read it** - This contains context from a previous session via `/apex:handoff`

@@ -9,18 +9,21 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
 
 ## Workflow
 
-1. **DETECT ENVIRONMENT**: Get the exact path for file reads
+1. **DETECT ENVIRONMENT**: Get the ABSOLUTE path for file reads
    ```bash
    mkdir -p "./.claude/tasks" && \
    # If argument provided: FOLDER="<provided-path>"
    # If no argument: find latest folder by number (sort by leading digits)
    FOLDER="$(/bin/ls -1 "./.claude/tasks" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)" && \
-   TASK_PATH="./.claude/tasks/$FOLDER" && \
-   echo "TASK_PATH=$TASK_PATH" && \
-   /bin/ls -la "$TASK_PATH/"
+   ABSOLUTE_PATH="$(pwd)/.claude/tasks/$FOLDER" && \
+   echo "══════════════════════════════════════════" && \
+   echo "USE THIS EXACT PATH FOR ALL READ OPERATIONS:" && \
+   echo "$ABSOLUTE_PATH" && \
+   echo "══════════════════════════════════════════" && \
+   /bin/ls -la "$ABSOLUTE_PATH/"
    ```
 
-   **Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/tasks/index.md`
+   **⚠️ CRITICAL: Copy the EXACT path from the output above for your Read tool call. Do NOT modify it. Do NOT use 'tasks/' - use the FULL path shown.**
 
 2. **FIND NEXT TASK**: Get first incomplete task + progress (use TASK_PATH from step 1)
    ```bash

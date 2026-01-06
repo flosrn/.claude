@@ -16,14 +16,17 @@ Parse the argument for flags:
 
 ## Workflow
 
-1. **DETECT ENVIRONMENT**: Get the exact path for file reads
+1. **DETECT ENVIRONMENT**: Get the ABSOLUTE path for file reads
    ```bash
-   TASK_PATH="./.claude/tasks/<task-folder>" && \
-   echo "TASK_PATH=$TASK_PATH" && \
-   /bin/ls -la "$TASK_PATH/"
+   ABSOLUTE_PATH="$(pwd)/.claude/tasks/<task-folder>" && \
+   echo "══════════════════════════════════════════" && \
+   echo "USE THIS EXACT PATH FOR ALL READ OPERATIONS:" && \
+   echo "$ABSOLUTE_PATH" && \
+   echo "══════════════════════════════════════════" && \
+   /bin/ls -la "$ABSOLUTE_PATH/"
    ```
 
-   **Then read files using the printed TASK_PATH**: `Read ./.claude/tasks/<folder>/plan.md`
+   **⚠️ CRITICAL: Copy the EXACT path from the output above for your Read tool call. Do NOT modify it. Do NOT use 'tasks/' - use the FULL path shown.**
 
 2. **VALIDATE INPUT**: Verify task folder is ready
    - Check output shows `plan.md` exists

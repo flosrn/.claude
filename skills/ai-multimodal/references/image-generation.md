@@ -556,3 +556,110 @@ config = types.GenerateContentConfig(
 The `response_modalities` parameter expects capital case values:
 - ✅ Correct: `['Image']`, `['Text']`, `['Image', 'Text']`
 - ❌ Wrong: `['image']`, `['text']`
+
+## Architecture Sketch Best Practices
+
+Guidelines for generating architecture diagrams using Gemini image generation.
+
+### Component Limits
+
+| Elements | Reliability | Notes |
+|----------|-------------|-------|
+| 5-7 | ✅ Excellent | All rendered correctly, optimal for diagrams |
+| 8-12 | ⚠️ Good | Recommended max, spatial relationships may suffer |
+| 13-16 | ⚠️ Degraded | Elements may be omitted |
+| 17+ | ❌ Poor | Unreliable, use layered approach instead |
+
+**Key insight**: Gemini struggles with quantity accuracy ("draw 7 boxes" is unreliable). Focus on clear descriptions instead of exact counts.
+
+### Effective Style Descriptors
+
+| Style | Effective Descriptors |
+|-------|----------------------|
+| **Pencil sketch** | "graphite lines, soft shading, cross-hatching, textured cream paper" |
+| **Notebook doodle** | "hand-drawn on cream paper, ballpoint pen marks, spontaneous imperfections" |
+| **Crayon** | "bright colors, bold lines, waxy texture, childlike charm, uneven strokes" |
+| **Comic ink** | "bold ink outlines, comic book style, simplified forms, high contrast" |
+
+**Anti-patterns to avoid**:
+- ❌ Generic: "hand-drawn whiteboard sketch" (too vague)
+- ❌ Contradictory: "photorealistic sketch" (conflicting styles)
+- ❌ Negative: "no neon colors" (use positive: "warm muted colors")
+
+### Recommended Color Palette
+
+For warm, professional architecture sketches:
+
+```
+Background: #FDF6E3 (warm cream paper)
+Primary:    #6A9FB5 (soft blue)
+Accent:     #D08770 (terracotta orange)
+Ink/Text:   #5B4636 (sepia brown)
+Highlight:  #EBCB8B (warm yellow for callouts)
+```
+
+**Why hex codes?** Gemini responds better to explicit colors than descriptions like "soft muted blues".
+
+### Prompt Structure (Gemini-Optimized)
+
+Order matters - Gemini prioritizes early content:
+
+```
+1. STYLE (concrete descriptors - highest priority)
+2. MOOD (emotional tone)
+3. COLORS (hex codes)
+4. LAYOUT (max 3 columns, 2-3 items each)
+5. CONTENT (max 7 elements, 2-word labels)
+6. ANTI-PATTERNS (what NOT to do)
+```
+
+**Example prompt**:
+```
+Create a hand-drawn architecture sketch.
+
+### STYLE
+Graphite pencil strokes with cross-hatching on cream paper.
+Ballpoint pen marks for labels. Imperfect hand-drawn lines.
+
+### MOOD
+Friendly, approachable, like a senior dev's whiteboard.
+
+### COLORS
+Background: #FDF6E3, Primary: #6A9FB5, Accent: #D08770, Ink: #5B4636
+
+### LAYOUT
+3 columns, 2-3 items each, curved arrows connecting elements.
+
+### CONTENT (7 elements max)
+- Entry Point with door icon, label: "User Input"
+- Processor with gear icon, label: "Core Logic"
+[...]
+
+### ANTI-PATTERNS
+NO neon colors, NO dark backgrounds, NO more than 7 elements.
+```
+
+### Layered Visualization Pattern
+
+For complex systems (>7 components), use multiple outputs:
+
+| Layer | Purpose | Format |
+|-------|---------|--------|
+| **1. Sketch Overview** | Visual "wow factor" | PNG (5-7 key components) |
+| **2. Mermaid Detailed** | Complete relationships | Markdown (100% components) |
+| **3. Legend.md** | Searchable reference | Text (all descriptions) |
+
+**Benefits**:
+- Sketch attracts attention (presentations, docs)
+- Mermaid provides precision (machine-readable)
+- Legend enables search (version control)
+
+### Fallback Strategy
+
+When sketch generation fails:
+
+1. **Retry simplified**: Reduce to 3-4 components
+2. **Fall back to Mermaid**: 100% reliable alternative
+3. **Suggest inpainting**: Manual enhancement option
+
+**Never leave user without output** - Mermaid is always available.

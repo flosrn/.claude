@@ -1,6 +1,6 @@
 ---
 description: Generate architecture visualization (ASCII, Mermaid, or Sketch infographic) from any code path
-argument-hint: <path> [--style ascii|mermaid|sketch] [--output readme|claude] [--task <folder>] [--model ...]
+argument-hint: <path> [--style ascii|mermaid|sketch] [--detail overview|detailed|full] [--output readme|claude] [--task <folder>] [--model ...]
 allowed-tools: Bash, Read, Glob, Grep, Write, Task, Skill
 ---
 
@@ -47,8 +47,13 @@ Parse `$ARGUMENTS` to extract:
 5. **--model** or **-m** (optional): Gemini model for sketch style
    - `gemini-3-pro-image-preview` - Best quality, superior text rendering (default)
    - `gemini-2.5-flash-image` - Faster, cheaper, good for simple diagrams
+6. **--detail** or **-d** (optional): Level of detail for sketch style
+   - `overview` - 5-7 key components max, single focused sketch (default)
+   - `detailed` - Sketch with zoom regions OR multiple images for complex areas
+   - `full` - Layered visualization: sketch overview + Mermaid detailed + Legend.md
 
 **Default behavior**: `--style mermaid` (best for LLM comprehension)
+**Sketch default**: `--detail overview` (prevents Gemini from losing components)
 
 ## Slug Generation
 
@@ -164,6 +169,43 @@ For each file read, extract:
 - [ ] Mode 2: description
 ...
 ```
+
+### Step 3b: Component Count Check (for Sketch mode)
+
+**⚠️ This step determines sketch complexity handling.**
+
+Count total components from your inventory:
+```markdown
+## Component Count
+
+| Category | Count |
+|----------|-------|
+| Commands | X |
+| Phases | Y |
+| Artifacts | Z |
+| Modes/Features | W |
+| **TOTAL** | **X+Y+Z+W** |
+```
+
+**Auto-escalation rules** (when `--style sketch`):
+
+| Total Components | `--detail` not set | `--detail overview` explicit |
+|-----------------|-------------------|------------------------------|
+| ≤7 | Normal sketch | Normal sketch |
+| 8-12 | ⚠️ Warn, auto-escalate to `full` | ⚠️ Warn, respect choice (may omit) |
+| >12 | ⚠️ Force `full` mode | ⚠️ Strong warn, respect choice |
+
+**Display warnings**:
+- If auto-escalating: `"⚠️ {N} components detected (>7). Auto-enabling layered visualization for completeness."`
+- If respecting override: `"⚠️ {N} components exceeds optimal limit (7). Some elements may be omitted. Consider --detail full."`
+
+**Component prioritization** (for `overview` mode with >7 components):
+1. **Entry points** - How users start (highest priority)
+2. **Main flow phases** - Core workflow steps
+3. **Key artifacts** - Primary outputs
+4. **Special features** - Distinctive behaviors (lowest priority)
+
+Select top 7 using this order. Store remaining for Mermaid (if `--detail full`).
 
 ### Step 4: Map Relationships
 
@@ -331,76 +373,91 @@ This alias renders the diagram to PNG and opens it in Preview automatically.
 
 ### If style = `sketch`
 
-**⚠️ PREREQUISITE**: You MUST have completed Phase 1 with a full Architecture Summary before building the prompt. The sketch will only be as complete as your analysis.
+**⚠️ PREREQUISITE**: You MUST have completed Phase 1 with a full Architecture Summary AND the Component Count Check (Step 3b) before building the prompt.
+
+#### Detail Mode Behaviors
+
+| Mode | Behavior |
+|------|----------|
+| `overview` (default) | Single sketch with max 7 components, prioritized by importance |
+| `detailed` | Sketch + zoom regions for complex areas |
+| `full` | Layered: sketch (7 components) + Mermaid (all) + Legend.md |
 
 **Build the prompt using your Architecture Summary from Step 6**:
 
-1. **Count total components** from your summary (commands + phases + artifacts + features)
-2. **Group into 3-4 columns** by category (e.g., Entry, Phases, Utilities, Artifacts)
-3. **Number ALL components** sequentially (1/, 2/, 3/... up to N)
-4. **Include ALL elements** - nothing should be omitted
+1. **Check component count** from Step 3b
+2. **If ≤7**: Include all components in sketch
+3. **If >7**: Select top 7 using prioritization order (entry points > phases > artifacts > features)
+4. **Group into max 3 columns** (2-3 items per column)
+5. **Use short labels** (2 words max per component)
 
-**Prompt template** (hand-drawn whiteboard cheatsheet style):
+#### Gemini-Optimized Prompt Template
+
+**⚠️ Order matters** - Gemini prioritizes early content. Structure: STYLE → MOOD → COLORS → LAYOUT → CONTENT → ANTI-PATTERNS
 
 ```
-Create a hand-drawn infographic cheatsheet about [SYSTEM NAME from Architecture Summary].
+Create a hand-drawn architecture sketch for [SYSTEM NAME].
 
-STYLE: Hand-drawn whiteboard sketch, notebook doodle aesthetic, like a developer's personal notes
-BACKGROUND: Warm cream/beige paper texture, slightly aged
-LINE WORK: Imperfect hand-drawn lines, ballpoint pen strokes, casual sketchy feel
-COLORS: Soft muted blues, warm browns, sepia tones - NO neon, NO dark backgrounds
+### STYLE (concrete descriptors - most important)
+Graphite pencil strokes with cross-hatching shading on cream paper.
+Ballpoint pen marks for text labels. Imperfect hand-drawn lines.
+Like a developer's notebook doodle - spontaneous, warm, approachable.
 
-TOTAL COMPONENTS: [X] items across [Y] columns
-LAYOUT: [Y] columns with numbered sections (1/, 2/, 3/...), curved arrows connecting ideas
+### MOOD
+Friendly and playful yet professional. A senior dev explaining on a whiteboard.
+Warm, inviting, makes complex systems feel accessible.
 
-CONTENT (describe EVERY component from Architecture Summary):
+### COLORS (explicit hex codes)
+- Background: #FDF6E3 (warm cream paper)
+- Primary elements: #6A9FB5 (soft blue)
+- Accent/highlights: #D08770 (terracotta orange)
+- Ink/text: #5B4636 (sepia brown)
+- Annotations: #EBCB8B (warm yellow for callouts)
 
-Column 1 - [CATEGORY from Summary]:
-- 1/ [COMPONENT] with [icon], '[purpose from summary]'
-- 2/ [COMPONENT] with [icon], '[purpose]'
-- 3/ [COMPONENT] with [icon], '[flags/options if any]'
+### LAYOUT
+Max 3 columns, 2-3 items per column.
+Curved arrows connecting related elements.
+Title at top in hand-lettered style.
 
-Column 2 - [CATEGORY from Summary]:
-- 4/ [COMPONENT] with [icon], '[purpose]'
-- 5/ [COMPONENT] with [icon], '[sub-elements: a, b, c]'
-- 6/ [COMPONENT] with [icon], '[outputs: file1, file2]'
+### CONTENT (max 7 elements, 2-word labels)
+Column 1 - [CATEGORY]:
+- [Component 1] with [icon], label: "[2 words]"
+- [Component 2] with [icon], label: "[2 words]"
 
-Column 3 - [CATEGORY from Summary]:
-- 7/ [COMPONENT] with [icon], '[purpose]'
-- 8/ [COMPONENT] with [icon], '[purpose]'
-- 9/ [COMPONENT] with [icon], '[purpose]'
+Column 2 - [CATEGORY]:
+- [Component 3] with [icon], label: "[2 words]"
+- [Component 4] with [icon], label: "[2 words]"
 
-Column 4 - [CATEGORY from Summary] (if needed):
-- 10/ [COMPONENT] with [icon], '[purpose]'
-- 11/ [COMPONENT] with [icon], '[purpose]'
+Column 3 - [CATEGORY]:
+- [Component 5] with [icon], label: "[2 words]"
+- [Component 6] with [icon], label: "[2 words]"
+- [Component 7] with [icon], label: "[2 words]"
 
-[SPECIAL FEATURES from Summary]:
-- Side element: [icon] labeled '[feature name]' (e.g., YOLO mode with lightning bolt)
-- Another element: [icon] labeled '[feature name]'
+### FLOW
+[Entry] → [Step 1] → [Step 2] → [Output]
 
-FLOW ARROWS (from Relationships mapping):
-- Show: [Entry] → [Phase 1] → [Phase 2] → ... → [End]
-- Show branches: [Decision] splits to [Option A] or [Option B]
-- Show cycles: [End] loops back to [Start] via [mechanism]
-
-TOP: Title '[SYSTEM NAME] CHEATSHEET' in hand-written style
-BOTTOM: Small legend explaining icons if >10 components
-
-ICONS: Simple line drawings - magnifying glass (analyze), blueprint (plan), gears (execute), checkmark (validate), document (files), lightning (fast mode), etc.
-ANNOTATIONS: Small handwritten notes next to each element explaining purpose
-FEEL: Friendly, approachable, like a senior dev explaining on a whiteboard
+### ANTI-PATTERNS (what NOT to do)
+- NO neon colors
+- NO dark backgrounds
+- NO more than 7 distinct elements
+- NO long text labels (keep under 15 characters)
+- NO photorealistic rendering
+- NO complex gradients
 ```
 
-**Completeness verification before generating**:
-- [ ] All commands from inventory included
-- [ ] All phases/stages included
-- [ ] All artifacts/outputs included
-- [ ] All modes/features included
-- [ ] All relationships shown as arrows
-- [ ] Component count matches Architecture Summary
+#### Component Selection Verification
 
-**Execution**:
-1. Run the ai-multimodal skill via wrapper script:
+Before generating, verify (for `overview` mode):
+- [ ] Component count ≤7 (or top 7 selected if >7 total)
+- [ ] Labels are ≤2 words each
+- [ ] Main flow is clear (entry → process → output)
+- [ ] Color palette uses hex codes only
+
+#### Execution by Mode
+
+##### If `--detail overview` (default)
+
+1. **Generate single sketch** (max 7 components):
    ```bash
    cd ~/.claude/skills/ai-multimodal && ./scripts/run.sh gemini_batch_process.py \
      --task generate \
@@ -409,30 +466,89 @@ FEEL: Friendly, approachable, like a senior dev explaining on a whiteboard
      --model gemini-3-pro-image-preview \
      --aspect-ratio 16:9
    ```
-   - The wrapper script auto-manages the Python venv
-   - Use `--model gemini-2.5-flash-image` for faster/cheaper option
 
-2. Generate legend backup at `docs/assets/architecture-{slug}-legend.md`:
+2. **Generate legend** at `docs/assets/architecture-{slug}-legend.md`:
    ```markdown
    # Architecture Legend: {slug}
 
-   ## Components
+   ## Components (7 shown in sketch)
    - **[Name]**: [Description]
+   ...
+
+   ## Omitted Components (if >7 total)
+   - **[Name]**: [Description] *(not in sketch - use --detail full to see all)*
 
    ## Connections
    - [A] → [B]: [Relationship]
-
-   ## Style Notes
-   - Hand-drawn whiteboard aesthetic
-   - Cream/beige background with soft blue accents
-   - Numbered sections with curved arrow flow
    ```
 
-**Prompt tips for best results**:
-- Describe the FEELING: "like a senior dev explaining on a whiteboard"
-- Specify what you DON'T want: "NO neon, NO dark backgrounds"
-- Use warm color words: "cream, beige, soft muted blues, sepia"
-- Describe line quality: "imperfect, sketchy, ballpoint pen strokes"
+##### If `--detail detailed`
+
+1. Generate overview sketch as above
+2. For complex areas (identified in analysis), generate **zoom sketches**:
+   - `architecture-{slug}-zoom-{area}.png` for each complex subsystem
+   - OR generate a second sketch focusing on internal structure
+
+##### If `--detail full` (Layered Visualization)
+
+Generate **three complementary outputs**:
+
+1. **Sketch Overview** (`architecture-{slug}-sketch.png`):
+   - Max 7 key components using prioritization
+   - Visual "wow factor" for presentations/docs
+
+2. **Mermaid Detailed** (`architecture-{slug}-detailed.md`):
+   - ALL components from Architecture Summary
+   - Full relationship mapping
+   - 100% complete, machine-readable
+   ```mermaid
+   flowchart TD
+       subgraph "All Components"
+           [Generate complete Mermaid from Architecture Summary]
+       end
+   ```
+
+3. **Legend** (`architecture-{slug}-legend.md`):
+   - Complete text descriptions for all components
+   - Searchable, version-controllable
+   - Maps sketch elements to detailed elements
+   ```markdown
+   # Architecture Legend: {slug}
+
+   ## Overview (in sketch)
+   Components 1-7 shown in visual overview...
+
+   ## Complete Reference (in Mermaid)
+   All N components with full descriptions...
+
+   ## Style Notes
+   - Sketch: Warm cream (#FDF6E3), graphite strokes
+   - Mermaid: Full technical detail
+   ```
+
+#### Fallback on Failure
+
+**If sketch generation fails** (API error, timeout, content filter):
+
+1. **First retry**: Simplify prompt to 3-4 components only
+   - Keep: Entry point, main flow (2 steps), output
+   - Remove: Features, secondary artifacts
+
+2. **If retry fails**: Auto-generate Mermaid instead
+   - Display: `"⚠️ Sketch generation failed. Generating Mermaid diagram instead."`
+   - Save Mermaid to: `architecture-{slug}.md`
+   - Suggest: `"Consider using inpainting to enhance manually, or retry with --model gemini-2.5-flash-image"`
+
+3. **Never leave user without output** - Mermaid is 100% reliable fallback
+
+#### Prompt Tips (Reference)
+
+| Goal | Technique |
+|------|-----------|
+| Warm feeling | Use hex: #FDF6E3, #D08770, #EBCB8B |
+| Hand-drawn look | "graphite strokes", "cross-hatching", "ballpoint pen" |
+| Avoid AI generic | Explicit ANTI-PATTERNS section |
+| Reliable rendering | Max 7 components, 2-word labels |
 
 ---
 
@@ -479,14 +595,26 @@ Report all output paths when complete.
 ### If no `--output` (default)
 
 1. Create `docs/assets/` directory if it doesn't exist
-2. Save file(s) based on style:
-   - ASCII: `docs/assets/architecture-{slug}.txt`
-   - Mermaid: `docs/assets/architecture-{slug}.md`
-   - Sketch: `docs/assets/architecture-{slug}.png` + `-legend.md`
+2. Save file(s) based on style and detail mode:
+
+   **ASCII**:
+   - `docs/assets/architecture-{slug}.txt`
+
+   **Mermaid**:
+   - `docs/assets/architecture-{slug}.md`
+
+   **Sketch** (varies by `--detail`):
+   | Detail Mode | Files Generated |
+   |------------|-----------------|
+   | `overview` | `architecture-{slug}.png` + `architecture-{slug}-legend.md` |
+   | `detailed` | Above + `architecture-{slug}-zoom-{area}.png` (per complex area) |
+   | `full` | `architecture-{slug}-sketch.png` + `architecture-{slug}-detailed.md` + `architecture-{slug}-legend.md` |
+
 3. Display result in terminal:
    - ASCII: Show the diagram directly
    - Mermaid: Show "Saved to {path}" + suggest `mermaid.live` for preview
-   - Sketch: Show "Generated at {path}"
+   - Sketch (`overview`): Show "Generated at {path}"
+   - Sketch (`full`): Show summary of all 3 files generated
 
 ---
 
@@ -526,11 +654,27 @@ Output: [file path or "injected into README.md"]
 # ASCII for terminal viewing
 /visualize src/api --style ascii
 
-# Sketch infographic (best quality - default model)
+# Sketch infographic (overview mode - default, max 7 components)
 /visualize ./apps/web -s sketch
+# → Generates: architecture-apps-web.png + architecture-apps-web-legend.md
 
 # Sketch with faster/cheaper model
 /visualize ./apps/web -s sketch --model gemini-2.5-flash-image
+
+# Sketch with explicit overview mode (same as default)
+/visualize src/complex-system -s sketch --detail overview
+# → If >7 components: warns but respects choice, may omit elements
+
+# Full layered visualization (sketch + mermaid + legend)
+/visualize ~/.claude/commands -s sketch --detail full
+# → Generates 3 files:
+#   - architecture-claude-commands-sketch.png (top 7 components)
+#   - architecture-claude-commands-detailed.md (ALL components in Mermaid)
+#   - architecture-claude-commands-legend.md (text reference)
+
+# Detailed mode with zoom regions
+/visualize src/auth -s sketch --detail detailed
+# → Generates: overview sketch + zoom sketches for complex areas
 
 # Save to APEX task folder (explicit)
 /visualize ~/.claude/commands/apex -s sketch --task 21-visualize-architecture

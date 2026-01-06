@@ -8,12 +8,13 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 
 | Command | Purpose | Key Flags |
 |---------|---------|-----------|
+| `/apex:0-brainstorm` | Interactive Q&A research (for vague tasks) | - |
 | `/apex:1-analyze` | Gather context & research | `--yolo` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
 | `/apex:3-execute` | Implement changes | `--parallel`, `--dry-run`, `--quick`, `--force-sonnet`, `--force-opus` |
 | `/apex:4-examine` | Two-phase validation (technical + logical) | `--foreground`, `--global`, `--skip-patterns` |
-| `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif` |
+| `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 | `/apex:next` | Run next pending task | - |
 | `/apex:status` | Show progress tree | - |
 | `/apex:handoff` | Transfer context to new workflow | `--vision`, `--brainstorm` |
@@ -48,6 +49,21 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 **Parallel Mode** (`3,4` or `--parallel`): Execute multiple tasks concurrently. Verify tasks don't depend on each other before using.
 
 **Global Scope** (`--global`): For examine phase, analyze ALL feature files instead of just modified ones. More comprehensive but slower.
+
+## Smart Skip (Post-Brainstorm)
+
+When `/apex:1-analyze` detects a seed.md from `/apex:0-brainstorm`, it enters **post-brainstorm mode**:
+
+| Agent | Full Mode | Post-Brainstorm Mode |
+|-------|-----------|---------------------|
+| `explore-codebase` | ✅ Launch | ✅ Launch |
+| `explore-docs` | ✅ Launch | ⏭️ Skip (done in brainstorm) |
+| `websearch` | ✅ Launch | ⏭️ Skip (done in brainstorm) |
+| `vision-analyzer` | If image | If image |
+
+**Detection**: Looks for `## 🔍 Brainstorm Summary` or `### Brainstorm Summary` in seed.md.
+
+**Why?** Brainstorm Round 1-3 already performed comprehensive web + docs research. Re-running wastes tokens and time.
 
 ## Two-Phase Validation (Examine)
 
@@ -86,7 +102,7 @@ Execute phase automatically selects the optimal model (Sonnet vs Opus) per task 
 
 | File | Created By | Purpose |
 |------|------------|---------|
-| `seed.md` | `/apex:handoff` | Prior context transfer (BLUF structure) |
+| `seed.md` | `/apex:handoff` or `/apex:0-brainstorm` | Prior context transfer (BLUF structure) |
 | `analyze.md` | `/apex:1-analyze` | Research findings, patterns, gotchas |
 | `plan.md` | `/apex:2-plan` | File-by-file change plan (no code snippets) |
 | `tasks/` | `/apex:tasks` | Granular task breakdown with dependencies |

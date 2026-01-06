@@ -156,6 +156,33 @@ touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
 
 3. **LAUNCH PARALLEL ANALYSIS**: Gather context from all sources
 
+   **First, determine analysis mode based on seed.md content:**
+
+   ### Mode A: Post-Brainstorm (seed.md has "Brainstorm Summary")
+
+   If seed.md exists AND contains `## 🔍 Brainstorm Summary` or `### Brainstorm Summary`:
+   - Brainstorm already performed web research and docs exploration
+   - **SKIP**: `websearch` agent (already done)
+   - **SKIP**: `explore-docs` agent (already done)
+   - **LAUNCH ONLY**:
+     - `explore-codebase` - Focus on locating specific files to modify
+     - `vision-analyzer` - If image provided
+
+   ```
+   # Post-brainstorm mode - targeted analysis only
+   Task(subagent_type="explore-codebase", run_in_background=true, ...)
+   Task(subagent_type="vision-analyzer", run_in_background=true, ...)  # if image
+   ```
+
+   **Why skip?** Brainstorm Round 1-3 already did comprehensive web + docs research.
+   Re-running wastes tokens and time. The seed.md contains all insights needed.
+
+   ---
+
+   ### Mode B: Full Analysis (no brainstorm or fresh task)
+
+   If NO seed.md OR seed.md lacks brainstorm sections:
+
    **Launch ALL agents in background** with `run_in_background: true`:
 
    - **Codebase exploration** (`explore-codebase` agent):
@@ -177,12 +204,16 @@ touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
      - Analyze UI screenshots for debugging context
 
    ```
+   # Full analysis mode - all agents
    Task(subagent_type="explore-codebase", run_in_background=true, ...)
    Task(subagent_type="explore-docs", run_in_background=true, ...)
    Task(subagent_type="websearch", run_in_background=true, ...)
+   Task(subagent_type="vision-analyzer", run_in_background=true, ...)  # if image
    ```
 
-   - **CRITICAL**: Launch ALL agents in a SINGLE message
+   ---
+
+   - **CRITICAL**: Launch all required agents in a SINGLE message
 
    **While agents run**:
    - Wait for agent completion using `TaskOutput`
@@ -313,6 +344,7 @@ touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
 
 - **PARALLEL EXECUTION**: All agents must run simultaneously for speed
 - **ULTRA THINK FIRST**: Never launch agents without clear search strategy
+- **SMART SKIP**: If seed.md contains brainstorm results, skip redundant web/docs research
 - **COMPREHENSIVE**: Gather more context than seems necessary
 - **ORGANIZED**: Structure findings for easy planning phase
 - **FILE REFERENCES**: Always include file paths with line numbers

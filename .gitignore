@@ -59,6 +59,9 @@ backups/
 # Generated reports and analyses
 /reports/
 
+# Generated architecture diagrams
+docs/assets/
+
 # Claude Code frameworks (exclude all)
 .claude/
 

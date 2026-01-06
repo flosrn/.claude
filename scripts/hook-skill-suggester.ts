@@ -256,14 +256,14 @@ if (trigger20) {
   );
 }
 
-// 21. systematic-debugging - Deep debugging methodology
+// 21. debugging - Systematic debugging with Makerkit patterns (EN + FR)
 const trigger21 = matchTrigger(
-  /root.*cause|systematic.*debug|test.*fail|why.*fail|investigate.*bug|analyser.*en.*profondeur|cause.*profonde/i,
+  /root.*cause|systematic.*debug|test.*fail|why.*fail|investigate.*bug|supabase.*error|drizzle.*error|rls.*fail|migration.*fail|turborepo.*fail|hydration.*mismatch|server.*component.*error|analyser.*en.*profondeur|cause.*profonde|erreur.*supabase|erreur.*migration/i,
   prompt,
 );
 if (trigger21) {
   suggestions.push(
-    `ALWAYS use Skill "systematic-debugging" for deep debugging. Four-phase framework: Root Cause → Pattern → Hypothesis → Implementation. [trigger: "${trigger21}"]`,
+    `ALWAYS use Skill "debugging" for systematic debugging. Four-phase framework + Makerkit patterns (Supabase, Drizzle, Turborepo, Next.js). [trigger: "${trigger21}"]`,
   );
 }
 
@@ -363,6 +363,17 @@ const trigger30 = matchTrigger(
 if (trigger30) {
   suggestions.push(
     `ALWAYS use Task agent "intelligent-search" for deep research with multiple providers (Tavily, Exa, Brave, Perplexity). Routes to best provider based on query intent. [trigger: "${trigger30}"]`,
+  );
+}
+
+// 31. code-review-mastery - Complete code review lifecycle (EN + FR)
+const trigger31 = matchTrigger(
+  /code.*review|review.*pr|review.*code|check.*my.*code|audit.*code|pr.*review|revue.*code|vérifier.*code|analyser.*pr|revoir.*code|recevoir.*feedback|verification.*gate/i,
+  prompt,
+);
+if (trigger31) {
+  suggestions.push(
+    `ALWAYS use Skill "code-review-mastery" for complete code review lifecycle. WHAT to review (OWASP, SOLID) + HOW to interact + Verification gates. [trigger: "${trigger31}"]`,
   );
 }
 

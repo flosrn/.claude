@@ -21,17 +21,9 @@ Use absolute paths - shell aliases break standard flags:
 | `grep` | `/usr/bin/grep` |
 | `find` | `/usr/bin/find` |
 
-## TypeScript Rules
-
-**NEVER use:**
-- `any` or `as any` - Use proper types or `unknown` with type guards
-- `@ts-ignore` / `@ts-expect-error` - Fix the actual type error
-
-**For external data:** Use Zod schemas with `z.infer<typeof Schema>`
-
 ## Code Quality
 
-Before committing, run: `pnpm typecheck && pnpm lint:fix && pnpm format:fix`
+Before committing JS/TS projects: `pnpm typecheck && pnpm lint:fix && pnpm format:fix`
 
 ## Git
 

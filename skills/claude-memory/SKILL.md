@@ -1,6 +1,6 @@
 ---
 name: claude-memory
-description: Create and optimize CLAUDE.md memory files or .claude/rules/ modular rules for Claude Code projects. Comprehensive guidance on file hierarchy, content structure, path-scoped rules, best practices, and anti-patterns. Use when working with CLAUDE.md files, .claude/rules directories, setting up new projects, or improving Claude Code's context awareness.
+description: Create and optimize CLAUDE.md memory files or .claude/rules/ modular rules for Claude Code projects. ALWAYS use when the user says "create CLAUDE.md", "setup memory", "configure project", "add rules", "créer CLAUDE.md", "configurer le projet", "mémoire Claude", "règles projet", or when working with CLAUDE.md files, .claude/rules directories, setting up new projects, or improving Claude Code's context awareness. Comprehensive guidance on file hierarchy, content structure, path-scoped rules, best practices, and anti-patterns.
 ---
 
 <objective>

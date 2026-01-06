@@ -1,6 +1,6 @@
 ---
 name: ci-experts
-description: Expert for debugging CI/CD using Vercel CLI and GitHub CLI. Fetches deployment logs, workflow artifacts, build errors, and stores them in /tmp/{project-name}/. Use when debugging failed deployments, investigating CI errors, or retrieving build artifacts.
+description: Expert for debugging CI/CD using Vercel CLI and GitHub CLI. Fetches deployment logs, workflow artifacts, build errors, and stores them in /tmp/{project-name}/. ALWAYS use when the user mentions "CI failed", "build failed", "deployment error", "GitHub Actions", "Vercel error", "pipeline broken", "échec CI", "déploiement échoué", "erreur de build", "pipeline cassé", or when debugging failed deployments, investigating CI errors, or retrieving build artifacts.
 ---
 
 <objective>

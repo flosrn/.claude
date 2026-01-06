@@ -8,7 +8,7 @@ The Command Validator is a **PreToolUse hook** that validates every bash command
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    COMMAND VALIDATOR FLOW                                    │
+│                    COMMAND VALIDATOR FLOW                                   │
 └─────────────────────────────────────────────────────────────────────────────┘
 
     Claude wants to run            Validator checks             Decision

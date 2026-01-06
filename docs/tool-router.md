@@ -10,7 +10,7 @@ The Tool Router is a **UserPromptSubmit hook** that runs on every user message. 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         TOOL ROUTER FLOW                                     │
+│                         TOOL ROUTER FLOW                                    │
 └─────────────────────────────────────────────────────────────────────────────┘
 
     User Prompt                    Hook Processing               Claude Sees

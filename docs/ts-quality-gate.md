@@ -8,7 +8,7 @@ The TypeScript Quality Gate is a **PostToolUse hook** that runs after every file
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    TS QUALITY GATE FLOW                                      │
+│                    TS QUALITY GATE FLOW                                     │
 └─────────────────────────────────────────────────────────────────────────────┘
 
     Claude writes file              Hook triggers              Feedback injected

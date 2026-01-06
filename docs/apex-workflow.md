@@ -10,31 +10,31 @@ APEX is a structured methodology that breaks down complex coding tasks into mana
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           APEX WORKFLOW                                      │
+│                           APEX WORKFLOW                                     │
 └─────────────────────────────────────────────────────────────────────────────┘
 
                     ┌──────────────┐
-                    │   seed.md    │ ← Optional (from /apex:handoff or /apex:0-brainstorm)
+                    │   seed.md    │  ← Optional (from /apex:handoff)
                     └──────┬───────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────────────────────┐
 │  PHASE 0: BRAINSTORM (optional)                   /apex:0-brainstorm        │
 │  • Interactive Q&A for vague tasks                                          │
-│  • Multi-round research with skeptical analysis                            │
-│  • Generates seed.md with insights                                         │
+│  • Multi-round research with skeptical analysis                             │
+│  • Generates seed.md with insights                                          │
 └─────────────────────────────────────────────────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────────────────────┐
 │  PHASE 1: ANALYZE                                 /apex:1-analyze           │
-│  • Create task folder: .claude/tasks/NN-kebab-name/                        │
-│  • Launch parallel agents: explore-codebase, explore-docs, websearch       │
+│  • Create task folder: .claude/tasks/NN-kebab-name/                         │
+│  • Launch parallel agents: explore-codebase, explore-docs, websearch        │
 │  • Output: analyze.md                                                       │
 └─────────────────────────────────────────────────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────────────────────┐
 │  PHASE 2: PLAN                                    /apex:2-plan              │
-│  • Read analyze.md, design implementation strategy                         │
-│  • File-centric planning (organized by file, not feature)                  │
+│  • Read analyze.md, design implementation strategy                          │
+│  • File-centric planning (organized by file, not feature)                   │
 │  • Output: plan.md                                                          │
 └─────────────────────────────────────────────────────────────────────────────┘
                            │
@@ -48,23 +48,23 @@ APEX is a structured methodology that breaks down complex coding tasks into mana
             │
 ┌───────────▼─────────────────────────────────────────────────────────────────┐
 │  PHASE 3: EXECUTE                                 /apex:3-execute           │
-│  • Task-by-Task Mode (if tasks/ exists) or Plan Mode                       │
+│  • Task-by-Task Mode (if tasks/ exists) or Plan Mode                        │
 │  • Sequential or Parallel execution                                         │
-│  • Smart Model Selection (Sonnet vs Opus based on complexity)              │
+│  • Smart Model Selection (Sonnet vs Opus based on complexity)               │
 │  • Output: implementation.md, progress dashboard                            │
 └─────────────────────────────────────────────────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────────────────────┐
 │  PHASE 4: EXAMINE                                 /apex:4-examine           │
-│  • Two-phase validation: Technical (build/lint/typecheck) + Logical        │
-│  • Auto-fix with parallel Snipper agents                                   │
+│  • Two-phase validation: Technical (build/lint/typecheck) + Logical         │
+│  • Auto-fix with parallel Snipper agents                                    │
 │  • React 19 pattern validation                                              │
 │  • Output: Updated implementation.md                                        │
 └─────────────────────────────────────────────────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────────────────────┐
 │  PHASE 5: BROWSER TEST (optional)                 /apex:5-browser-test      │
-│  • Live browser validation with GIF recording                              │
+│  • Live browser validation with GIF recording                               │
 │  • Console/network error detection                                          │
 │  • Visual proof of functionality                                            │
 └─────────────────────────────────────────────────────────────────────────────┘

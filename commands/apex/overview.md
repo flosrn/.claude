@@ -34,7 +34,7 @@
 ┌───────────────────────────────────────────────────────────────────────────────┐
 │  PHASE 1: ANALYZE                              /apex:1-analyze                 │
 │  ─────────────────                                                             │
-│  • Create task folder: tasks/NN-kebab-name/                                   │
+│  • Create task folder: .claude/tasks/NN-kebab-name/                           │
 │  • Launch parallel agents: explore-codebase, explore-docs, websearch         │
 │  • ULTRA THINK: Plan search strategy                                          │
 │  • Output: analyze.md                                                          │
@@ -101,7 +101,7 @@
 **Output**: `analyze.md` with findings
 
 **What it does**:
-- Creates numbered task folder (`tasks/NN-kebab-name/`)
+- Creates numbered task folder (`.claude/tasks/NN-kebab-name/`)
 - Launches parallel agents for research
 - ULTRA THINKs about search strategy
 - Produces comprehensive analysis document
@@ -264,7 +264,7 @@
 
 **Output**:
 ```
-tasks/08-auth-feature/
+.claude/tasks/08-auth-feature/
 ├── analyze.md ✓
 ├── plan.md ✓
 ├── implementation.md
@@ -372,7 +372,7 @@ User runs: /apex:1-analyze "task" --yolo
 ### Task Folder Template
 
 ```
-tasks/NN-kebab-name/
+.claude/tasks/NN-kebab-name/
 ├── seed.md              # Optional: context from /apex:handoff
 ├── analyze.md           # Phase 1 output
 ├── plan.md              # Phase 2 output

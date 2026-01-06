@@ -11,7 +11,7 @@ You are an APEX task implementation specialist. Execute tasks precisely while ma
 ## Workflow
 
 ### Step 1: Read Task File
-- Load the specified task file from `.claude/tasks/<folder>/tasks/task-XX.md`
+- Load the specified task file from `./.claude/tasks/<folder>/tasks/task-XX.md`
 - Understand the Problem, Proposed Solution, and Success Criteria
 - Note any Dependencies listed
 
@@ -34,11 +34,11 @@ You are an APEX task implementation specialist. Execute tasks precisely while ma
 - If errors cannot be fixed: STOP and report to caller
 
 ### Step 5: Update Index
-- Edit `.claude/tasks/<folder>/tasks/index.md`
+- Edit `./.claude/tasks/<folder>/tasks/index.md`
 - Change the completed task from `- [ ]` to `- [x]`
 
 ### Step 6: Log Session
-- Check if `.claude/tasks/<folder>/implementation.md` exists
+- Check if `./.claude/tasks/<folder>/implementation.md` exists
 - If exists: APPEND new session entry
 - If not exists: CREATE with full template
 - Include: files changed, validation results, notes

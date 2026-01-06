@@ -12,18 +12,13 @@ You are an APEX workflow assistant. Your job is to find and execute the next pen
 1. **DETECT ENVIRONMENT**: Get the ABSOLUTE path for file reads
    ```bash
    mkdir -p "./.claude/tasks" && \
-   # If argument provided: FOLDER="<provided-path>"
-   # If no argument: find latest folder by number (sort by leading digits)
    FOLDER="$(/bin/ls -1 "./.claude/tasks" 2>/dev/null | /usr/bin/grep -E '^[0-9]+-' | sort -t- -k1 -n | tail -1)" && \
    ABSOLUTE_PATH="$(pwd)/.claude/tasks/$FOLDER" && \
-   echo "══════════════════════════════════════════" && \
-   echo "USE THIS EXACT PATH FOR ALL READ OPERATIONS:" && \
-   echo "$ABSOLUTE_PATH" && \
-   echo "══════════════════════════════════════════" && \
+   echo "📁 READ FROM: $ABSOLUTE_PATH" && \
    /bin/ls -la "$ABSOLUTE_PATH/"
    ```
 
-   **⚠️ CRITICAL: Copy the EXACT path from the output above for your Read tool call. Do NOT modify it. Do NOT use 'tasks/' - use the FULL path shown.**
+   **⚠️ Use the FULL path from output (starts with /Users/...) for Read calls.**
 
 2. **FIND NEXT TASK**: Get first incomplete task + progress (use TASK_PATH from step 1)
    ```bash

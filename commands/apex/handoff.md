@@ -27,14 +27,11 @@ If no task description provided, use `AskUserQuestion` to gather it.
 mkdir -p "./.claude/tasks" && \
 RECENT_FOLDER="$(/bin/ls -1t "./.claude/tasks" 2>/dev/null | head -1)" && \
 ABSOLUTE_PATH="$(pwd)/.claude/tasks/$RECENT_FOLDER" && \
-echo "══════════════════════════════════════════" && \
-echo "USE THIS EXACT PATH FOR ALL READ OPERATIONS:" && \
-echo "$ABSOLUTE_PATH" && \
-echo "══════════════════════════════════════════" && \
+echo "📁 READ FROM: $ABSOLUTE_PATH" && \
 /bin/ls -la "$ABSOLUTE_PATH/"
 ```
 
-**⚠️ CRITICAL: Copy the EXACT path from the output above for your Read tool call. Do NOT modify it. Do NOT use 'tasks/' - use the FULL path shown.**
+**⚠️ Use the FULL path from output (starts with /Users/...) for Read calls.**
 
 **Read available artifacts from source:**
 - `analyze.md` - Task analysis and discoveries

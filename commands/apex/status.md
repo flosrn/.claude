@@ -12,17 +12,13 @@ You are an APEX status reporter. Display a clear overview of task progress and s
 1. **DETECT ENVIRONMENT**: Get the ABSOLUTE path for file reads
    ```bash
    mkdir -p "./.claude/tasks" && \
-   # If argument provided: use it, otherwise find most recent folder
    FOLDER="${1:-$(/bin/ls -1t "./.claude/tasks" 2>/dev/null | head -1)}" && \
    ABSOLUTE_PATH="$(pwd)/.claude/tasks/$FOLDER" && \
-   echo "══════════════════════════════════════════" && \
-   echo "USE THIS EXACT PATH FOR ALL READ OPERATIONS:" && \
-   echo "$ABSOLUTE_PATH" && \
-   echo "══════════════════════════════════════════" && \
+   echo "📁 READ FROM: $ABSOLUTE_PATH" && \
    /bin/ls -la "$ABSOLUTE_PATH/"
    ```
 
-   **⚠️ CRITICAL: Copy the EXACT path from the output above for your Read tool call. Do NOT modify it. Do NOT use 'tasks/' - use the FULL path shown.**
+   **⚠️ Use the FULL path from output (starts with /Users/...) for Read calls.**
 
 2. **GATHER STATUS**: Check existence and state of all artifacts
    - Check for `analyze.md` → exists? extract task description?

@@ -37,14 +37,11 @@ Fast, blocking checks - build, lint, typecheck. Runs in background by default.
 1. **DETECT ENVIRONMENT**: Get the ABSOLUTE path for file reads
    ```bash
    ABSOLUTE_PATH="$(pwd)/.claude/tasks/<task-folder>" && \
-   echo "══════════════════════════════════════════" && \
-   echo "USE THIS EXACT PATH FOR ALL READ OPERATIONS:" && \
-   echo "$ABSOLUTE_PATH" && \
-   echo "══════════════════════════════════════════" && \
+   echo "📁 READ FROM: $ABSOLUTE_PATH" && \
    /bin/ls -la "$ABSOLUTE_PATH/"
    ```
 
-   **⚠️ CRITICAL: Copy the EXACT path from the output above for your Read tool call. Do NOT modify it. Do NOT use 'tasks/' - use the FULL path shown.**
+   **⚠️ Use the FULL path from output (starts with /Users/...) for Read calls.**
 
 2. **VALIDATE INPUT**: Check task folder context (if provided)
    - If `<task-folder-path>` argument provided:

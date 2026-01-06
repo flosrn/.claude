@@ -433,6 +433,17 @@ Configure in `~/.claude.json`:
 }
 ```
 
+## Documentation
+
+Detailed guides for the main features:
+
+| Guide | Description |
+|-------|-------------|
+| [**APEX Workflow**](docs/apex-workflow.md) | Complete 6-phase orchestrator with `--yolo` automation, smart model selection, parallel execution |
+| [**Tool Router**](docs/tool-router.md) | 31-pattern skill-suggester hook that analyzes prompts and suggests optimal tools |
+| [**TS Quality Gate**](docs/ts-quality-gate.md) | PostToolUse hook for automatic Prettier, ESLint, and TypeScript validation |
+| [**Command Validator**](docs/command-validator.md) | Security rules database blocking dangerous bash commands |
+
 ## Contributing
 
 To extend this configuration:

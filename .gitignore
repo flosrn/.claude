@@ -81,3 +81,9 @@ stats-cache.json
 
 # Task plans (temporary work files)
 plans/
+
+# Session image cache (screenshots shared during conversations)
+image-cache/
+
+# Chrome extension native host (machine-specific, version-dependent)
+chrome/

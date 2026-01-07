@@ -110,7 +110,7 @@ Parse the argument for flags:
    - Confirm plan created
    - Highlight key implementation steps
    - Note any risks or complexity
-   - **STANDARD MODE**: Suggest next step: Run `/apex:tasks <task-folder>` to divide plan into tasks or `/apex:execute <task-folder>` to execute plan directly
+   - **STANDARD MODE**: Suggest next step: Run `/apex:tasks <task-folder>` to divide plan into tasks or `/apex:3-execute <task-folder>` to execute plan directly
    - **YOLO MODE**: Say "YOLO mode: Session will exit. Next phase will start automatically in a new split." then **STOP IMMEDIATELY** - do NOT continue to the next phase. The hooks will handle automation.
 
 ## Plan Quality Guidelines

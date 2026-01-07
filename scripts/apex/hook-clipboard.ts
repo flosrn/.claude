@@ -8,7 +8,7 @@
  *
  * Triggers:
  *   - analyze.md → /apex:2-plan <folder>
- *   - plan.md → /apex:5-tasks <folder> (complex) or /apex:3-execute <folder> (simple)
+ *   - plan.md → /apex:tasks <folder> (complex) or /apex:3-execute <folder> (simple)
  *   - tasks/index.md → /apex:3-execute <folder>
  *
  * YOLO Mode:
@@ -97,7 +97,7 @@ function getNextCommand(
 
       if (fileCount >= 6) {
         return {
-          command: `/apex:5-tasks ${folder}`,
+          command: `/apex:tasks ${folder}`,
           reason: ` (${fileCount} files detected)`,
         };
       }

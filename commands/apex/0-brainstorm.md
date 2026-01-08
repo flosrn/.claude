@@ -1,5 +1,5 @@
 ---
-description: Interactive Research-Driven Dialogue with iterative research loops and user checkpoints
+description: Interactive Research-Driven Dialogue with adaptive agent routing and iterative research loops
 argument-hint: <topic>
 model: opus
 ---
@@ -7,9 +7,16 @@ model: opus
 <objective>
 Conduct deep, iterative research and brainstorming on: $ARGUMENTS
 
-This command uses a **Research-Driven Dialogue** model:
+This command uses a **Research-Driven Dialogue** model with **Adaptive Agent Routing**:
 1. **Phase 0: Context Gathering** - Ask clarifying questions to understand the problem deeply
-2. **Research Loop** (max 5 rounds) - Iterative research with user checkpoints after each round
+2. **Strategy Detection** - Score Code/Web/Docs needs to determine optimal agent mix
+3. **Research Loop** (max 5 rounds) - Iterative research with user checkpoints after each round
+
+**Adaptive routing** selects the right tools:
+- `explore-codebase` for project-specific context (light or deep based on score)
+- `websearch` for standard research (3 angles: Mainstream/Alternatives/Risks)
+- `intelligent-search` for cutting-edge topics (auto-routes to Tavily/Exa/Perplexity)
+- `explore-docs` for library/API documentation
 
 After completion, a `seed.md` is auto-generated for seamless continuation with `/apex:1-analyze`.
 </objective>
@@ -114,6 +121,72 @@ On continue avec la recherche ?
 
 Wait for confirmation before proceeding to research loop.
 
+### Step 0e: Research Strategy Detection
+
+**ULTRA THINK** to determine optimal research strategy based on topic analysis.
+
+#### Dimension 1: Code Relevance Score
+
+| Signal | Score | Example |
+|--------|-------|---------|
+| Mentions specific files/paths | +3 | "améliorer src/auth/*" |
+| References existing feature | +2 | "optimiser le cache actuel" |
+| Domain = `tech` or `problem` | +1 | Technical implementation or debugging |
+| Domain = `product` | +1 | May need to understand current UX |
+| Domain = `research` (pure) | 0 | "compare React vs Vue" |
+| Greenfield/new project | -1 | "quelle stack pour un nouveau projet" |
+
+**Code Score interpretation:**
+- **0-2**: Skip codebase exploration
+- **3-4**: Light scan (1 explore-codebase agent)
+- **5+**: Deep exploration (2 explore-codebase agents with different angles)
+
+#### Dimension 2: Web Research Depth Score
+
+| Signal | Score | Example |
+|--------|-------|---------|
+| Cutting-edge/recent tech (2024-2025) | +3 | "Bun runtime", "React 19 features" |
+| Comparison/alternatives needed | +2 | "Redis vs Dragonfly vs KeyDB" |
+| Well-established topic | +1 | "JWT authentication best practices" |
+| Project-specific question | 0 | "pourquoi mon test échoue" |
+| Already researched (seed exists) | -2 | Seed has prior research |
+
+**Web Score interpretation:**
+- **0-1**: Skip web research (or minimal)
+- **2-3**: Standard websearch (3 angles: Mainstream/Alternatives/Risks)
+- **4+**: Deep research with intelligent-search (auto-routes to best provider)
+
+#### Dimension 3: Documentation Need Score
+
+| Signal | Score | Example |
+|--------|-------|---------|
+| Specific library/API mentioned | +3 | "Stripe webhooks", "Supabase RLS" |
+| Integration question | +2 | "connect Drizzle with Supabase" |
+| General patterns | +1 | "authentication patterns" |
+| No external dependencies | 0 | "refactor this function" |
+
+**Docs Score interpretation:**
+- **0-1**: Skip docs exploration
+- **2+**: Launch explore-docs agent
+
+#### Display Strategy
+
+After calculating scores, display:
+
+```
+┌─────────────────────────────────────────────────┐
+│ RESEARCH STRATEGY                               │
+├─────────────────────────────────────────────────┤
+│ Code:  {score}/6 → {Skip|Light|Deep}            │
+│ Web:   {score}/6 → {Skip|websearch|intelligent} │
+│ Docs:  {score}/6 → {Skip|explore-docs}          │
+├─────────────────────────────────────────────────┤
+│ Agents to launch: {count}                       │
+└─────────────────────────────────────────────────┘
+```
+
+**Store these scores** - they will be used in Step R.1 for each round.
+
 ---
 
 ## RESEARCH LOOP (max 5 iterations)
@@ -126,6 +199,7 @@ Each round follows: **Research → Synthesize → Ask → Adapt**
 - `round_number`: Current round (1-5)
 - `focus_area`: Current research focus (starts from Phase 0 synthesis)
 - `key_decisions`: Array of pivots/validations from user choices
+- `strategy`: Research strategy from Step 0e (code_score, web_score, docs_score)
 
 ---
 
@@ -140,30 +214,76 @@ Focus: {focus_area}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-#### Step R.1: Launch Parallel Research Agents
+#### Step R.1: Launch Adaptive Research Agents
 
-Launch 3 Task agents with **different research angles** based on current focus:
+Based on strategy scores from Step 0e, build the agent roster dynamically.
 
-1. **Mainstream Agent** - Use Task with subagent_type=websearch:
-   - "best practices for {focus_area}"
-   - "{focus_area} tutorial guide"
-   - "recommended approach for {focus_area}"
+##### Codebase Agents (if code_score ≥ 3)
 
-2. **Alternatives Agent** - Use Task with subagent_type=websearch:
-   - "alternatives to {focus_area}"
-   - "{focus_area} vs {competitor/alternative}"
-   - "different approaches to {focus_area}"
+| Code Score | Configuration |
+|------------|---------------|
+| **3-4 (Light)** | 1 agent: "Find relevant files and existing patterns for {focus_area}" |
+| **5+ (Deep)** | 2 agents in parallel: |
+| | Agent 1: "Existing implementations similar to {focus_area}, patterns to follow" |
+| | Agent 2: "Files that would need modification for {focus_area}, dependencies, imports" |
 
-3. **Risks Agent** - Use Task with subagent_type=websearch:
-   - "{focus_area} problems pitfalls"
-   - "{focus_area} failures mistakes"
-   - "why not {focus_area} criticism"
+Use Task with `subagent_type=explore-codebase`.
 
-**Additional agents** (launch if relevant):
-- **Docs Agent** - Use Task with subagent_type=explore-docs if technical topic
-- **Codebase Agent** - Use Task with subagent_type=explore-codebase if relevant to project
+##### Web Research Agents (if web_score ≥ 2)
 
-**Use `run_in_background: true`** for all agents to enable parallel execution.
+| Web Score | Agent Type | Configuration |
+|-----------|------------|---------------|
+| **2-3 (Standard)** | `websearch` | 3 agents with angles: |
+| | | 1. Mainstream: "best practices for {focus_area}" |
+| | | 2. Alternatives: "alternatives to {focus_area}, different approaches" |
+| | | 3. Risks: "{focus_area} problems pitfalls failures" |
+| **4+ (Deep)** | `intelligent-search` | 2-3 agents with auto-routing: |
+| | | Uses `mcp__omnisearch__ai_search` or `mcp__omnisearch__web_search` |
+| | | Provider selection: Tavily (factual), Exa (semantic), Perplexity (reasoning) |
+
+**intelligent-search query examples:**
+- Perplexity: "{focus_area} best approach 2025 with reasoning"
+- Exa: "production experience {focus_area} real-world"
+- Tavily: "{focus_area} documentation official guide"
+
+##### Documentation Agent (if docs_score ≥ 2)
+
+Launch 1 agent with `subagent_type=explore-docs`:
+- "Documentation for {specific_library} related to {focus_area}"
+- Focus on APIs, configuration, and integration patterns
+
+##### Minimum Guarantee
+
+**Always launch at least 2 agents** to avoid empty research rounds.
+If all scores are low, default to:
+- 1x websearch (Mainstream angle)
+- 1x websearch (Alternatives angle)
+
+##### Launch Strategy
+
+**Use `run_in_background: true`** for ALL agents to enable parallel execution.
+
+**Example for "Améliorer le cache Redis dans notre API":**
+```
+Strategy: Code=4 (Light), Web=3 (websearch), Docs=3 (explore-docs)
+
+Agents launched:
+1. explore-codebase: "Find current Redis cache implementation, patterns used"
+2. websearch (Mainstream): "Redis caching best practices API 2025"
+3. websearch (Alternatives): "Redis alternatives Dragonfly KeyDB comparison"
+4. websearch (Risks): "Redis caching problems pitfalls production"
+5. explore-docs: "Redis caching patterns, TTL strategies, connection pooling"
+```
+
+**Example for "Évaluer si on devrait migrer vers Bun":**
+```
+Strategy: Code=1 (Skip), Web=5 (intelligent-search), Docs=1 (Skip)
+
+Agents launched:
+1. intelligent-search (Perplexity): "Bun vs Node.js 2025 production ready reasoning"
+2. intelligent-search (Exa): "Bun migration experiences real-world production"
+3. intelligent-search (Tavily): "Bun limitations problems compatibility issues 2025"
+```
 
 #### Step R.2: Gather & Synthesize Findings
 
@@ -382,12 +502,14 @@ Next: /apex:1-analyze <NN>-brainstorm-<topic>
 
 <rules>
 - **Phase 0 is optional** - Skip if topic is already clear and specific
+- **Adaptive routing is mandatory** - Always calculate strategy scores before launching agents
 - **Never settle for first answers** - Every finding must be questioned
 - **Cite your sources** - Reference where information came from
 - **Admit uncertainty** - Be explicit about confidence levels
 - **Challenge yourself** - If you agree too quickly, dig deeper
 - **User checkpoints are mandatory** - Always ask after research, never proceed silently
 - **Parallel execution** - Launch multiple agents simultaneously when possible
+- **Right tool for the job** - Use intelligent-search for deep research, websearch for standard
 - **Strong opinions** - Form clear views, don't be wishy-washy
 - **But loosely held** - Update views when evidence contradicts them
 - **Proactive suggestions** - Always include "As-tu pensé à X?" options
@@ -439,8 +561,12 @@ Structure your final output as:
 
 <success_criteria>
 - Asked clarifying questions if topic was vague (Phase 0)
+- Calculated and displayed research strategy scores (Step 0e)
+- Used adaptive agent routing based on Code/Web/Docs scores
 - Completed research loop with user checkpoints after each round
-- Launched multiple parallel research agents per round
+- Launched appropriate agents in parallel per round
+- Used intelligent-search for deep research topics (web_score ≥ 4)
+- Explored codebase when relevant (code_score ≥ 3)
 - Offered proactive suggestions based on unexpected findings
 - Tracked all user decisions in key_decisions
 - Formed a clear, well-reasoned recommendation

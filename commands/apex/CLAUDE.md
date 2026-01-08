@@ -8,7 +8,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 
 | Command | Purpose | Key Flags |
 |---------|---------|-----------|
-| `/apex:0-brainstorm` | Interactive Q&A research (for vague tasks) | - |
+| `/apex:0-brainstorm` | Adaptive research with smart agent routing | - |
 | `/apex:1-analyze` | Gather context & research | `--yolo` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
@@ -49,6 +49,26 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 **Parallel Mode** (`3,4` or `--parallel`): Execute multiple tasks concurrently. Verify tasks don't depend on each other before using.
 
 **Global Scope** (`--global`): For examine phase, analyze ALL feature files instead of just modified ones. More comprehensive but slower.
+
+## Adaptive Agent Routing (Brainstorm)
+
+The `/apex:0-brainstorm` command uses a **scoring system** to select optimal research agents:
+
+| Dimension | Scores | Agent Selection |
+|-----------|--------|-----------------|
+| **Code Relevance** | 0-2: Skip | 3-4: 1x explore-codebase | 5+: 2x explore-codebase |
+| **Web Research** | 0-1: Skip | 2-3: websearch (3 angles) | 4+: intelligent-search |
+| **Documentation** | 0-1: Skip | 2+: explore-docs |
+
+**intelligent-search** auto-routes to best provider:
+- Tavily: Factual queries with citations
+- Exa: Semantic/deep search
+- Perplexity: Complex reasoning (API key required)
+
+**Signal examples** that increase scores:
+- Code: "améliorer src/auth/*" (+3), "optimiser le cache actuel" (+2)
+- Web: "React 19 features" (+3), "Redis vs alternatives" (+2)
+- Docs: "Stripe webhooks" (+3), "connect Drizzle with Supabase" (+2)
 
 ## Smart Skip (Post-Brainstorm)
 

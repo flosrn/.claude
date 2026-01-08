@@ -241,15 +241,99 @@ Potential enhancements:
 
 ---
 
-## Quick Navigation
+## Auxiliary Commands
 
-| Need | Command |
-|------|---------|
-| Start new feature | `/apex:1-analyze "description"` |
-| Explore first | `/apex:0-brainstorm "topic"` |
-| Check progress | `/apex:status folder-name` |
-| Run next task | `/apex:next folder-name` |
-| Validate everything | `/apex:4-examine folder-name` |
-| Visual proof | `/apex:5-browser-test folder-name` |
+These commands support the main workflow phases:
+
+### `/apex:status <folder-name>`
+
+**Purpose**: Display progress tree and task status for a workflow.
+
+```
+$ /apex:status 27-auth-feature
+
+📂 27-auth-feature/
+├── ✅ analyze.md      (complete)
+├── ✅ plan.md         (complete)
+├── 📁 tasks/
+│   ├── ✅ task-01.md  (complete)
+│   ├── 🔄 task-02.md  (in progress)
+│   └── ⏳ task-03.md  (pending)
+└── 📝 implementation.md
+```
+
+**When to use**: Check workflow progress, see which tasks remain, verify phase completion.
+
+---
+
+### `/apex:next <folder-name>`
+
+**Purpose**: Automatically execute the next pending task.
+
+```
+$ /apex:next 27-auth-feature
+→ Detecting next task...
+→ Found: task-02.md (dependencies satisfied)
+→ Launching apex-executor...
+```
+
+**Behavior**:
+- Reads `tasks/index.md` to find pending tasks
+- Verifies dependencies are satisfied
+- Executes the next available task
+- Updates `implementation.md` with results
+
+**When to use**: Continue working through a task list without manually specifying task numbers.
+
+---
+
+### `/apex:handoff`
+
+**Purpose**: Generate a `seed.md` file to transfer context to a new APEX workflow.
+
+```
+$ /apex:handoff
+→ Analyzing current session...
+→ Extracting key findings, decisions, blockers...
+→ Generated: seed.md (directive template format)
+```
+
+**Output structure** (Directive Template):
+```markdown
+## 🎯 Mission
+[Primary objective transferred from previous session]
+
+## ✅ Success Criteria
+[How to know when the new task is complete]
+
+## 🚀 Starting Points
+[Files and patterns discovered in previous session]
+
+## ⛔ Gotchas
+[Risks, constraints, things to avoid]
+
+## 📚 Artifacts
+[References for lazy loading]
+```
+
+**When to use**:
+- Session context getting too long
+- Pivoting to a related but different task
+- Handing off work to another session or person
+
+---
+
+## Quick Reference
+
+| Goal | Command | Notes |
+|------|---------|-------|
+| **Start** (clear requirements) | `/apex:1-analyze "desc"` | Direct to analyze |
+| **Start** (vague/exploratory) | `/apex:0-brainstorm "topic"` | Research first |
+| **Check progress** | `/apex:status folder` | Visual progress tree |
+| **Continue work** | `/apex:next folder` | Auto-detect next task |
+| **Resume interrupted** | `/apex:3-execute folder --continue` | Read impl.md state |
+| **Validate all** | `/apex:4-examine folder` | Technical + logical |
+| **Visual proof** | `/apex:5-browser-test folder` | GIF recording |
+| **Transfer context** | `/apex:handoff` | Generate seed.md |
 
 **Full reference**: [CLAUDE.md](./CLAUDE.md)

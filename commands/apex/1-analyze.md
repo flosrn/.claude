@@ -154,61 +154,132 @@ touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
    - Determine which sources need analysis (codebase/docs/web)
    - List specific questions each agent should answer
 
-3. **LAUNCH PARALLEL ANALYSIS**: Gather context from all sources
+3. **LAUNCH ADAPTIVE ANALYSIS**: Gather context based on strategy scores
 
    **First, determine analysis mode based on seed.md content:**
 
-   ### Mode A: Post-Brainstorm (seed.md has "Brainstorm Summary")
+   ### Mode A: Ultra-Light (Post-Brainstorm)
 
-   If seed.md exists AND contains `## 🔍 Brainstorm Summary` or `### Brainstorm Summary`:
-   - Brainstorm already performed web research and docs exploration
-   - **SKIP**: `websearch` agent (already done)
-   - **SKIP**: `explore-docs` agent (already done)
-   - **LAUNCH ONLY**:
-     - `explore-codebase` - Focus on locating specific files to modify
-     - `vision-analyzer` - If image provided
+   If seed.md contains `## 🔍 Brainstorm Summary` or `### Brainstorm Summary`:
 
+   **Step A.1: Extract inherited scores**
+
+   Look for `### 📊 Strategy Scores` or `### Strategy Scores` in seed.md:
    ```
-   # Post-brainstorm mode - targeted analysis only
-   Task(subagent_type="explore-codebase", run_in_background=true, ...)
-   Task(subagent_type="vision-analyzer", run_in_background=true, ...)  # if image
+   Code: X/6 | Web: Y/6 | Docs: Z/6
    ```
 
-   **Why skip?** Research Loop already did comprehensive web + docs research.
-   Re-running wastes tokens and time. The seed.md contains all insights needed.
+   Parse scores. If not found, default to: Code=3, Web=0, Docs=0
+
+   **Step A.2: Conditional codebase exploration**
+
+   | Inherited Code Score | Action |
+   |---------------------|--------|
+   | **≥ 3** | **SKIP explore-codebase** — Brainstorm already did comprehensive exploration |
+   | **< 3** | Launch 1 explore-codebase for file:line precision |
+
+   **Only scan for precise line numbers** if `🚀 Point de départ` section lacks them.
+
+   **Step A.3: Always skip**
+   - `websearch` — Already done in brainstorm
+   - `explore-docs` — Already done in brainstorm
+
+   **Step A.4: Conditional vision**
+   - `vision-analyzer` — Only if image provided with command
+
+   **Step A.5: Skip clarification**
+
+   If seed.md has `## 📋 Spécifications` or `## 💬 Clarifications`:
+   - Skip Step 4 (Clarification) entirely
+   - Decisions already captured in seed
+
+   **Rationale**: Brainstorm's Research Loop already gathered comprehensive context.
+   Mode A reformats seed.md → analyze.md without redundant exploration.
+
+   ```
+   # Ultra-light mode - minimal or no agents
+   # Only launch explore-codebase if code_score < 3
+   Task(subagent_type="explore-codebase", run_in_background=true, ...)  # if code_score < 3
+   Task(subagent_type="vision-analyzer", run_in_background=true, ...)   # if image
+   ```
 
    ---
 
-   ### Mode B: Full Analysis (no brainstorm or fresh task)
+   ### Mode B: Adaptive (No Brainstorm)
 
    If NO seed.md OR seed.md lacks brainstorm sections:
 
-   **Launch ALL agents in background** with `run_in_background: true`:
+   **Step B.0: Calculate Strategy Scores**
 
-   - **Codebase exploration** (`explore-codebase` agent):
-     - Find similar implementations to use as examples
-     - Locate files that need modification
-     - Identify existing patterns and conventions
+   Before launching agents, calculate scores using same logic as brainstorm:
 
-   - **Documentation exploration** (`explore-docs` agent):
-     - Search library docs for APIs and patterns
-     - Find best practices for tools being used
+   #### Code Relevance Score
 
-   - **Web research** (`websearch` agent):
-     - Research latest approaches and solutions
-     - Find community examples and patterns
+   | Signal | Score |
+   |--------|-------|
+   | Mentions specific files/paths | +3 |
+   | References existing feature | +2 |
+   | Domain = tech or problem | +1 |
+   | Greenfield/new project | -1 |
 
-   - **Vision analysis** (`vision-analyzer` agent) - **ONLY if image provided**:
-     - From seed.md `📷 Image de référence` section
-     - Or drag & drop with the `/apex:1-analyze` command
-     - Analyze UI screenshots for debugging context
+   #### Web Research Depth Score
+
+   | Signal | Score |
+   |--------|-------|
+   | Cutting-edge tech (2024-2026) | +3 |
+   | Comparison/alternatives needed | +2 |
+   | Well-established topic | +1 |
+   | Project-specific question | 0 |
+
+   #### Documentation Need Score
+
+   | Signal | Score |
+   |--------|-------|
+   | Specific library/API mentioned | +3 |
+   | Integration question | +2 |
+   | General patterns | +1 |
+   | No external dependencies | 0 |
+
+   **Step B.1: Launch Adaptive Agents**
+
+   | Dimension | Score | Action |
+   |-----------|-------|--------|
+   | **Code** | 0-2 | Skip |
+   | | 3-4 | 1 explore-codebase |
+   | | 5+ | 2 explore-codebase (different angles) |
+   | **Web** | 0-1 | Skip |
+   | | 2-3 | websearch (3 angles) |
+   | | 4+ | intelligent-search |
+   | **Docs** | 0-1 | Skip |
+   | | 2+ | explore-docs |
+
+   **Minimum guarantee**: Always launch at least 1 agent.
+
+   **Display strategy:**
+   ```
+   ┌─────────────────────────────────────────────────┐
+   │ ANALYSIS STRATEGY                               │
+   ├─────────────────────────────────────────────────┤
+   │ Code:  {score}/6 → {Skip|Light|Deep}            │
+   │ Web:   {score}/6 → {Skip|websearch|intelligent} │
+   │ Docs:  {score}/6 → {Skip|explore-docs}          │
+   ├─────────────────────────────────────────────────┤
+   │ Agents to launch: {count}                       │
+   └─────────────────────────────────────────────────┘
+   ```
+
+   **Vision analysis** (`vision-analyzer` agent) - **ONLY if image provided**:
+   - From seed.md `📷 Image de référence` section
+   - Or drag & drop with the `/apex:1-analyze` command
+   - Analyze UI screenshots for debugging context
 
    ```
-   # Full analysis mode - all agents
-   Task(subagent_type="explore-codebase", run_in_background=true, ...)
-   Task(subagent_type="explore-docs", run_in_background=true, ...)
-   Task(subagent_type="websearch", run_in_background=true, ...)
-   Task(subagent_type="vision-analyzer", run_in_background=true, ...)  # if image
+   # Adaptive analysis mode - agents based on scores
+   Task(subagent_type="explore-codebase", run_in_background=true, ...)  # if code_score >= 3
+   Task(subagent_type="explore-docs", run_in_background=true, ...)      # if docs_score >= 2
+   Task(subagent_type="websearch", run_in_background=true, ...)         # if web_score 2-3
+   Task(subagent_type="intelligent-search", run_in_background=true, ...)# if web_score >= 4
+   Task(subagent_type="vision-analyzer", run_in_background=true, ...)   # if image
    ```
 
    ---
@@ -288,6 +359,11 @@ touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
 
      > This section is the PRIMARY content consumed by lazy loading.
      > Keep it dense and actionable.
+
+     **Strategy used:**
+     - Code: X/6 → {Skip|Light|Deep}
+     - Web:  Y/6 → {Skip|websearch|intelligent}
+     - Docs: Z/6 → {Skip|explore-docs}
 
      **Key files to modify:**
      - `path/to/main-file.ts` - [Brief purpose]

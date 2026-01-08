@@ -1,6 +1,6 @@
 ---
 description: Execution phase - implement the plan step by step with ultra thinking
-argument-hint: <task-folder-path> [task-number(s) | --parallel]
+argument-hint: <task-folder-path> [task-number(s)] [--parallel | --continue | --validate]
 ---
 
 You are an implementation specialist. Execute plans precisely while maintaining code quality.
@@ -31,15 +31,26 @@ You are an implementation specialist. Execute plans precisely while maintaining 
 
    **Parse argument for execution type**:
    - `--parallel` flag → **PARALLEL AUTO-DETECT MODE**
+   - `--continue` flag → **CONTINUE MODE** (resume from last session state)
    - `--dry-run` flag → **DRY-RUN MODE** (preview only, no changes)
-   - `--quick` flag → **QUICK VALIDATION MODE** (run typecheck+lint after task)
+   - `--validate` flag → **VALIDATE MODE** (run typecheck+lint after task)
+   - `--quick` flag → **QUICK MODE** (validate + stop on first error)
    - `--force-sonnet` flag → **Override Smart Model Selection** (always use Sonnet)
    - `--force-opus` flag → **Override Smart Model Selection** (always use Opus)
    - Comma-separated numbers (e.g., `3,4`) → **PARALLEL EXPLICIT MODE**
    - Single number (e.g., `3`) → **SEQUENTIAL MODE** (single task)
    - No number → **SEQUENTIAL MODE** (next incomplete task)
 
-   **Note**: Flags can combine (e.g., `3 --dry-run`, `3,4 --force-opus`)
+   **Default behavior**: Validation is SKIPPED by default. Use `--validate` or `--quick` to run typecheck/lint. This delegates validation to `/apex:4-examine` for a cleaner separation of concerns.
+
+   **Supported flag combinations**:
+   | Combination | Behavior |
+   |-------------|----------|
+   | `3 --validate` | Execute task 3, then validate |
+   | `3,4 --parallel` | Invalid - use one or the other |
+   | `--parallel --force-opus` | Auto-detect parallel, all use Opus |
+   | `--continue --validate` | Resume + validate each task |
+   | `--dry-run --validate` | Invalid - dry-run doesn't execute |
 
    **IMPORTANT**: Task-by-task mode is preferred when available because:
    - Individual tasks are smaller and more focused (~50 lines vs 400+ lines)
@@ -293,26 +304,90 @@ Run without --dry-run to execute
 
 ---
 
-## 3D. QUICK VALIDATION MODE (when --quick flag detected)
+## 3D. VALIDATE MODE (when --validate flag detected)
 
-**Note**: `--quick` modifies normal execution, not a separate mode.
+**Note**: `--validate` is an optional modifier. By default, validation is SKIPPED.
 
-After completing task implementation (Step 9):
-1. Run `pnpm run typecheck`
-2. Run `pnpm run lint`
-3. Display results:
+After completing task implementation (Step 7):
+1. Run `pnpm run format` (if available)
+2. Run `pnpm run typecheck`
+3. Run `pnpm run lint`
+4. Display results:
 
 ```
 ══════════════════════════════════════════════════
-QUICK VALIDATION
+VALIDATION RESULTS
 ══════════════════════════════════════════════════
+Format:    ✓ Applied
 Typecheck: ✓ Pass (or ✗ N errors)
 Lint:      ✓ Pass (or ✗ N warnings/errors)
 ══════════════════════════════════════════════════
 ```
 
-4. If errors found: Display and ask user whether to continue to documentation update
-5. If all pass: Continue to Step 10 (UPDATE TASK STATUS)
+5. If errors found: Attempt to fix, then re-run
+6. Continue to Step 10 (UPDATE TASK STATUS)
+
+**When to use**:
+- Final task before `/apex:4-examine`
+- When you want immediate feedback on code quality
+- Before committing (ensures clean code)
+
+---
+
+## 3E. QUICK MODE (when --quick flag detected)
+
+**Note**: `--quick` = validate + stop on first error. More strict than `--validate`.
+
+**Behavior**:
+- Same as `--validate` but **STOPS immediately** if any check fails
+- Does NOT attempt auto-fix
+- Useful for catching issues early
+
+**Display on error**:
+```
+══════════════════════════════════════════════════
+QUICK VALIDATION - STOPPED
+══════════════════════════════════════════════════
+Typecheck: ✗ 3 errors found
+
+Stopping execution. Fix errors and retry.
+══════════════════════════════════════════════════
+```
+
+---
+
+## 3F. CONTINUE MODE (when --continue flag detected)
+
+**Purpose**: Resume execution from last session state after interruption.
+
+**Behavior**:
+1. Read `./.claude/tasks/<task-folder>/tasks/index.md`
+2. Find first incomplete task (`- [ ]`)
+3. Check if `implementation.md` has a "Session N" entry for this task
+4. If partial session found → Resume from last noted step
+5. If no partial session → Start fresh on that task
+
+**State detection** (from implementation.md):
+- Look for `### Session N - [date]` entries
+- Check `**Task(s) Completed**:` line
+- Identify any "In Progress" or incomplete markers
+
+**Display**:
+```
+══════════════════════════════════════════════════
+CONTINUE MODE
+══════════════════════════════════════════════════
+Last session: Session 2 (2026-01-07)
+Completed: Tasks 1, 2
+In progress: Task 3 (partial)
+
+Resuming Task 3...
+══════════════════════════════════════════════════
+```
+
+**If no previous state found**:
+- Behave like normal sequential mode
+- Start with first incomplete task
 
 ---
 
@@ -361,23 +436,31 @@ Lint:      ✓ Pass (or ✗ N warnings/errors)
    - **STOP** if something doesn't work as expected
    - **RETURN TO TASK**: If implementation reveals issues with task definition
 
-8. **FORMAT AND LINT**: Clean up code
-   - Check `package.json` for available scripts
-   - Run formatting: `pnpm run format`
-   - Fix linter warnings if reasonable
-   - **CRITICAL**: Don't skip this step
+8. **VALIDATION** (only if `--validate` or `--quick` flag)
 
-9. **TEST PHASE**: Verify implementation works
-   - **Check `package.json`** for available test commands:
-     - Look for: `lint`, `typecheck`, `test`, `format`, `build`
-   - **Run relevant checks**:
-     - `pnpm run typecheck` - MUST pass
-     - `pnpm run lint` - MUST pass
-     - `pnpm run test` - Run ONLY tests related to changes
-   - **STAY IN SCOPE**: Don't run entire test suite unless necessary
-   - **If tests fail**:
-     - Debug and fix issues
-     - **NEVER** mark as complete with failing tests
+   **DEFAULT BEHAVIOR (no flag)**: Skip this step entirely.
+   - Validation is delegated to `/apex:4-examine`
+   - This keeps execute fast and focused on implementation
+   - Display:
+     ```
+     ══════════════════════════════════════════════════
+     Validation skipped (default behavior)
+     Run /apex:4-examine for comprehensive validation
+     ══════════════════════════════════════════════════
+     ```
+
+   **WITH `--validate` FLAG**: Run validation, attempt fixes
+   - See section 3D for details
+
+   **WITH `--quick` FLAG**: Run validation, stop on error
+   - See section 3E for details
+
+9. **CONTINUOUS VALIDATION** (during implementation)
+   - This is NOT the same as step 8
+   - As you implement, verify code parses/compiles
+   - Catch obvious syntax errors immediately
+   - **Don't wait for step 8** to find broken code
+   - **NEVER** mark a task as complete if code doesn't compile
 
 10. **UPDATE TASK STATUS**: Mark completion in index.md
 
@@ -632,7 +715,7 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 
 ```bash
 # Execute next pending task (auto-detects from index.md)
-# Smart Model Selection chooses Sonnet or Opus based on complexity
+# Validation SKIPPED by default - run /apex:4-examine after
 /apex:3-execute 68-ai-template-creator
 
 # Execute specific task by number
@@ -641,12 +724,12 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 # Execute with plan.md fallback (if no tasks/ folder)
 /apex:3-execute 10-advent-won-prize-id-bug
 
+# CONTINUE: Resume from last interrupted session
+/apex:3-execute 68-ai-template-creator --continue
+
 # PARALLEL: Execute specific tasks simultaneously
 # Each task gets its own model based on complexity score
 /apex:3-execute 72-rename-feature 3,4
-
-# PARALLEL: Execute 3 tasks at once
-/apex:3-execute 72-rename-feature 3,4,5
 
 # PARALLEL: Auto-detect parallelizable tasks from index.md
 /apex:3-execute 72-rename-feature --parallel
@@ -654,12 +737,18 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 # DRY-RUN: Preview what a task would do without executing
 /apex:3-execute 68-ai-template-creator 3 --dry-run
 
-# QUICK: Execute task with immediate typecheck/lint validation
+# VALIDATE: Run typecheck/lint after task (opt-in)
+/apex:3-execute 68-ai-template-creator 3 --validate
+
+# QUICK: Validate + stop on first error (stricter)
 /apex:3-execute 68-ai-template-creator 3 --quick
 
 # FORCE MODEL: Override Smart Model Selection
 /apex:3-execute 68-ai-template-creator 5 --force-opus    # Complex integration
 /apex:3-execute 68-ai-template-creator 2 --force-sonnet  # Keep simple even if scored high
+
+# COMBINED: Continue with validation
+/apex:3-execute 72-rename-feature --continue --validate
 
 # COMBINED: Parallel with forced model
 /apex:3-execute 72-rename-feature 3,4 --force-opus       # All tasks use Opus

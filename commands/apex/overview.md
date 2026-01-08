@@ -1,20 +1,14 @@
-# APEX System Overview
+---
+description: APEX System Overview
+argument-hint: (no arguments - displays visual guide)
+---
 
-> **APEX** (Analyze-Plan-Execute-eXamine) - A multi-session workflow orchestrator for Claude Code that handles complex implementation tasks through structured phases.
+# APEX Visual Guide
 
-## Quick Reference
+> **APEX** (Analyze-Plan-Execute-eXamine) - A multi-session workflow orchestrator for complex implementation tasks.
 
-| Command | Purpose | Common Flags |
-|---------|---------|--------------|
-| `/apex:1-analyze` | Gather context & research | `--yolo`, `--background` |
-| `/apex:2-plan` | Design implementation strategy | `--yolo` |
-| `/apex:3-execute` | Implement changes | `--parallel`, `--dry-run`, `--quick` |
-| `/apex:4-examine` | Validate & fix issues | `--skip-patterns`, `--background` |
-| `/apex:tasks` | Divide plan into tasks | `--yolo` |
-| `/apex:next` | Run next pending task | - |
-| `/apex:status` | Show progress tree | - |
-| `/apex:handoff` | Transfer context to new workflow | `--from`, `--edit` |
-| `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
+**For quick reference**: See [CLAUDE.md](./CLAUDE.md)
+**For command details**: See individual command files (1-analyze.md, 2-plan.md, etc.)
 
 ---
 
@@ -22,305 +16,98 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           APEX WORKFLOW                                       │
+│                           APEX WORKFLOW                                      │
+│                                                                              │
+│  "Think before you act. Think deeper. Then act precisely."                  │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-                    ┌──────────────┐
-                    │   seed.md    │ (optional, from /apex:handoff)
-                    │ Prior Context│
-                    └──────┬───────┘
-                           │
-                           ▼
+                         ┌──────────────────┐
+                         │  User Request    │
+                         │  "Add feature X" │
+                         └────────┬─────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+                    ▼                           ▼
+    ┌───────────────────────────┐   ┌───────────────────────────┐
+    │  VAGUE / EXPLORATORY?     │   │  CLEAR / SPECIFIC?        │
+    │  /apex:0-brainstorm       │   │  Skip to analyze          │
+    │  • Interactive Q&A        │   │                           │
+    │  • Adaptive agent routing │   │                           │
+    │  • Research loops (max 5) │   │                           │
+    │  • Output: seed.md        │   │                           │
+    └─────────────┬─────────────┘   └─────────────┬─────────────┘
+                  │                               │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
 ┌───────────────────────────────────────────────────────────────────────────────┐
-│  PHASE 1: ANALYZE                              /apex:1-analyze                 │
-│  ─────────────────                                                             │
-│  • Create task folder: .claude/tasks/NN-kebab-name/                           │
-│  • Launch parallel agents: explore-codebase, explore-docs, websearch         │
-│  • ULTRA THINK: Plan search strategy                                          │
-│  • Output: analyze.md                                                          │
+│  PHASE 1: ANALYZE                              /apex:1-analyze                │
+│  ─────────────────                                                            │
+│  • Create task folder: .claude/tasks/NN-kebab-name/                          │
+│  • Launch parallel agents (adaptive based on scores)                         │
+│  • ULTRA THINK: Plan search strategy                                         │
+│  • Output: analyze.md                                                         │
 └───────────────────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
+                                  │
+                                  ▼
 ┌───────────────────────────────────────────────────────────────────────────────┐
-│  PHASE 2: PLAN                                 /apex:2-plan                    │
-│  ─────────────                                                                 │
-│  • Read analyze.md                                                             │
-│  • ULTRA THINK: Design implementation strategy                                │
-│  • Ask user questions if ambiguous                                            │
-│  • Output: plan.md (file-centric, no code snippets)                           │
+│  PHASE 2: PLAN                                 /apex:2-plan                   │
+│  ─────────────                                                                │
+│  • Read analyze.md                                                            │
+│  • ULTRA THINK: Design implementation strategy                               │
+│  • Ask user questions if ambiguous                                           │
+│  • Output: plan.md (file-centric, no code snippets)                          │
 └───────────────────────────────────────────────────────────────────────────────┘
-                           │
-            ┌──────────────┴──────────────┐
-            │                             │
-            ▼                             ▼
-┌─────────────────────────────┐   ┌─────────────────────────────┐
-│  OPTIONAL: TASK DIVISION    │   │  DIRECT EXECUTION            │
-│  /apex:tasks                │   │  (skip to Phase 3)           │
-│  • ≥6 files → divide        │   │  • <6 files → execute        │
-│  • Create tasks/index.md    │   └─────────────────────────────┘
-│  • Output: task-01.md, etc  │
-└──────────────┬──────────────┘
-               │
-               ▼
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+                    ▼                           ▼
+    ┌───────────────────────────┐   ┌───────────────────────────┐
+    │  COMPLEX (≥6 files)?      │   │  SIMPLE (<6 files)?       │
+    │  /apex:tasks              │   │  Skip to execute          │
+    │  • Divide into task files │   │                           │
+    │  • Define dependencies    │   │                           │
+    │  • Output: tasks/*.md     │   │                           │
+    └─────────────┬─────────────┘   └─────────────┬─────────────┘
+                  │                               │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
 ┌───────────────────────────────────────────────────────────────────────────────┐
-│  PHASE 3: EXECUTE                              /apex:3-execute                 │
-│  ───────────────                                                               │
-│  • Task-by-Task Mode (if tasks/ exists) or Plan Mode (fallback)               │
-│  • Sequential: one task at a time                                              │
-│  • Parallel: 3,4 or --parallel for concurrent execution                       │
-│  • Outputs: implementation.md, progress dashboard                              │
+│  PHASE 3: EXECUTE                              /apex:3-execute                │
+│  ───────────────                                                              │
+│  • Task-by-Task Mode (if tasks/ exists) or Plan Mode (fallback)              │
+│  • Sequential (default) or Parallel (3,4 or --parallel)                      │
+│  • Validation SKIPPED by default (use --validate to opt-in)                  │
+│  • Output: implementation.md                                                  │
 └───────────────────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
+                                  │
+                                  ▼
 ┌───────────────────────────────────────────────────────────────────────────────┐
-│  PHASE 4: EXAMINE                              /apex:4-examine                 │
-│  ───────────────                                                               │
-│  • Run build, typecheck, lint                                                 │
-│  • React 19 pattern validation                                                │
-│  • Auto-fix with parallel Snipper agents                                      │
-│  • Update implementation.md with results                                      │
+│  PHASE 4: EXAMINE                              /apex:4-examine                │
+│  ───────────────                                                              │
+│  • Phase 1: Technical (build, typecheck, lint)                               │
+│  • Phase 2: Logical (coherence, edge cases, patterns)                        │
+│  • Auto-fix with parallel Snipper agents                                     │
+│  • Output: Updated implementation.md                                          │
 └───────────────────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-                    ┌──────────────┐
-                    │   COMPLETE   │
-                    │  Ready for   │
-                    │  deployment  │
-                    └──────────────┘
-```
-
----
-
-## Phase Details
-
-### Phase 1: Analyze (`/apex:1-analyze`)
-
-**Purpose**: Gather all context needed before planning
-
-**Input**: Task description (string) or existing folder name
-**Output**: `analyze.md` with findings
-
-**What it does**:
-- Creates numbered task folder (`.claude/tasks/NN-kebab-name/`)
-- Launches parallel agents for research
-- ULTRA THINKs about search strategy
-- Produces comprehensive analysis document
-
-**Flags**:
-| Flag | Behavior |
-|------|----------|
-| `--yolo` | Auto-continue to next phase in new terminal |
-| `--background` | Run research agents asynchronously |
-
-**Example**:
-```bash
-/apex:1-analyze "Add JWT authentication to the API"
-/apex:1-analyze 08-auth-feature --yolo
-```
-
----
-
-### Phase 2: Plan (`/apex:2-plan`)
-
-**Purpose**: Design implementation strategy before coding
-
-**Input**: `analyze.md` from Phase 1
-**Output**: `plan.md` with file-centric changes
-
-**What it does**:
-- Reads analysis findings
-- ULTRA THINKs about approach
-- Asks clarifying questions if needed
-- Creates file-by-file change plan (no code snippets)
-
-**Flags**:
-| Flag | Behavior |
-|------|----------|
-| `--yolo` | Auto-continue to `/apex:tasks` or `/apex:3-execute` |
-
-**Example**:
-```bash
-/apex:2-plan 08-auth-feature
-```
-
----
-
-### Phase 3: Execute (`/apex:3-execute`)
-
-**Purpose**: Implement the planned changes
-
-**Input**: `plan.md` or `tasks/*.md` files
-**Output**: `implementation.md`, progress dashboard
-
-**Execution Modes**:
-
-| Mode | When Used | Behavior |
-|------|-----------|----------|
-| Sequential (default) | Single task or no number | One task at a time |
-| Parallel Explicit | `3,4` or `3,4,5` | Run specified tasks concurrently |
-| Parallel Auto | `--parallel` | Detect parallelizable tasks |
-| Dry-Run | `--dry-run` | Preview without executing |
-| Quick | `--quick` | Run typecheck+lint after task |
-
-**Flags**:
-| Flag | Behavior |
-|------|----------|
-| `--parallel` | Auto-detect parallelizable tasks from index.md |
-| `--dry-run` | Preview task actions without changes |
-| `--quick` | Immediate validation after implementation |
-
-**Examples**:
-```bash
-/apex:3-execute 08-auth-feature        # Next pending task
-/apex:3-execute 08-auth-feature 3      # Specific task
-/apex:3-execute 08-auth-feature 3,4    # Parallel tasks
-/apex:3-execute 08-auth-feature --parallel  # Auto-detect parallel
-/apex:3-execute 08-auth-feature 3 --dry-run # Preview only
-```
-
----
-
-### Phase 4: Examine (`/apex:4-examine`)
-
-**Purpose**: Validate implementation and auto-fix issues
-
-**Input**: Codebase with recent changes
-**Output**: Updates `implementation.md` with validation results
-
-**What it does**:
-- Runs build, typecheck, lint
-- Checks React 19 patterns (Context.Provider, useContext, memo)
-- Groups errors into fix areas (max 5 files each)
-- Launches parallel Snipper agents for auto-fixing
-- Runs format
-
-**Flags**:
-| Flag | Behavior |
-|------|----------|
-| `--skip-patterns` | Skip React 19 pattern validation |
-| `--background` | Run diagnostics asynchronously |
-
-**Example**:
-```bash
-/apex:4-examine 08-auth-feature
-/apex:4-examine 08-auth-feature --skip-patterns
-```
-
----
-
-### Phase 5: Tasks (`/apex:tasks`)
-
-**Purpose**: Divide plan into granular, parallelizable tasks
-
-**Input**: `plan.md`
-**Output**: `tasks/index.md`, `task-01.md`, `task-02.md`, etc.
-
-**When to use**: When plan has ≥6 file changes
-
-**What it does**:
-- Creates `tasks/` subfolder
-- Generates individual task files with:
-  - Problem statement
-  - Proposed solution
-  - Dependencies
-  - Success criteria
-- Creates `index.md` with execution order
-
-**Flags**:
-| Flag | Behavior |
-|------|----------|
-| `--yolo` | STOPS after task creation (safety) |
-
-**Example**:
-```bash
-/apex:tasks 08-auth-feature
-```
-
----
-
-## Utility Commands
-
-### `/apex:next`
-
-**Purpose**: Execute next pending task automatically
-
-**What it does**:
-- Auto-detects most recent task folder (if not provided)
-- Finds first incomplete task from `index.md`
-- Checks dependencies are satisfied
-- Runs via apex-executor agent
-
-**Example**:
-```bash
-/apex:next                    # Most recent folder
-/apex:next 08-auth-feature    # Specific folder
-```
-
----
-
-### `/apex:status`
-
-**Purpose**: Show visual progress tree
-
-**Output**:
-```
-.claude/tasks/08-auth-feature/
-├── analyze.md ✓
-├── plan.md ✓
-├── implementation.md
-└── tasks/
-    ├── index.md
-    ├── ✓ task-01.md (Setup middleware)
-    ├── ✓ task-02.md (Token validation)
-    ├── ○ task-03.md (Route protection)
-    └── ○ task-04.md (Tests)
-
-Progress: 2/4 (50%)
-Next: /apex:3-execute 08-auth-feature 3
-```
-
----
-
-### `/apex:handoff`
-
-**Purpose**: Transfer context to next workflow
-
-**Output**: Creates `seed.md` with directive template
-
-**Flags**:
-| Flag | Behavior |
-|------|----------|
-| `--from <folder>` | Extract context from specific folder |
-| `--edit` | Open seed.md in Zed editor |
-
-**Example**:
-```bash
-/apex:handoff "Continue auth work with refresh tokens" --from 08-auth-feature
-```
-
----
-
-### `/apex:5-browser-test`
-
-**Purpose**: Browser testing with GIF recording
-
-**What it does**:
-- Opens browser with chrome-devtools MCP
-- Records test flows as GIF
-- Detects console/network errors
-- Saves recordings to `recordings/` folder
-
-**Flags**:
-| Flag | Behavior |
-|------|----------|
-| `--url=` | Explicit test URL |
-| `--no-gif` | Skip GIF recording |
-| `--parallel` | Run test scenarios concurrently |
-
-**Example**:
-```bash
-/apex:5-browser-test 08-auth-feature
-/apex:5-browser-test 08-auth-feature --url=http://localhost:3000/login
+                                  │
+                                  ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│  PHASE 5: BROWSER TEST (optional)             /apex:5-browser-test           │
+│  ─────────────────────────────                                                │
+│  • Live browser validation with GIF recording                                │
+│  • Console/network error detection                                           │
+│  • Visual proof of functionality                                             │
+└───────────────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+                         ┌──────────────┐
+                         │   COMPLETE   │
+                         │  Ready for   │
+                         │  deployment  │
+                         └──────────────┘
 ```
 
 ---
@@ -340,7 +127,7 @@ User runs: /apex:1-analyze "task" --yolo
                         ▼
          ┌──────────────────────────────┐
          │ 2. Phase completes           │
-         │    → Writes analyze.md      │
+         │    → Writes analyze.md       │
          └──────────────┬───────────────┘
                         │
                         ▼
@@ -367,53 +154,40 @@ User runs: /apex:1-analyze "task" --yolo
 
 ---
 
-## File Structure
-
-### Task Folder Template
-
-```
-.claude/tasks/NN-kebab-name/
-├── seed.md              # Optional: context from /apex:handoff
-├── analyze.md           # Phase 1 output
-├── plan.md              # Phase 2 output
-├── implementation.md    # Phase 3/4 output (session log)
-├── .yolo                # Marker file for YOLO mode
-└── tasks/               # Optional: from /apex:tasks
-    ├── index.md         # Task list with dependencies
-    ├── task-01.md       # Individual task
-    ├── task-02.md
-    └── ...
-```
-
-### Artifact Lifecycle
-
-| File | Created By | Purpose |
-|------|------------|---------|
-| `seed.md` | `/apex:handoff` | Prior context transfer (directive template) |
-| `analyze.md` | `/apex:1-analyze` | Research findings |
-| `plan.md` | `/apex:2-plan` | Implementation strategy |
-| `tasks/` | `/apex:tasks` | Granular task breakdown |
-| `implementation.md` | `/apex:3-execute` | Session log, changes made |
-
----
-
 ## Key Patterns
 
 ### ULTRA THINK
 
 All commands mandate deep thinking before action:
+- **Brainstorm**: Score task to select optimal agents
 - **Analyze**: Plan search strategy before launching agents
 - **Plan**: Design complete strategy before writing
 - **Execute**: Think through each change before editing
 - **Tasks**: Consider dependencies and size balance
 
+### Adaptive Agent Routing
+
+Brainstorm and Analyze use a **scoring system** to select agents:
+
+```
+┌─────────────────────────────────────────────────┐
+│ STRATEGY SCORES                                 │
+├─────────────────────────────────────────────────┤
+│ Code:  X/6 → {Skip | 1 agent | 2 agents}       │
+│ Web:   Y/6 → {Skip | websearch | intelligent}  │
+│ Docs:  Z/6 → {Skip | explore-docs}             │
+└─────────────────────────────────────────────────┘
+```
+
 ### Directive Template
 
-Used in `seed.md` structure:
-1. **🎯 Objectif** - Most important, shown first
-2. Supporting context (Point de départ, Interdictions, Spécifications)
-3. Technical details (optional, lazy-loaded)
-4. Artifacts table (lazy load references)
+Used in `seed.md` structure (most important first):
+1. **🎯 Objectif** - The mission (FIRST)
+2. **✅ Critères de succès** - How to know when done
+3. **🚀 Point de départ** - Files to read first
+4. **⛔ Interdictions** - Gotchas to avoid
+5. **📋 Spécifications** - Requirements
+6. **📚 Artifacts** - Lazy-loaded references
 
 ### Parallel Notation
 
@@ -434,52 +208,48 @@ Plans organized by file, not feature:
 
 ---
 
-## Troubleshooting
+## Separation of Concerns
 
-### Bash Portability
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                     RESPONSIBILITY MATRIX                                   │
+├────────────────────┬───────────────────────────────────────────────────────┤
+│  /apex:0-brainstorm│ Research, explore options, form recommendations       │
+│  /apex:1-analyze   │ Gather context, understand codebase                   │
+│  /apex:2-plan      │ Design strategy, no code                              │
+│  /apex:tasks       │ Divide work, define dependencies                      │
+│  /apex:3-execute   │ Implement code (validation OPTIONAL)                  │
+│  /apex:4-examine   │ Validate (technical + logical)                        │
+│  /apex:5-browser   │ Visual proof, GIF documentation                       │
+└────────────────────┴───────────────────────────────────────────────────────┘
+```
 
-The system uses portable bash constructs:
-- `/usr/bin/grep -E` instead of `grep -E` (bypasses rg alias)
-- `sort -t- -k1 -n` instead of `sort -V` (portable numeric sort)
-- `expr` instead of `$(( ))` for arithmetic
-
-### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| YOLO doesn't continue | Check `.yolo` file exists in task folder |
-| GIF recording fails | Ensure browser tab context exists first |
-| Parallel tasks conflict | Verify no dependencies between tasks |
-| Hook not triggering | Check hook registration in settings.json |
-
-### Untested Flag Combinations
-
-Exercise caution with:
-- `--parallel --dry-run` (may have undefined behavior)
-- Multiple flags in combination
+**Key insight**: Execute focuses on implementation, Examine handles all validation. This prevents duplication and keeps each phase focused.
 
 ---
 
 ## Future Improvements
 
-Suggested enhancements from audit:
+Potential enhancements:
 
-1. **`/apex:rollback`** - Undo last execute session
-2. **`--watch` flag for examine** - Auto-rerun on file changes
-3. **Task templates** - Common patterns (API endpoint, component, etc.)
-4. **Improved GIF workflow** - Auto-move from Downloads to task folder
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| `/apex:rollback` | Undo last execute session | 🟡 Medium |
+| `--watch` for examine | Auto-rerun on file changes | 🟢 Low |
+| Task templates | Common patterns (API, component) | 🟢 Low |
+| Test generation | Auto-create tests during execute | 🟡 Medium |
 
 ---
 
-## Related Documentation
+## Quick Navigation
 
-- [CLAUDE.md](./CLAUDE.md) - Quick reference guide
-- [1-analyze](./1-analyze.md) - Analysis phase details
-- [2-plan](./2-plan.md) - Planning phase details
-- [3-execute](./3-execute.md) - Execution phase details
-- [4-examine](./4-examine.md) - Validation phase details
-- [tasks](./tasks.md) - Task division details
-- [5-browser-test](./5-browser-test.md) - Browser testing with GIF
-- [handoff](./handoff.md) - Context transfer
-- [next](./next.md) - Auto-execute next task
-- [status](./status.md) - Progress display
+| Need | Command |
+|------|---------|
+| Start new feature | `/apex:1-analyze "description"` |
+| Explore first | `/apex:0-brainstorm "topic"` |
+| Check progress | `/apex:status folder-name` |
+| Run next task | `/apex:next folder-name` |
+| Validate everything | `/apex:4-examine folder-name` |
+| Visual proof | `/apex:5-browser-test folder-name` |
+
+**Full reference**: [CLAUDE.md](./CLAUDE.md)

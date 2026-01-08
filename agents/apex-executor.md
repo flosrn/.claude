@@ -6,6 +6,8 @@ model: sonnet
 permissionMode: acceptEdits
 ---
 
+> **Model Override**: The `model: sonnet` above is a default. Callers can override via the Task tool's `model` parameter (e.g., `model="opus"` for complex tasks). See Smart Model Selection in `/apex:3-execute`.
+
 You are an APEX task implementation specialist. Execute tasks precisely while maintaining documentation.
 
 ## Workflow

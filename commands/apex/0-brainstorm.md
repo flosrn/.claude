@@ -428,36 +428,62 @@ echo "════════════════════════�
 
 **⚠️ COPY THE EXACT PATH shown above for the Write tool.**
 
-### Step 5b: Write seed.md
+### Step 5b: Write seed.md (Directive Template Format)
 
 **⚠️ CRITICAL**: Use the **EXACT path** from the output above (starts with `/Users/...`).
 Do NOT use `tasks/...` or any relative path - use the FULL absolute path displayed.
 
+**Section mapping from brainstorm findings:**
+
+| Brainstorm Source | Maps To |
+|-------------------|---------|
+| Final recommendation | 🎯 Mission + ✅ Critères |
+| Codebase exploration files | 🚀 Point de départ |
+| Risks research angle | ⛔ Interdictions |
+| User clarifications + decisions | 📋 Spécifications |
+| Strategy scores (Step 0e) | 📊 Strategy Scores |
+| Synthesis | 🔍 Brainstorm Summary |
+
 ```markdown
-# 🌱 Seed: [Topic Name]
+# 🎯 Mission: [Task derived from brainstorm]
+
+**Tu dois** [imperative objective from recommendations].
 
 **Created**: [Date] via /apex:0-brainstorm
 **Status**: Ready for analysis
 
 ---
 
-## 🎯 Objectif
+## ✅ Critères de succès
 
-[Clear objective derived from brainstorm conclusions]
+Tu as réussi si :
+- [ ] [Success criterion from recommendations]
+- [ ] [Success criterion 2]
+- [ ] Tests passent / Build réussit
+
+## 🚀 Point de départ
+
+**Commence par lire** :
+- `path/to/file.ts:L42` — [From codebase exploration findings]
+- `path/to/pattern.ts` — [Pattern discovered]
+
+## ⛔ Interdictions
+
+**NE FAIS PAS** :
+- [Gotcha from Risks research] — [Why]
+- [Pitfall discovered] — [Consequence]
 
 ## 📋 Spécifications
 
-Based on brainstorm findings:
-- [Key requirement/decision 1]
-- [Key requirement/decision 2]
-- [Key requirement/decision 3]
-
-## 💬 Clarifications (from Phase 0)
-
-- **Q**: [Question asked]
-  **A**: [User's answer]
+- **[Decision 1]**: [From Decision Journey]
+- **[Requirement]**: [From user clarifications]
 
 ## 🔍 Brainstorm Summary
+
+### 📊 Strategy Scores
+```
+Code: {code_score}/6 | Web: {web_score}/6 | Docs: {docs_score}/6
+```
 
 ### Key Insights
 [Top 3-5 insights from synthesis]
@@ -476,6 +502,14 @@ Based on brainstorm findings:
 [For each round where user made a choice:]
 - **Round N**: [Decision made] — [Rationale from findings]
 
+## 📚 Artifacts source
+
+> **Lazy Load**: Ne lire que si nécessaire.
+
+| Artifact | Path | Quand lire |
+|----------|------|------------|
+| Full brainstorm | Current seed | Pour l'historique des décisions |
+
 ## ⏭️ Next Step
 
 Run `/apex:1-analyze <folder-name>` to continue with implementation planning.
@@ -493,6 +527,11 @@ BRAINSTORM COMPLETE
 
 Research rounds completed: {round_number}
 Key decisions captured: {len(key_decisions)}
+
+Research strategy used:
+- Code: {code_score}/6 → {Skip|Light|Deep}
+- Web:  {web_score}/6 → {Skip|websearch|intelligent}
+- Docs: {docs_score}/6 → {Skip|explore-docs}
 
 Next: /apex:1-analyze <NN>-brainstorm-<topic>
 ══════════════════════════════════════════════════

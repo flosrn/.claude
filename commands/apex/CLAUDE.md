@@ -12,7 +12,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 | `/apex:1-analyze` | Gather context & research | `--yolo` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
-| `/apex:3-execute` | Implement changes | `--parallel`, `--dry-run`, `--quick`, `--force-sonnet`, `--force-opus` |
+| `/apex:3-execute` | Implement changes | `--parallel`, `--continue`, `--validate`, `--quick`, `--dry-run`, `--force-sonnet`, `--force-opus` |
 | `/apex:4-examine` | Two-phase validation (technical + logical) | `--foreground`, `--global`, `--skip-patterns` |
 | `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 | `/apex:next` | Run next pending task | - |
@@ -48,6 +48,12 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 
 **Parallel Mode** (`3,4` or `--parallel`): Execute multiple tasks concurrently. Verify tasks don't depend on each other before using.
 
+**Continue Mode** (`--continue`): Resume execution from last session state. Reads progress from `implementation.md` and continues where interrupted.
+
+**Validation Mode**: Execute phase skips validation by default. Use these flags to opt-in:
+- `--validate`: Run typecheck/lint after task, attempt fixes
+- `--quick`: Run validation but stop immediately on first error
+
 **Global Scope** (`--global`): For examine phase, analyze ALL feature files instead of just modified ones. More comprehensive but slower.
 
 ## Adaptive Agent Routing (Brainstorm)
@@ -72,18 +78,32 @@ The `/apex:0-brainstorm` command uses a **scoring system** to select optimal res
 
 ## Smart Skip (Post-Brainstorm)
 
-When `/apex:1-analyze` detects a seed.md from `/apex:0-brainstorm`, it enters **post-brainstorm mode**:
+When `/apex:1-analyze` detects a seed.md from `/apex:0-brainstorm`, it enters **ultra-light mode**:
 
-| Agent | Full Mode | Post-Brainstorm Mode |
-|-------|-----------|---------------------|
-| `explore-codebase` | ✅ Launch | ✅ Launch |
-| `explore-docs` | ✅ Launch | ⏭️ Skip (done in brainstorm) |
-| `websearch` | ✅ Launch | ⏭️ Skip (done in brainstorm) |
-| `vision-analyzer` | If image | If image |
+| Agent | Full Mode | Post-Brainstorm (code≥3) | Post-Brainstorm (code<3) |
+|-------|-----------|--------------------------|--------------------------|
+| `explore-codebase` | Adaptive | ⏭️ Skip | ✅ Light scan |
+| `explore-docs` | Adaptive | ⏭️ Skip | ⏭️ Skip |
+| `websearch` | Adaptive | ⏭️ Skip | ⏭️ Skip |
+| `vision-analyzer` | If image | If image | If image |
+
+**Score inheritance**: Analyze reads `### 📊 Strategy Scores` from seed.md to determine if brainstorm already did comprehensive codebase exploration (code_score ≥ 3).
 
 **Detection**: Looks for `## 🔍 Brainstorm Summary` or `### Brainstorm Summary` in seed.md.
 
-**Why?** Research Loop already performed comprehensive web + docs research. Re-running wastes tokens and time.
+**Why?** Research Loop already performed comprehensive research. Ultra-light mode avoids redundant exploration.
+
+## Adaptive Routing (Analyze Mode B)
+
+When `/apex:1-analyze` runs WITHOUT prior brainstorm, it calculates its own strategy scores:
+
+| Dimension | 0-2 | 3-4 | 5+ |
+|-----------|-----|-----|-----|
+| **Code** | Skip | 1 agent | 2 agents |
+| **Web** | Skip | websearch | intelligent-search |
+| **Docs** | Skip | explore-docs | explore-docs |
+
+This matches brainstorm's adaptive routing, ensuring consistent behavior whether user starts with brainstorm or analyze.
 
 ## Two-Phase Validation (Examine)
 
@@ -122,8 +142,8 @@ Execute phase automatically selects the optimal model (Sonnet vs Opus) per task 
 
 | File | Created By | Purpose |
 |------|------------|---------|
-| `seed.md` | `/apex:handoff` or `/apex:0-brainstorm` | Prior context transfer (directive template) |
-| `analyze.md` | `/apex:1-analyze` | Research findings, patterns, gotchas |
+| `seed.md` | `/apex:handoff` or `/apex:0-brainstorm` | Prior context transfer (directive template + Strategy Scores) |
+| `analyze.md` | `/apex:1-analyze` | Research findings, patterns, gotchas (includes Strategy Scores) |
 | `plan.md` | `/apex:2-plan` | File-by-file change plan (no code snippets) |
 | `tasks/` | `/apex:tasks` | Granular task breakdown with dependencies |
 | `implementation.md` | `/apex:3-execute` | Session log, changes made, test results |

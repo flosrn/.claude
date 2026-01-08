@@ -17,7 +17,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 | `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 | `/apex:next` | Run next pending task | - |
 | `/apex:status` | Show progress tree | - |
-| `/apex:handoff` | Transfer context to new workflow | `--vision`, `--brainstorm` |
+| `/apex:handoff` | Transfer context to new workflow | `-` |
 
 ## Task Folder Structure
 
@@ -63,7 +63,7 @@ When `/apex:1-analyze` detects a seed.md from `/apex:0-brainstorm`, it enters **
 
 **Detection**: Looks for `## 🔍 Brainstorm Summary` or `### Brainstorm Summary` in seed.md.
 
-**Why?** Brainstorm Round 1-3 already performed comprehensive web + docs research. Re-running wastes tokens and time.
+**Why?** Research Loop already performed comprehensive web + docs research. Re-running wastes tokens and time.
 
 ## Two-Phase Validation (Examine)
 
@@ -102,7 +102,7 @@ Execute phase automatically selects the optimal model (Sonnet vs Opus) per task 
 
 | File | Created By | Purpose |
 |------|------------|---------|
-| `seed.md` | `/apex:handoff` or `/apex:0-brainstorm` | Prior context transfer (BLUF structure) |
+| `seed.md` | `/apex:handoff` or `/apex:0-brainstorm` | Prior context transfer (directive template) |
 | `analyze.md` | `/apex:1-analyze` | Research findings, patterns, gotchas |
 | `plan.md` | `/apex:2-plan` | File-by-file change plan (no code snippets) |
 | `tasks/` | `/apex:tasks` | Granular task breakdown with dependencies |
@@ -122,7 +122,7 @@ Execute phase automatically selects the optimal model (Sonnet vs Opus) per task 
 **Parallel notation**: Use arrows for dependencies, pipes for parallel:
 `Task 1 → [Task 2 ‖ Task 3] → Task 4`
 
-**BLUF structure** (for seed.md): Objectif first, supporting context second, technical details last.
+**Directive template** (for seed.md): Objectif first, supporting context second, technical details last.
 
 ## Bash Portability
 

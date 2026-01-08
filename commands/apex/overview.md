@@ -285,7 +285,7 @@ Next: /apex:3-execute 08-auth-feature 3
 
 **Purpose**: Transfer context to next workflow
 
-**Output**: Creates `seed.md` with BLUF structure
+**Output**: Creates `seed.md` with directive template
 
 **Flags**:
 | Flag | Behavior |
@@ -389,7 +389,7 @@ User runs: /apex:1-analyze "task" --yolo
 
 | File | Created By | Purpose |
 |------|------------|---------|
-| `seed.md` | `/apex:handoff` | Prior context transfer |
+| `seed.md` | `/apex:handoff` | Prior context transfer (directive template) |
 | `analyze.md` | `/apex:1-analyze` | Research findings |
 | `plan.md` | `/apex:2-plan` | Implementation strategy |
 | `tasks/` | `/apex:tasks` | Granular task breakdown |
@@ -407,13 +407,13 @@ All commands mandate deep thinking before action:
 - **Execute**: Think through each change before editing
 - **Tasks**: Consider dependencies and size balance
 
-### BLUF (Bottom Line Up Front)
+### Directive Template
 
 Used in `seed.md` structure:
-1. **Objectif** - Most important, shown first
-2. Supporting context
-3. Technical details
-4. Lazy load references (artifacts table)
+1. **🎯 Objectif** - Most important, shown first
+2. Supporting context (Point de départ, Interdictions, Spécifications)
+3. Technical details (optional, lazy-loaded)
+4. Artifacts table (lazy load references)
 
 ### Parallel Notation
 

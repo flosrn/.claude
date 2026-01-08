@@ -88,7 +88,7 @@ echo "📁 READ FROM: $TASK_FOLDER" && \
 
 **If `seed.md` exists:**
 1. **Read it** - This contains context from a previous session via `/apex:handoff`
-2. **Extract from BLUF structure**:
+2. **Extract from directive template**:
    - 🎯 Objectif (the task description - FIRST section)
    - 📂 Point de départ (critical files to explore FIRST)
    - ⚠️ Pièges à éviter (gotchas - don't repeat these mistakes)
@@ -174,7 +174,7 @@ touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
    Task(subagent_type="vision-analyzer", run_in_background=true, ...)  # if image
    ```
 
-   **Why skip?** Brainstorm Round 1-3 already did comprehensive web + docs research.
+   **Why skip?** Research Loop already did comprehensive web + docs research.
    Re-running wastes tokens and time. The seed.md contains all insights needed.
 
    ---
@@ -199,7 +199,7 @@ touch ./.claude/tasks/<NN>-<KEBAB-NAME>/.yolo
      - Find community examples and patterns
 
    - **Vision analysis** (`vision-analyzer` agent) - **ONLY if image provided**:
-     - From seed.md `📷 Image de référence` section (via `--vision` flag)
+     - From seed.md `📷 Image de référence` section
      - Or drag & drop with the `/apex:1-analyze` command
      - Analyze UI screenshots for debugging context
 

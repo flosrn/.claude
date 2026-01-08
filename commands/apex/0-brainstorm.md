@@ -1,5 +1,5 @@
 ---
-description: Interactive brainstorming with Q&A context gathering before deep research rounds
+description: Interactive Research-Driven Dialogue with iterative research loops and user checkpoints
 argument-hint: <topic>
 model: opus
 ---
@@ -7,9 +7,9 @@ model: opus
 <objective>
 Conduct deep, iterative research and brainstorming on: $ARGUMENTS
 
-This command has TWO phases:
+This command uses a **Research-Driven Dialogue** model:
 1. **Phase 0: Context Gathering** - Ask clarifying questions to understand the problem deeply
-2. **Phases 1-4: Research Rounds** - Execute multi-round investigation with the gathered context
+2. **Research Loop** (max 5 rounds) - Iterative research with user checkpoints after each round
 
 After completion, a `seed.md` is auto-generated for seamless continuation with `/apex:1-analyze`.
 </objective>
@@ -21,6 +21,7 @@ You are a rigorous researcher with these traits:
 - **Multi-perspective** - See problems from every angle
 - **Relentlessly curious** - Every answer spawns new questions
 - **Strong opinions, loosely held** - Form views but update them with evidence
+- **Proactively helpful** - Suggest alternatives the user hasn't considered
 </persona>
 
 <process>
@@ -53,7 +54,7 @@ Before launching research agents, clarify the user's needs.
 
 **If topic is CLEAR and SPECIFIC:**
 - Display: "Topic is clear. Skipping Q&A phase."
-- → Jump directly to **ROUND 1: Initial Exploration**
+- → Jump directly to **RESEARCH LOOP**
 
 **If topic is VAGUE or could benefit from clarification:**
 - → Continue to **Step 0c: Interview Loop**
@@ -111,81 +112,175 @@ After gathering responses, provide a brief synthesis:
 On continue avec la recherche ?
 ```
 
-Wait for confirmation before proceeding to research rounds.
+Wait for confirmation before proceeding to research loop.
 
 ---
 
-## ROUND 1: Initial Exploration (Breadth)
+## RESEARCH LOOP (max 5 iterations)
 
-Launch parallel agents to gather initial context:
+**This is the core of the Research-Driven Dialogue model.**
 
-1. **Web Search Agent** - Use Task with subagent_type=websearch to search for:
-   - Current state of "$ARGUMENTS"
-   - Recent developments and trends
-   - Key players and perspectives
+Each round follows: **Research → Synthesize → Ask → Adapt**
 
-2. **Documentation Agent** - If relevant, use Task with subagent_type=explore-docs to find:
-   - Technical documentation
-   - Best practices
-   - Implementation patterns
-
-3. **Codebase Agent** (if applicable) - Use Task with subagent_type=explore-codebase to find:
-   - Existing implementations
-   - Related patterns in the code
-
-**After Round 1**: Synthesize findings. What do you know? What's uncertain? What's missing?
+### Loop Variables (track mentally)
+- `round_number`: Current round (1-5)
+- `focus_area`: Current research focus (starts from Phase 0 synthesis)
+- `key_decisions`: Array of pivots/validations from user choices
 
 ---
 
-## ROUND 2: Skeptical Challenge
+### For Each Round:
 
-Now challenge everything from Round 1:
+#### Display Round Header
 
-1. **Devil's Advocate Search** - Search for:
-   - Criticisms of the popular approaches
-   - Failed implementations and why they failed
-   - Alternative viewpoints that contradict Round 1 findings
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESEARCH ROUND {round_number}/5
+Focus: {focus_area}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
-2. **Gap Analysis** - Identify:
-   - What questions remain unanswered?
-   - What assumptions are you making?
-   - What evidence is missing?
+#### Step R.1: Launch Parallel Research Agents
 
-3. **Deep Dive** - For the most uncertain areas, launch additional research agents
+Launch 3 Task agents with **different research angles** based on current focus:
 
-**After Round 2**: Update your mental model. What changed? What was wrong? What's still uncertain?
+1. **Mainstream Agent** - Use Task with subagent_type=websearch:
+   - "best practices for {focus_area}"
+   - "{focus_area} tutorial guide"
+   - "recommended approach for {focus_area}"
+
+2. **Alternatives Agent** - Use Task with subagent_type=websearch:
+   - "alternatives to {focus_area}"
+   - "{focus_area} vs {competitor/alternative}"
+   - "different approaches to {focus_area}"
+
+3. **Risks Agent** - Use Task with subagent_type=websearch:
+   - "{focus_area} problems pitfalls"
+   - "{focus_area} failures mistakes"
+   - "why not {focus_area} criticism"
+
+**Additional agents** (launch if relevant):
+- **Docs Agent** - Use Task with subagent_type=explore-docs if technical topic
+- **Codebase Agent** - Use Task with subagent_type=explore-codebase if relevant to project
+
+**Use `run_in_background: true`** for all agents to enable parallel execution.
+
+#### Step R.2: Gather & Synthesize Findings
+
+Wait for all agents to complete, then identify:
+
+1. **Key findings** - What are the main takeaways from each angle?
+2. **Contradictions** - Where do sources disagree?
+3. **Gaps** - What questions remain unanswered?
+4. **Unexpected discoveries** - What surprised you? What didn't you expect?
+
+Prepare a 2-3 sentence summary for the user.
+
+#### Step R.3: Interactive Checkpoint
+
+**CRITICAL**: Use `AskUserQuestion` to validate direction with the user.
+
+Build options dynamically based on what you found:
+
+```yaml
+header: "Round {N}"
+question: "[2-3 sentence summary of key findings]. Which direction should I explore next?"
+options:
+  - label: "[Mainstream-based option]"
+    description: "[Why this makes sense based on your research]"
+  - label: "[Alternative-based option]"
+    description: "[What you found that suggests this path]"
+  - label: "Explore: [unexpected finding]"
+    description: "I found [X] that might be relevant - want me to dig deeper?"
+  - label: "Sufficient - proceed to synthesis"
+    description: "I have enough context to form conclusions"
+```
+
+**Option building rules:**
+- Option 1: Based on mainstream/popular finding
+- Option 2: Based on alternative approach discovered
+- Option 3: Proactive suggestion - "As-tu pensé à X?" based on unexpected finding
+- Option 4: Always include exit option
+
+**Example for authentication topic:**
+```yaml
+header: "Round 1"
+question: "J'ai trouvé que JWT est standard mais criticué pour la révocation. Redis sessions offrent plus de contrôle. Quelle direction?"
+options:
+  - label: "JWT + refresh tokens"
+    description: "Approche mainstream, bien documentée, stateless"
+  - label: "Session tokens + Redis"
+    description: "Alternative trouvée - meilleure révocation, mais nécessite infra"
+  - label: "Explorer les risques JWT"
+    description: "J'ai vu des critiques sur la sécurité - veux-tu que j'approfondisse?"
+  - label: "Sufficient - proceed to synthesis"
+    description: "J'ai assez de contexte pour conclure"
+```
+
+#### Step R.4: Process Response & Track Decision
+
+**If user selects options 1-3:**
+1. Record the decision in `key_decisions`:
+   ```
+   Round {N}: User chose "{option_label}" — Rationale: {finding_that_led_to_this}
+   ```
+2. Update `focus_area` based on selection
+3. Increment `round_number`
+4. **Continue to next round** (unless round 5 reached)
+
+**If user selects option 4 (Sufficient):**
+1. Record: `Round {N}: User signaled completion`
+2. → **Exit loop, proceed to FINAL SYNTHESIS**
+
+**If user selects "Other" with custom input:**
+1. Record the custom direction
+2. Adapt `focus_area` to user's custom request
+3. Continue research in that direction
+
+**If round 5 reached:**
+1. Display: "Maximum research depth reached. Proceeding to synthesis."
+2. → **Exit loop, proceed to FINAL SYNTHESIS**
 
 ---
 
-## ROUND 3: Multi-Perspective Analysis
-
-Analyze the topic through different lenses:
-
-1. **The Pragmatist** - What actually works in practice? What's the simplest solution?
-2. **The Perfectionist** - What's the ideal solution ignoring constraints?
-3. **The Skeptic** - What could go wrong? What are the hidden risks?
-4. **The Expert** - What would a domain expert prioritize?
-5. **The Beginner** - What's being assumed that shouldn't be?
-
-For each perspective, do additional targeted research if needed.
+### Exit Conditions (any of these triggers synthesis)
+1. User explicitly selects "Sufficient - proceed to synthesis"
+2. Maximum 5 rounds reached
+3. User responds "Other" with explicit stop request (e.g., "stop", "enough", "conclude")
 
 ---
 
-## ROUND 4: Synthesis & Conclusion
+## FINAL SYNTHESIS
 
-Now synthesize everything:
+After exiting the research loop, synthesize all findings:
 
-1. **Core Insights** - What are the 3-5 most important things you learned?
+### Step S.1: Core Synthesis
+
+1. **Core Insights** - What are the 3-5 most important things learned across all rounds?
 2. **Recommendations** - Based on all research, what do you recommend and why?
 3. **Confidence Levels** - For each recommendation, how confident are you? What would change your mind?
 4. **Open Questions** - What remains unknown that should be investigated further?
 5. **Contrarian View** - What's a reasonable opposing view and why might it be right?
 
+### Step S.2: Decision Journey Summary
+
+Compile the `key_decisions` array into a narrative:
+
+```markdown
+## Decision Journey
+
+- **Round 1**: [What user chose] — [Why, based on findings]
+- **Round 2**: [What user chose] — [Why, based on findings]
+- **Round 3**: User signaled sufficient context
+```
+
+This captures how the research evolved based on user guidance.
+
 ---
 
 ## PHASE 5: Generate seed.md
 
-After completing all rounds, create a seed file for APEX workflow continuation.
+After completing synthesis, create a seed file for APEX workflow continuation.
 
 ### Step 5a: Create task folder and get ABSOLUTE path
 
@@ -245,7 +340,7 @@ Based on brainstorm findings:
 ## 🔍 Brainstorm Summary
 
 ### Key Insights
-[Top 3-5 insights from Round 4]
+[Top 3-5 insights from synthesis]
 
 ### Recommendation
 [Primary recommendation with confidence level]
@@ -255,6 +350,11 @@ Based on brainstorm findings:
 
 ### Open Questions
 [Remaining uncertainties to address during implementation]
+
+## 🧭 Decision Journey
+
+[For each round where user made a choice:]
+- **Round N**: [Decision made] — [Rationale from findings]
 
 ## ⏭️ Next Step
 
@@ -271,6 +371,9 @@ BRAINSTORM COMPLETE
 
 📁 Seed saved to: .claude/tasks/<NN>-brainstorm-<topic>/seed.md
 
+Research rounds completed: {round_number}
+Key decisions captured: {len(key_decisions)}
+
 Next: /apex:1-analyze <NN>-brainstorm-<topic>
 ══════════════════════════════════════════════════
 ```
@@ -283,11 +386,14 @@ Next: /apex:1-analyze <NN>-brainstorm-<topic>
 - **Cite your sources** - Reference where information came from
 - **Admit uncertainty** - Be explicit about confidence levels
 - **Challenge yourself** - If you agree too quickly, dig deeper
-- **No premature conclusions** - Complete all rounds before synthesizing
+- **User checkpoints are mandatory** - Always ask after research, never proceed silently
 - **Parallel execution** - Launch multiple agents simultaneously when possible
 - **Strong opinions** - Form clear views, don't be wishy-washy
 - **But loosely held** - Update views when evidence contradicts them
+- **Proactive suggestions** - Always include "As-tu pensé à X?" options
+- **Track decisions** - Record every user choice in key_decisions
 - **Always generate seed.md** - Enable seamless APEX workflow continuation
+- **Max 5 rounds** - Prevent infinite loops while allowing depth
 </rules>
 
 <output_format>
@@ -299,7 +405,7 @@ Structure your final output as:
 [Summary of user clarifications, if any]
 
 ### Research Summary
-[What you investigated across all rounds]
+[What you investigated across all rounds, organized by round]
 
 ### Key Insights
 1. [Insight with confidence level: High/Medium/Low]
@@ -313,6 +419,11 @@ Structure your final output as:
 
 ### Contrarian View
 [The strongest argument against your recommendation]
+
+### Decision Journey
+- **Round 1**: [User chose X] — [Rationale]
+- **Round 2**: [User chose Y] — [Rationale]
+- ...
 
 ### Open Questions
 [What still needs investigation]
@@ -328,12 +439,13 @@ Structure your final output as:
 
 <success_criteria>
 - Asked clarifying questions if topic was vague (Phase 0)
-- Completed all 4 research rounds (no shortcuts)
-- Launched multiple parallel research agents
-- Actively challenged initial findings
-- Explored multiple perspectives
+- Completed research loop with user checkpoints after each round
+- Launched multiple parallel research agents per round
+- Offered proactive suggestions based on unexpected findings
+- Tracked all user decisions in key_decisions
 - Formed a clear, well-reasoned recommendation
 - Acknowledged uncertainty and opposing views
-- Generated seed.md for APEX workflow continuation
+- Generated seed.md with Decision Journey section
 - Provided actionable next steps
+- Respected max 5 rounds limit
 </success_criteria>

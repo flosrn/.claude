@@ -1,10 +1,10 @@
 ---
 description: Generate seed.md for next APEX workflow with context transfer
 allowed-tools: Read, Write, Bash, AskUserQuestion, Glob, Grep
-argument-hint: "task-description" [--vision] [--brainstorm]
+argument-hint: "task-description"
 ---
 
-You are a session context transfer specialist. Generate a `seed.md` that captures session learnings and seeds the next APEX workflow.
+You are a session context transfer specialist. Generate a **directive** `seed.md` that gives the next AI session a clear mission.
 
 **You need to ULTRA THINK to extract valuable, non-redundant context.**
 
@@ -14,10 +14,10 @@ You are a session context transfer specialist. Generate a `seed.md` that capture
 
 Parse `$ARGUMENTS` for:
 - **Task description**: Free text describing the next task (required)
-- **`--vision`**: Detect shared image and include in seed for deep analysis
-- **`--brainstorm`**: Ask clarifying questions before generating seed (for vague tasks)
 
 If no task description provided, use `AskUserQuestion` to gather it.
+
+**Note**: For vague tasks requiring exploration, redirect user to `/apex:0-brainstorm` instead.
 
 ## Workflow
 
@@ -87,158 +87,59 @@ From `implementation.md`:
 - **ONLY** include: bugs found, patterns discovered, gotchas, decisions made THIS session
 - Ask: "Would the next session need to re-discover this?" If yes → include. If it's in CLAUDE.md → skip.
 
-**Section mapping (BLUF order):**
-- **📂 Point de départ** ← Critical files with specific line numbers
-- **⚠️ Pièges à éviter** ← Gotchas, bugs encountered, things that wasted time
-- **📋 Spécifications** ← Requirements, decisions made, constraints
-- **🔍 Contexte technique** ← Architectural decisions, patterns discovered (OPTIONAL)
+**Section mapping (DIRECTIVE order):**
+- **🎯 Ta Mission** ← Clear imperative objective with "Tu dois..."
+- **✅ Critères de succès** ← Checkboxes defining "done"
+- **🚀 Point de départ** ← Critical files to read FIRST
+- **⛔ Interdictions** ← What NOT to do (explicit prohibitions)
+- **📋 Spécifications** ← Requirements, decisions, constraints
+- **🔍 Contexte technique** ← Background (OPTIONAL, lazy-load)
 
-### 3b. DETECT SHARED IMAGE (only if `--vision` flag)
+### 4. STRUCTURE SEED CONTENT (Directive Template)
 
-Skip this step if no `--vision` flag.
+Generate a **directive, mission-focused** seed prompt.
 
-```bash
-# Find images shared in the last hour
-# Note: Quotes around $() are required for zsh compatibility with pipes
-RECENT_IMAGE="$(/usr/bin/find ~/.claude/image-cache -name '*.png' -type f -mmin -60 -print0 2>/dev/null | xargs -0 /bin/ls -t 2>/dev/null | head -1)" && \
-([ -n "$RECENT_IMAGE" ] && echo "IMAGE FOUND: $RECENT_IMAGE" || echo "NO IMAGE")
-```
-
-Include `📷 Image de référence` section in seed.md only if image found.
-
-### 3c. GATHER CLARIFICATIONS (only if `--brainstorm` flag)
-
-Skip this step if no `--brainstorm` flag.
-
-**ULTRA THINK**: Analyze the task description to identify what needs clarification:
-- **Vague adjectives** ("better", "faster", "improved") → Ask for specific metrics or outcomes
-- **Multiple aspects** mentioned without priority → Ask which is most critical
-- **Missing scope** → Ask what's explicitly excluded
-- **Missing audience** → Ask who will use/benefit from this
-- **Unclear approach** → Ask for preferred implementation style
-- **Technical gaps** → Ask about error handling, edge cases, constraints
-- **UX implications** → Ask about expected behavior, user feedback, loading states
-- **Tradeoffs** → Ask about preferences between competing approaches
-
-**Interview until complete** using `AskUserQuestion`:
-
-Continue asking questions in rounds until the user signals satisfaction ("c'est bon", "let's proceed", "that's all", etc.). Each round should ask 2-3 focused questions, then wait for responses before continuing.
-
-Use collaborative "What/How" framing (not accusatory "Why"). Questions should be **specific to the task description**, not generic.
-
-**Good questions** (contextual):
-- "You mentioned X, Y, and Z. Which aspect is most critical to get right first?"
-- "Should this include [potential scope item] or is that out of scope?"
-- "Is this for [user type A] or [user type B]?"
-- "How should [component] handle [specific error case]?"
-- "What's the expected behavior when [edge case] happens?"
-- "Would you prefer [approach A] (faster) or [approach B] (more maintainable)?"
-- "Should [feature] provide visual feedback during [async operation]?"
-
-**Bad questions** (generic):
-- "What are your requirements?" (too vague)
-- "Why do you want this?" (accusatory framing)
-- "Can you describe the feature?" (already have description)
-
-**FORBIDDEN questions** (NEVER ask these):
-- "What's the priority of this task?"
-- "When should this be completed?"
-- "What order should we tackle these in?"
-- "What's the deadline?"
-- "Should we do this before or after [other task]?"
-
-**Rationale**: APEX handles task ordering automatically via dependency analysis. Project management questions are irrelevant and waste the user's time.
-
-**Continuation loop**:
-1. Ask 2-3 contextual questions
-2. Wait for user responses
-3. If user signals completion → proceed to Step 3d
-4. If more clarity needed → ask 2-3 more questions and repeat
-
-### 3d. SYNTHESIZE & CONFIRM (only if `--brainstorm` flag)
-
-**After receiving answers**, provide a detailed synthesis of each point:
-
-1. **Reformulate each response** with your interpretation
-2. **Give a concrete example** of what you understood (ASCII mockup, pseudo-code, workflow)
-3. **Highlight implications** for implementation
-4. **Ask for confirmation**: "Est-ce bien ce que tu avais en tête ?"
-
-**Example synthesis format:**
-
-```
-**[Topic from question]** - Je l'ai interprété comme :
-
-[Detailed explanation of what you understood]
-
-[Concrete example: ASCII mockup, pseudo-code, or workflow description]
-
-**Implications pour l'implémentation:**
-- [What this means for the technical approach]
-- [Constraints or patterns this suggests]
-
-Est-ce bien ça ? Ou tu voyais les choses différemment ?
-```
-
-**Why this step matters:**
-- Prevents misalignment before seed generation
-- Surfaces misunderstandings early
-- Gives user chance to course-correct
-
-**If user corrects understanding**: Update interpretation and re-confirm before proceeding.
-
-**Store final confirmed responses** for inclusion in seed.md under `💬 Clarifications` section.
-
-### 4. STRUCTURE SEED CONTENT (BLUF Pattern)
-
-Generate a **condensed, actionable** seed prompt following **BLUF (Bottom Line Up Front)**.
-
-**If `--brainstorm` was used**: Incorporate clarification responses into the relevant seed sections (Objectif, Spécifications) and include the `💬 Clarifications` section.
+**TONE RULES:**
+- Use **imperative verbs**: "Tu dois", "Corrige", "Implémente", "Trouve"
+- Use **2nd person**: Address the AI directly
+- Be **specific**: Include file paths, line numbers, concrete outcomes
+- Frame prohibitions as **explicit**: "NE FAIS PAS" not "évite"
+- Add **success criteria**: Define what "done" looks like
 
 ```markdown
-# 🔄 [Task Name from argument] - Seed
+# 🎯 Mission: [Task Name from argument]
 
-## 🎯 Objectif
+**Tu dois** [imperative 1-sentence description of what to accomplish].
 
-[Next task description - clear, actionable, expanded if needed]
+## ✅ Critères de succès
 
-## 📂 Point de départ
+Tu as réussi si :
+- [ ] [Measurable outcome 1]
+- [ ] [Measurable outcome 2]
+- [ ] [Tests pass / Build succeeds / No regressions]
 
-**Fichiers critiques à lire:**
-- `path/to/main-file.ts:L42-L89` - [What this file does, why start here]
-- `path/to/pattern.ts:L15` - [Pattern to follow]
+## 🚀 Point de départ
 
-## ⚠️ Pièges à éviter
+**Commence par lire** :
+- `path/to/main-file.ts:L42-L89` — [Why this file, what to look for]
+- `path/to/pattern.ts:L15` — [Pattern to follow]
 
-- [Gotcha 1]: [Ce qui aurait fait perdre du temps]
-- [Bug rencontré]: [Comment on l'a résolu - `file.ts:42`]
+## ⛔ Interdictions
+
+**NE FAIS PAS** :
+- [Piège 1] — [Consequence if ignored, e.g. "Ça casse le build"]
+- [Piège 2] — [Why this is forbidden]
 
 ## 📋 Spécifications
 
-- [Exigence 1]: [Détails]
-- [Décision prise]: [Pourquoi ce choix]
+- **[Requirement 1]**: [Details]
+- **[Decision made]**: [Why this choice was made]
 
 ## 🔍 Contexte technique (optionnel)
 
-> **Note**: Section optionnelle. Lire uniquement si besoin de comprendre l'historique.
+> **Lazy-load**: Ne lis que si tu as besoin de comprendre l'historique.
 
 [Brief technical context - patterns discovered, architectural decisions]
-
-## 📷 Image de référence (si applicable)
-
-> **Note**: Image partagée pendant `/apex:handoff`. Sera analysée par `vision-analyzer` lors de `/apex:1-analyze`.
-
-| Image | Path |
-|-------|------|
-| Screenshot partagé | `[PATH_FROM_STEP_3b]` |
-
-## 💬 Clarifications (si applicable)
-
-> Questions posées via `--brainstorm` flag
-
-| Question | Réponse |
-|----------|---------|
-| [Question posée] | [Réponse utilisateur] |
 
 ## 📚 Artifacts source
 
@@ -296,21 +197,26 @@ The seed.md will be read automatically as initial context.
 
 ## Execution Rules
 
+- **DIRECTIVE TONE**: Use imperative verbs, address AI directly
 - **ULTRA THINK**: Quality over speed - the seed must be actionable
 - **CONCISE**: Dense with information, not verbose
 - **RELEVANT**: Only include context useful for the next task
 - **FILTERED**: Exclude what's already in CLAUDE.md
-- **BLUF**: Objectif FIRST, then context
+- **SUCCESS-FOCUSED**: Always define what "done" looks like
 
 ## Output Quality Guidelines
 
-### Be Specific, Not Vague
-- **Bad**: "Learned about the auth module"
-- **Good**: "AuthService uses JWT with refresh tokens, pattern in `src/services/auth.ts:42`"
+### Be Directive, Not Descriptive
+- **Bad**: "L'erreur survient lors de la sauvegarde..."
+- **Good**: "Tu dois corriger l'erreur de sauvegarde. Elle vient de..."
 
-### Include Why, Not Just What
-- **Bad**: "Use the Card component"
-- **Good**: "Use Card component for consistency - established pattern in dashboard"
+### Include Why With Prohibitions
+- **Bad**: "Évite de modifier auth.ts"
+- **Good**: "NE MODIFIE PAS `auth.ts` — Les tests d'intégration dépendent de sa structure actuelle"
+
+### Define Success Explicitly
+- **Bad**: "Corriger le bug"
+- **Good**: "Tu as réussi si : l'utilisateur peut sauvegarder sans erreur ET les tests passent"
 
 ### Anticipate Next Session Needs
 - What files will they need immediately?
@@ -328,24 +234,30 @@ When to **include inline** (in main sections):
 - Essential file paths with line numbers
 - Key decisions that affect implementation
 
+## Vague Task Detection
+
+If the task description contains:
+- Vague adjectives: "améliorer", "optimiser", "mieux"
+- Exploratory language: "explorer", "réfléchir", "brainstorm"
+- Question framing: "comment faire", "quelle approche"
+
+**Redirect the user:**
+```
+Cette tâche semble exploratoire. Pour une exploration approfondie avec recherche web, utilise plutôt :
+
+/apex:0-brainstorm [task-description]
+
+Cela générera un seed.md enrichi avec un Decision Journey après plusieurs rounds de recherche.
+```
+
 ## Priority
 
-**Actionability > Completeness**. A focused, dense seed beats an exhaustive document.
+**Actionability > Completeness**. A focused, directive seed beats an exhaustive document.
 
-## Usage Examples
+## Usage Example
 
 ```bash
-# Standard
-/apex:handoff "Optimize the AI conversation flow"
-
-# With image for deep vision analysis (share image before running)
-/apex:handoff "Implement this design" --vision
-
-# With brainstorm for vague task descriptions
-/apex:handoff "améliorer le système de tracking" --brainstorm
-
-# Both flags together
-/apex:handoff "implement the new design" --vision --brainstorm
+/apex:handoff "Fix the save draft game insert error"
 ```
 
 ---

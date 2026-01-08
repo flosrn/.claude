@@ -1,6 +1,6 @@
 ---
 description: Interactive Research-Driven Dialogue with adaptive agent routing and iterative research loops
-argument-hint: <topic>
+argument-hint: <topic-or-folder>
 model: opus
 ---
 
@@ -8,9 +8,10 @@ model: opus
 Conduct deep, iterative research and brainstorming on: $ARGUMENTS
 
 This command uses a **Research-Driven Dialogue** model with **Adaptive Agent Routing**:
-1. **Phase 0: Context Gathering** - Ask clarifying questions to understand the problem deeply
-2. **Strategy Detection** - Score Code/Web/Docs needs to determine optimal agent mix
-3. **Research Loop** (max 5 rounds) - Iterative research with user checkpoints after each round
+1. **Seed Detection** - Auto-detect existing seed.md from `/apex:handoff` and pre-load context
+2. **Phase 0: Context Gathering** - Ask clarifying questions (skipped if seed has specs)
+3. **Strategy Detection** - Score Code/Web/Docs needs to determine optimal agent mix
+4. **Research Loop** (max 5 rounds) - Iterative research with user checkpoints after each round
 
 **Adaptive routing** selects the right tools:
 - `explore-codebase` for project-specific context (light or deep based on score)
@@ -18,7 +19,11 @@ This command uses a **Research-Driven Dialogue** model with **Adaptive Agent Rou
 - `intelligent-search` for cutting-edge topics (auto-routes to Tavily/Exa/Perplexity)
 - `explore-docs` for library/API documentation
 
-After completion, a `seed.md` is auto-generated for seamless continuation with `/apex:1-analyze`.
+**Seed modes:**
+- **Fresh topic** (`$ARGUMENTS` = description) → Creates new folder + seed.md
+- **Existing folder** (`$ARGUMENTS` = `NN-folder-name`) → Enriches existing seed.md with research
+
+After completion, seed.md is created/enriched for seamless continuation with `/apex:1-analyze`.
 </objective>
 
 <persona>
@@ -33,7 +38,86 @@ You are a rigorous researcher with these traits:
 
 <process>
 
+## SEED DETECTION (Auto)
+
+Before anything else, detect if `$ARGUMENTS` refers to an existing task folder with a seed.md.
+
+### Step S.1: Parse Argument Type
+
+**ULTRA THINK** about `$ARGUMENTS`:
+
+**Pattern detection:**
+- If matches `^\d+-` (starts with number + hyphen) → Likely a **folder name**
+- Otherwise → Treat as **fresh topic description**
+
+### Step S.2: Check for Existing Seed (if folder pattern detected)
+
+```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+TASK_FOLDER="$APEX_TASKS_DIR/$ARGUMENTS" && \
+if [ -f "$TASK_FOLDER/seed.md" ]; then
+  echo "═══════════════════════════════════════════════"
+  echo "🌱 SEED FOUND: $TASK_FOLDER/seed.md"
+  echo "📖 READ FROM: $TASK_FOLDER/seed.md"
+  echo "═══════════════════════════════════════════════"
+else
+  echo "❌ No seed.md found in $TASK_FOLDER"
+  echo "→ Treating '$ARGUMENTS' as fresh topic description"
+fi
+```
+
+### Step S.3: Load Seed Context (if found)
+
+**If seed.md EXISTS**, read it and extract:
+
+| Section | Variable | Use |
+|---------|----------|-----|
+| `# 🎯 Mission:` or `## 🎯 Objectif` | `seed_mission` | Use as topic for research |
+| `## 📋 Spécifications` | `seed_specs` | Pre-answered questions (skip interview) |
+| `## 🚀 Point de départ` | `seed_files` | Boost Code Score (+2) |
+| `## ⛔ Interdictions` | `seed_gotchas` | Include in research angles |
+| `## 🔍 Contexte technique` | `seed_context` | Background for synthesis |
+
+**Set mode flag:**
+```
+SEED_MODE = true
+SEED_FOLDER = $ARGUMENTS
+```
+
+**Display:**
+```
+┌─────────────────────────────────────────────────┐
+│ 🌱 SEED MODE ACTIVATED                          │
+├─────────────────────────────────────────────────┤
+│ Folder: .claude/tasks/{folder}/                 │
+│ Mission: {first 60 chars of seed_mission}...    │
+│ Pre-loaded: Specs ✓  Files ✓  Gotchas ✓         │
+├─────────────────────────────────────────────────┤
+│ → Skipping interview (specs already defined)    │
+│ → Research will ENRICH existing seed.md         │
+└─────────────────────────────────────────────────┘
+```
+
+### Step S.4: Fresh Topic Mode (if no seed found)
+
+**If NO seed.md** (or argument is not a folder pattern):
+```
+SEED_MODE = false
+SEED_FOLDER = null
+topic = $ARGUMENTS
+```
+
+→ Continue to **Phase 0** normally.
+
+---
+
 ## PHASE 0: Context Gathering (Interactive)
+
+**Behavior depends on SEED_MODE:**
+
+- **SEED_MODE = true**: Skip interview, use `seed_mission` as topic, go directly to **Step 0e: Research Strategy Detection**
+- **SEED_MODE = false**: Run full interview as normal
 
 Before launching research agents, clarify the user's needs.
 
@@ -129,6 +213,7 @@ Wait for confirmation before proceeding to research loop.
 
 | Signal | Score | Example |
 |--------|-------|---------|
+| **SEED_MODE with 🚀 Point de départ** | +2 | Seed has file references |
 | Mentions specific files/paths | +3 | "améliorer src/auth/*" |
 | References existing feature | +2 | "optimiser le cache actuel" |
 | Domain = `tech` or `problem` | +1 | Technical implementation or debugging |
@@ -140,6 +225,8 @@ Wait for confirmation before proceeding to research loop.
 - **0-2**: Skip codebase exploration
 - **3-4**: Light scan (1 explore-codebase agent)
 - **5+**: Deep exploration (2 explore-codebase agents with different angles)
+
+**SEED_MODE bonus**: If seed.md has `🚀 Point de départ` with file paths, add +2 to Code Score and use those paths as starting points for exploration.
 
 #### Dimension 2: Web Research Depth Score
 
@@ -398,13 +485,111 @@ This captures how the research evolved based on user guidance.
 
 ---
 
-## PHASE 5: Generate seed.md
+## PHASE 5: Generate/Enrich seed.md
 
-After completing synthesis, create a seed file for APEX workflow continuation.
+After completing synthesis, create or enrich the seed file for APEX workflow continuation.
 
-### Step 5a: Create task folder and get ABSOLUTE path
+**Behavior depends on SEED_MODE:**
+- **SEED_MODE = true**: ENRICH existing seed.md (preserve original sections, add research sections)
+- **SEED_MODE = false**: CREATE new folder + seed.md
 
-**Step 5a-i**: Find next folder number
+---
+
+### Path A: ENRICH Existing Seed (SEED_MODE = true)
+
+**Step 5a-enrich**: Get path to existing seed
+```bash
+# ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
+APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
+TASK_FOLDER="$APEX_TASKS_DIR/$SEED_FOLDER" && \
+echo "═══════════════════════════════════════════════" && \
+echo "🔄 ENRICHING: $TASK_FOLDER/seed.md" && \
+echo "═══════════════════════════════════════════════"
+```
+
+**Step 5b-enrich**: Read existing seed.md and MERGE with research findings
+
+**Sections to PRESERVE from original seed:**
+- `# 🎯 Mission:` - Keep original (or refine based on research)
+- `## ✅ Critères de succès` - Keep original (or enhance)
+- `## 🚀 Point de départ` - MERGE: add new files discovered
+- `## ⛔ Interdictions` - MERGE: add new gotchas from research
+- `## 📋 Spécifications` - Keep original specs
+
+**Sections to ADD from brainstorm:**
+- `## 🔍 Brainstorm Summary` - NEW: insights, recommendation, trade-offs
+- `### 📊 Strategy Scores` - NEW: Code/Web/Docs scores used
+- `## 🧭 Decision Journey` - NEW: research pivots from user choices
+- Update `**Status**:` to "Enriched via /apex:0-brainstorm"
+
+**Enriched seed template:**
+```markdown
+# 🎯 Mission: [PRESERVED from original OR refined]
+
+**Tu dois** [PRESERVED or refined based on research].
+
+**Created**: [Original date] via /apex:handoff
+**Enriched**: [Today] via /apex:0-brainstorm
+**Status**: Ready for analysis (research complete)
+
+---
+
+## ✅ Critères de succès
+[PRESERVED + any additions from research]
+
+## 🚀 Point de départ
+
+**Commence par lire** :
+- [PRESERVED original files]
+- [NEW files discovered during research]
+
+## ⛔ Interdictions
+
+**NE FAIS PAS** :
+- [PRESERVED original gotchas]
+- [NEW gotchas from Risks research angle]
+
+## 📋 Spécifications
+[PRESERVED from original seed]
+
+## 🔍 Brainstorm Summary
+
+### 📊 Strategy Scores
+```
+Code: {code_score}/6 | Web: {web_score}/6 | Docs: {docs_score}/6
+```
+
+### Key Insights
+[Top 3-5 insights from synthesis]
+
+### Recommendation
+[Primary recommendation with confidence level]
+
+### Trade-offs Identified
+[Key trade-offs discovered during research]
+
+### Open Questions
+[Remaining uncertainties to address during implementation]
+
+## 🧭 Decision Journey
+
+- **Round N**: [Decision made] — [Rationale from findings]
+
+## 📚 Artifacts source
+[PRESERVED from original + add current seed as reference]
+
+## ⏭️ Next Step
+
+Run `/apex:1-analyze {SEED_FOLDER}` to continue with implementation planning.
+```
+
+→ Skip to **Step 5c: Report to user**
+
+---
+
+### Path B: CREATE New Seed (SEED_MODE = false)
+
+**Step 5a-create-i**: Find next folder number
 ```bash
 # ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
@@ -415,7 +600,7 @@ echo "📁 APEX TASKS DIR: $APEX_TASKS_DIR" && \
 
 Calculate next folder number (if last is `06-something` → next is `07`).
 
-**Step 5a-ii**: Create folder AND get path for Write
+**Step 5a-create-ii**: Create folder AND get path for Write
 ```bash
 # ⚠️ DO NOT SIMPLIFY: .claude/tasks is INSIDE the .claude project folder (intentional nesting)
 APEX_TASKS_DIR="$(pwd)/.claude/tasks" && \
@@ -428,7 +613,7 @@ echo "════════════════════════�
 
 **⚠️ COPY THE EXACT PATH shown above for the Write tool.**
 
-### Step 5b: Write seed.md (Directive Template Format)
+### Step 5b-create: Write seed.md (Directive Template Format)
 
 **⚠️ CRITICAL**: Use the **EXACT path** from the output above (starts with `/Users/...`).
 Do NOT use `tasks/...` or any relative path - use the FULL absolute path displayed.
@@ -517,13 +702,38 @@ Run `/apex:1-analyze <folder-name>` to continue with implementation planning.
 
 ### Step 5c: Report to user
 
-Display:
+**If SEED_MODE = true (enriched existing seed):**
 ```
 ══════════════════════════════════════════════════
-BRAINSTORM COMPLETE
+🔄 SEED ENRICHED
 ══════════════════════════════════════════════════
 
-📁 Seed saved to: .claude/tasks/<NN>-brainstorm-<topic>/seed.md
+📁 Updated: .claude/tasks/{SEED_FOLDER}/seed.md
+
+Original context: PRESERVED ✓
+Research added:
+- 🔍 Brainstorm Summary (insights, recommendation)
+- 📊 Strategy Scores
+- 🧭 Decision Journey ({len(key_decisions)} decisions)
+
+Research rounds completed: {round_number}
+
+Research strategy used:
+- Code: {code_score}/6 → {Skip|Light|Deep}
+- Web:  {web_score}/6 → {Skip|websearch|intelligent}
+- Docs: {docs_score}/6 → {Skip|explore-docs}
+
+Next: /apex:1-analyze {SEED_FOLDER}
+══════════════════════════════════════════════════
+```
+
+**If SEED_MODE = false (created new seed):**
+```
+══════════════════════════════════════════════════
+✨ BRAINSTORM COMPLETE
+══════════════════════════════════════════════════
+
+📁 Created: .claude/tasks/<NN>-brainstorm-<topic>/seed.md
 
 Research rounds completed: {round_number}
 Key decisions captured: {len(key_decisions)}
@@ -540,7 +750,9 @@ Next: /apex:1-analyze <NN>-brainstorm-<topic>
 </process>
 
 <rules>
-- **Phase 0 is optional** - Skip if topic is already clear and specific
+- **Seed detection is automatic** - If argument matches `^\d+-` pattern, check for existing seed.md
+- **SEED_MODE preserves context** - When enriching, MERGE new findings with original seed sections
+- **Phase 0 is optional** - Skip if topic is clear OR if SEED_MODE has specs
 - **Adaptive routing is mandatory** - Always calculate strategy scores before launching agents
 - **Never settle for first answers** - Every finding must be questioned
 - **Cite your sources** - Reference where information came from
@@ -553,7 +765,7 @@ Next: /apex:1-analyze <NN>-brainstorm-<topic>
 - **But loosely held** - Update views when evidence contradicts them
 - **Proactive suggestions** - Always include "As-tu pensé à X?" options
 - **Track decisions** - Record every user choice in key_decisions
-- **Always generate seed.md** - Enable seamless APEX workflow continuation
+- **Always generate/enrich seed.md** - Create new OR enrich existing for seamless workflow
 - **Max 5 rounds** - Prevent infinite loops while allowing depth
 </rules>
 
@@ -599,9 +811,12 @@ Structure your final output as:
 </output_format>
 
 <success_criteria>
-- Asked clarifying questions if topic was vague (Phase 0)
+- Detected existing seed.md if argument was folder name (Seed Detection)
+- If SEED_MODE: loaded context, skipped interview, displayed activation banner
+- Asked clarifying questions if topic was vague AND not in SEED_MODE (Phase 0)
 - Calculated and displayed research strategy scores (Step 0e)
 - Used adaptive agent routing based on Code/Web/Docs scores
+- Applied SEED_MODE bonus (+2 Code) if seed had file references
 - Completed research loop with user checkpoints after each round
 - Launched appropriate agents in parallel per round
 - Used intelligent-search for deep research topics (web_score ≥ 4)
@@ -610,7 +825,8 @@ Structure your final output as:
 - Tracked all user decisions in key_decisions
 - Formed a clear, well-reasoned recommendation
 - Acknowledged uncertainty and opposing views
-- Generated seed.md with Decision Journey section
+- If SEED_MODE: ENRICHED existing seed (preserved + merged sections)
+- If fresh: CREATED new seed.md with Decision Journey section
 - Provided actionable next steps
 - Respected max 5 rounds limit
 </success_criteria>

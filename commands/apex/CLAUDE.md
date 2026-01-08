@@ -8,7 +8,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 
 | Command | Purpose | Key Flags |
 |---------|---------|-----------|
-| `/apex:0-brainstorm` | Adaptive research with smart agent routing | - |
+| `/apex:0-brainstorm` | Adaptive research with smart agent routing | `<topic>` or `<folder>` |
 | `/apex:1-analyze` | Gather context & research | `--yolo` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
@@ -76,6 +76,28 @@ The `/apex:0-brainstorm` command uses a **scoring system** to select optimal res
 - Web: "React 19 features" (+3), "Redis vs alternatives" (+2)
 - Docs: "Stripe webhooks" (+3), "connect Drizzle with Supabase" (+2)
 
+## Seed Mode (Brainstorm from Handoff)
+
+Brainstorm auto-detects when argument is an existing task folder and enters **Seed Mode**:
+
+```
+/apex:0-brainstorm 27-my-feature    ← Seed Mode (enriches existing seed.md)
+/apex:0-brainstorm "new topic"      ← Fresh Mode (creates new folder)
+```
+
+**Seed Mode workflow:**
+1. Detects folder pattern (`^\d+-`)
+2. Reads existing `seed.md` from `/apex:handoff`
+3. Pre-loads context (Mission, Specs, Files)
+4. Skips interview phase (specs already defined)
+5. Runs Research Loop with pre-loaded context
+6. **ENRICHES** existing seed.md (preserves + adds research sections)
+
+**Sections preserved:** 🎯 Mission, ✅ Critères, 📋 Spécifications
+**Sections added:** 🔍 Brainstorm Summary, 📊 Strategy Scores, 🧭 Decision Journey
+
+**Use case:** `/apex:handoff` → `/apex:0-brainstorm <folder>` → `/apex:1-analyze <folder>`
+
 ## Smart Skip (Post-Brainstorm)
 
 When `/apex:1-analyze` detects a seed.md from `/apex:0-brainstorm`, it enters **ultra-light mode**:
@@ -142,7 +164,7 @@ Execute phase automatically selects the optimal model (Sonnet vs Opus) per task 
 
 | File | Created By | Purpose |
 |------|------------|---------|
-| `seed.md` | `/apex:handoff` or `/apex:0-brainstorm` | Prior context transfer (directive template + Strategy Scores) |
+| `seed.md` | `/apex:handoff`, `/apex:0-brainstorm`, or both | Prior context (handoff) + research (brainstorm) |
 | `analyze.md` | `/apex:1-analyze` | Research findings, patterns, gotchas (includes Strategy Scores) |
 | `plan.md` | `/apex:2-plan` | File-by-file change plan (no code snippets) |
 | `tasks/` | `/apex:tasks` | Granular task breakdown with dependencies |

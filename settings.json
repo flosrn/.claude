@@ -6,12 +6,10 @@
       "mcp__claude-in-chrome__*",
       "mcp__playwright__*",
       "mcp__cclsp__*",
-      "Bash(node -e:*)",
-      "Bash(pnpm i)",
-      "Bash(git add:*)",
-      "Bash(pnpm run typecheck:*)",
-      "Bash(tree:*)",
-      "Bash(git :*)"
+      "Bash(node *)",
+      "Bash(pnpm *)",
+      "Bash(git *)",
+      "Bash(tree *)"
     ],
     "deny": [],
     "ask": [],

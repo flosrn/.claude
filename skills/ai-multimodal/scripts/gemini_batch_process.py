@@ -13,6 +13,8 @@ Supports all Gemini modalities:
 import argparse
 import json
 import os
+import platform
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -162,7 +164,8 @@ def process_file(
     format_output: str,
     aspect_ratio: Optional[str] = None,
     verbose: bool = False,
-    max_retries: int = 3
+    max_retries: int = 3,
+    output_path: Optional[str] = None
 ) -> Dict[str, Any]:
     """Process a single file with retry logic."""
 
@@ -226,29 +229,41 @@ def process_file(
             if task == 'generate' and hasattr(response, 'candidates'):
                 for i, part in enumerate(response.candidates[0].content.parts):
                     if part.inline_data:
-                        # Determine output directory - use project root docs/assets
-                        if file_path:
+                        # Determine output path for generated image
+                        if output_path:
+                            # Use provided output path directly
+                            out_path = Path(output_path)
+                            # Add .png extension if missing
+                            if out_path.suffix.lower() not in {'.png', '.jpg', '.jpeg', '.webp'}:
+                                out_path = out_path.with_suffix('.png')
+                            out_path.parent.mkdir(parents=True, exist_ok=True)
+                            output_file = out_path
+                        elif file_path:
                             output_dir = Path(file_path).parent
                             base_name = Path(file_path).stem
+                            output_file = output_dir / f"{base_name}_generated_{i}.png"
                         else:
-                            # Find project root (look for .git or .claude directory)
+                            # Fallback to project docs/assets
                             script_dir = Path(__file__).parent
                             project_root = script_dir
                             for parent in [script_dir] + list(script_dir.parents):
                                 if (parent / '.git').exists() or (parent / '.claude').exists():
                                     project_root = parent
                                     break
-
                             output_dir = project_root / 'docs' / 'assets'
                             output_dir.mkdir(parents=True, exist_ok=True)
-                            base_name = "generated"
+                            output_file = output_dir / f"generated_{i}.png"
 
-                        output_file = output_dir / f"{base_name}_generated_{i}.png"
                         with open(output_file, 'wb') as f:
                             f.write(part.inline_data.data)
                         result['generated_image'] = str(output_file)
-                        if verbose:
-                            print(f"  Saved image to: {output_file}")
+
+                        # Always print the path clearly and open the image
+                        print(f"\n✅ IMAGE GENERATED: {output_file}")
+
+                        # Auto-open on macOS
+                        if platform.system() == 'Darwin':
+                            subprocess.run(['open', str(output_file)], check=False)
 
             return result
 
@@ -309,7 +324,8 @@ def batch_process(
             task=task,
             format_output=format_output,
             aspect_ratio=aspect_ratio,
-            verbose=verbose
+            verbose=verbose,
+            output_path=output_file  # Pass output path for image saving
         )
 
         results.append(result)

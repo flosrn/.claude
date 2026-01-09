@@ -36,14 +36,15 @@ function matchTrigger(regex: RegExp, text: string): string | null {
   return match ? match[0] : null;
 }
 
-// 1. ai-multimodal - Media files (EN + FR)
+// 1. ai-multimodal - Media files: PDF, audio, video (EN + FR)
+// NOTE: "screenshot" removed - use vision-analyzer for UI debugging instead
 const trigger1 = matchTrigger(
-  /pdf|document|image|screenshot|photo|audio|video|mp3|mp4|transcri|ocr|extract.*from|fichier|extraire|analyser.*image|analyser.*pdf|transcrire/i,
+  /pdf|audio|video|mp3|mp4|wav|transcri|ocr|extract.*text|extract.*data|fichier.*pdf|fichier.*audio|fichier.*video|transcrire|generate.*image|créer.*image|text.*to.*image/i,
   prompt,
 );
 if (trigger1) {
   suggestions.push(
-    `ALWAYS use Skill "ai-multimodal" for PDFs/images/audio/video. Do NOT manually read or describe media files. [trigger: "${trigger1}"]`,
+    `ALWAYS use Skill "ai-multimodal" for PDFs/audio/video/image-generation. Uses Gemini API. [trigger: "${trigger1}"]`,
   );
 }
 
@@ -102,14 +103,15 @@ if (trigger6) {
   );
 }
 
-// 7. aesthetic - Design work (EN + FR, word boundaries for ui/ux)
+// 7. aesthetic - Design IMPROVEMENT (not debugging) (EN + FR)
+// NOTE: For debugging (overflow, cut-off), use vision-analyzer instead
 const trigger7 = matchTrigger(
-  /beautiful|design|\bui\b|\bux\b|aesthetic|inspiration|dribbble|pretty|visual|look.*feel|modern.*look|beau|joli|esthétique|visuel|apparence|moderne/i,
+  /beautiful|improv.*design|better.*ui|modern.*look|aesthetic|make.*pretty|rendre.*beau|améliorer.*design|plus.*joli|moderniser|esthétique|score.*design|iterate.*design/i,
   prompt,
 );
 if (trigger7) {
   suggestions.push(
-    `ALWAYS use Skill "aesthetic" for design work. Provides structured design analysis and iteration using Gemini vision. [trigger: "${trigger7}"]`,
+    `ALWAYS use Skill "aesthetic" for design IMPROVEMENT. Uses Gemini to score, generate alternatives, iterate. NOT for debugging bugs. [trigger: "${trigger7}"]`,
   );
 }
 
@@ -124,14 +126,15 @@ if (trigger8) {
   );
 }
 
-// 9. vision-analyzer agent - UI debugging (EN + FR)
+// 9. vision-analyzer agent - Quick UI DEBUGGING (EN + FR)
+// NOTE: For design improvement (beautiful, modern), use aesthetic skill instead
 const trigger9 = matchTrigger(
-  /screenshot|visual.*bug|ui.*issue|looks.*wrong|display.*problem|layout.*broken|capture.*écran|bug.*visuel|problème.*affichage|rendu.*cassé/i,
+  /overflow|cut.*off|misalign|z-?index|layout.*bug|ui.*bug|visual.*bug|looks.*wrong|display.*broken|déborde|coupé|cassé|alignement.*bug|problème.*affichage|rendu.*cassé/i,
   prompt,
 );
 if (trigger9) {
   suggestions.push(
-    `ALWAYS use Task agent "vision-analyzer" for UI bugs. Analyzes screenshots to identify visual issues. [trigger: "${trigger9}"]`,
+    `ALWAYS use Task agent "vision-analyzer" for UI bug DEBUGGING (overflow, cut-off, misalignment). Instant Claude Opus analysis. NOT for design improvement. [trigger: "${trigger9}"]`,
   );
 }
 

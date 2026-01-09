@@ -1,6 +1,12 @@
 ---
 name: aesthetic
-description: Create aesthetically beautiful interfaces following proven design principles. ALWAYS use when the user says "make it beautiful", "improve the design", "better UI", "aesthetic", "beau design", "améliorer le design", "interface plus jolie", "esthétique", or when building UI/UX, analyzing designs from inspiration sites (Dribbble, Behance, Awwwards), generating design images with ai-multimodal, implementing visual hierarchy and color theory, adding micro-interactions, or creating design documentation. Includes workflows for capturing and analyzing inspiration screenshots, iterative design image generation until aesthetic standards are met (score ≥7/10), and comprehensive design system guidance covering BEAUTIFUL, RIGHT, SATISFYING, and PEAK stages.
+description: |
+  Design IMPROVEMENT and iteration using Gemini API. Score designs, generate alternatives, extract design tokens.
+
+  ALWAYS use for: "beautiful", "improve design", "better UI", "modern look", "aesthetic", "beau", "améliorer", "moderniser".
+  DO NOT use for: quick bug debugging (overflow, cut-off) → use "vision-analyzer" agent instead.
+
+  Workflow: Analyze (gemini-2.5-pro) → Generate improved (gemini-3-pro-image-preview) → Score → Iterate until ≥7/10.
 ---
 
 # Aesthetic
@@ -41,6 +47,160 @@ Elevate with narrative elements—parallax effects, particle systems, thematic c
 **Reference**: [`references/storytelling-design.md`](references/storytelling-design.md) - Narrative elements, scroll-based storytelling, interactive techniques.
 
 ## Workflows
+
+### Workflow 0: Improve Existing UI (Primary Use Case)
+
+**Purpose**: Take a screenshot of current UI and iteratively improve it using Gemini vision + generation.
+
+**Prerequisites**:
+- `GEMINI_API_KEY` configured (see `skills/ai-multimodal/SKILL.md`)
+- Image path available (drag & drop or provide path)
+
+**Steps**:
+
+#### Step 1: Analyze Current Design
+
+```bash
+# Analyze the current UI and get a score
+~/.claude/skills/ai-multimodal/scripts/run.sh gemini_batch_process.py \
+  --files "/path/to/current-ui.png" \
+  --task analyze \
+  --prompt "Rate this UI design from 1-10 on these criteria:
+    - Visual hierarchy (1-10)
+    - Color harmony (1-10)
+    - Typography (1-10)
+    - Spacing & layout (1-10)
+    - Modern feel (1-10)
+    - Overall aesthetic (1-10)
+
+    List the TOP 3 weaknesses to fix.
+    List the TOP 3 strengths to preserve.
+    Suggest specific improvements." \
+  --model gemini-2.5-pro \
+  --output /tmp/design-analysis.md
+```
+
+#### Step 2: Generate Improved Design
+
+Based on analysis, create a design generation prompt:
+
+```bash
+~/.claude/skills/ai-multimodal/scripts/run.sh gemini_batch_process.py \
+  --task generate \
+  --prompt "Modern UI design for [PAGE TYPE].
+
+PRESERVE from original:
+- [Strength 1 from analysis]
+- [Strength 2 from analysis]
+
+IMPROVE:
+- [Weakness 1] -> [Specific improvement]
+- [Weakness 2] -> [Specific improvement]
+- [Weakness 3] -> [Specific improvement]
+
+STYLE: Clean, modern, professional
+COLORS: [Extracted or improved palette]
+LAYOUT: [Description based on original structure]
+COMPONENTS: [Key components to include]" \
+  --model gemini-3-pro-image-preview \
+  --output /tmp/design-v1 \
+  --aspect-ratio 16:9
+```
+
+#### Step 3: Score Generated Design
+
+```bash
+~/.claude/skills/ai-multimodal/scripts/run.sh gemini_batch_process.py \
+  --files "/tmp/design-v1.png" \
+  --task analyze \
+  --prompt "Rate this generated UI design 1-10:
+    - Does it look professional and polished?
+    - Is the visual hierarchy clear?
+    - Are colors harmonious?
+    - Would this work as a real product?
+
+    Overall score (1-10):
+    If score < 7, list SPECIFIC fixes needed." \
+  --model gemini-2.5-pro \
+  --output /tmp/design-v1-score.md
+```
+
+#### Step 4: Iterate Until Score >= 7
+
+```
+LOOP:
+  IF score >= 7:
+    DONE - proceed to implementation
+  ELSE:
+    Refine prompt with specific fixes
+    Regenerate design
+    Re-score
+    Continue until score >= 7 or max 3 iterations
+```
+
+#### Step 5: Extract Implementation Specs
+
+```bash
+~/.claude/skills/ai-multimodal/scripts/run.sh gemini_batch_process.py \
+  --files "/tmp/design-final.png" \
+  --task extract \
+  --prompt "Extract implementation specs from this design:
+
+1. COLOR PALETTE (hex codes):
+   - Primary:
+   - Secondary:
+   - Background:
+   - Text:
+   - Accent:
+
+2. TYPOGRAPHY:
+   - Headings: font, size, weight
+   - Body: font, size, weight
+   - Labels: font, size, weight
+
+3. SPACING SYSTEM:
+   - Base unit (px):
+   - Common paddings:
+   - Common margins:
+
+4. COMPONENTS TO CREATE:
+   - [Component name]: [Brief description]
+
+5. TAILWIND CLASSES SUGGESTIONS:
+   - [Component]: [Suggested classes]
+
+Return as JSON." \
+  --model gemini-2.5-pro \
+  --format json \
+  --output /tmp/design-specs.json
+```
+
+#### Step 6: Implement
+
+Use the extracted specs to modify code:
+- Update Tailwind config with colors
+- Create/modify components
+- Apply typography and spacing
+
+**Quick Command** (all-in-one):
+```bash
+# Store in a shell function for quick access
+design-improve() {
+  local img="$1"
+  local output="${2:-/tmp/design-improved}"
+
+  echo "1. Analyzing current design..."
+  ~/.claude/skills/ai-multimodal/scripts/run.sh gemini_batch_process.py \
+    --files "$img" --task analyze \
+    --prompt "Rate 1-10, list top 3 weaknesses and improvements" \
+    --model gemini-2.5-pro --output "${output}-analysis.md"
+
+  echo "Analysis saved to ${output}-analysis.md"
+  echo "2. Review analysis, then run design generation with refined prompt"
+}
+```
+
+---
 
 ### Workflow 1: Capture & Analyze Inspiration
 

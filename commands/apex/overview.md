@@ -79,7 +79,7 @@ argument-hint: (no arguments - displays visual guide)
 │  ───────────────                                                              │
 │  • Task-by-Task Mode (if tasks/ exists) or Plan Mode (fallback)              │
 │  • Sequential (default) or Parallel (3,4 or --parallel)                      │
-│  • Validation SKIPPED by default (use --validate to opt-in)                  │
+│  • Real-time validation via hook + code-simplifier polish pass              │
 │  • Output: implementation.md                                                  │
 └───────────────────────────────────────────────────────────────────────────────┘
                                   │

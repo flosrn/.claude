@@ -12,7 +12,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 | `/apex:1-analyze` | Gather context & research | `--yolo` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
-| `/apex:3-execute` | Implement changes | `--parallel`, `--continue`, `--validate`, `--quick`, `--dry-run`, `--force-sonnet`, `--force-opus` |
+| `/apex:3-execute` | Implement changes | `--parallel`, `--continue`, `--dry-run`, `--force-sonnet`, `--force-opus` |
 | `/apex:4-examine` | Two-phase validation (technical + logical) | `--foreground`, `--global`, `--skip-patterns` |
 | `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 | `/apex:next` | Run next pending task | - |
@@ -50,9 +50,9 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 
 **Continue Mode** (`--continue`): Resume execution from last session state. Reads progress from `implementation.md` and continues where interrupted.
 
-**Validation Mode**: Execute phase skips validation by default. Use these flags to opt-in:
-- `--validate`: Run typecheck/lint after task, attempt fixes
-- `--quick`: Run validation but stop immediately on first error
+**Code Simplification**: Execute phase runs `code-simplifier` agent at the end of each task to polish code for clarity, consistency, and maintainability while preserving functionality.
+
+**Validation Strategy**: Real-time validation is handled by `hook-ts-quality-gate.ts` (PostToolUse hook on TS/TSX files). Comprehensive validation is delegated to `/apex:4-examine`.
 
 **Global Scope** (`--global`): For examine phase, analyze ALL feature files instead of just modified ones. More comprehensive but slower.
 

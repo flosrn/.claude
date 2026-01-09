@@ -1,6 +1,6 @@
 ---
 description: Execution phase - implement the plan step by step with ultra thinking
-argument-hint: <task-folder-path> [task-number(s)] [--parallel | --continue | --validate]
+argument-hint: <task-folder-path> [task-number(s)] [--parallel | --continue]
 ---
 
 You are an implementation specialist. Execute plans precisely while maintaining code quality.
@@ -33,24 +33,20 @@ You are an implementation specialist. Execute plans precisely while maintaining 
    - `--parallel` flag → **PARALLEL AUTO-DETECT MODE**
    - `--continue` flag → **CONTINUE MODE** (resume from last session state)
    - `--dry-run` flag → **DRY-RUN MODE** (preview only, no changes)
-   - `--validate` flag → **VALIDATE MODE** (run typecheck+lint after task)
-   - `--quick` flag → **QUICK MODE** (validate + stop on first error)
    - `--force-sonnet` flag → **Override Smart Model Selection** (always use Sonnet)
    - `--force-opus` flag → **Override Smart Model Selection** (always use Opus)
    - Comma-separated numbers (e.g., `3,4`) → **PARALLEL EXPLICIT MODE**
    - Single number (e.g., `3`) → **SEQUENTIAL MODE** (single task)
    - No number → **SEQUENTIAL MODE** (next incomplete task)
 
-   **Default behavior**: Validation is SKIPPED by default. Use `--validate` or `--quick` to run typecheck/lint. This delegates validation to `/apex:4-examine` for a cleaner separation of concerns.
+   **Validation strategy**: Real-time validation is handled by the `hook-ts-quality-gate.ts` PostToolUse hook (runs automatically on every TS/TSX file edit). Comprehensive validation is delegated to `/apex:4-examine`.
 
    **Supported flag combinations**:
    | Combination | Behavior |
    |-------------|----------|
-   | `3 --validate` | Execute task 3, then validate |
    | `3,4 --parallel` | Invalid - use one or the other |
    | `--parallel --force-opus` | Auto-detect parallel, all use Opus |
-   | `--continue --validate` | Resume + validate each task |
-   | `--dry-run --validate` | Invalid - dry-run doesn't execute |
+   | `--continue --force-sonnet` | Resume + all tasks use Sonnet |
 
    **IMPORTANT**: Task-by-task mode is preferred when available because:
    - Individual tasks are smaller and more focused (~50 lines vs 400+ lines)
@@ -255,7 +251,7 @@ After all agents complete:
   - In Session entry, list ALL tasks completed: "Tasks 3, 4 - [Names]"
   - Note: "Executed in parallel"
 
-### Then → GO TO STEP 12 (PROGRESS DASHBOARD)
+### Then → GO TO STEP 11 (PROGRESS DASHBOARD)
 
 ---
 
@@ -304,59 +300,7 @@ Run without --dry-run to execute
 
 ---
 
-## 3D. VALIDATE MODE (when --validate flag detected)
-
-**Note**: `--validate` is an optional modifier. By default, validation is SKIPPED.
-
-After completing task implementation (Step 7):
-1. Run `pnpm run format` (if available)
-2. Run `pnpm run typecheck`
-3. Run `pnpm run lint`
-4. Display results:
-
-```
-══════════════════════════════════════════════════
-VALIDATION RESULTS
-══════════════════════════════════════════════════
-Format:    ✓ Applied
-Typecheck: ✓ Pass (or ✗ N errors)
-Lint:      ✓ Pass (or ✗ N warnings/errors)
-══════════════════════════════════════════════════
-```
-
-5. If errors found: Attempt to fix, then re-run
-6. Continue to Step 10 (UPDATE TASK STATUS)
-
-**When to use**:
-- Final task before `/apex:4-examine`
-- When you want immediate feedback on code quality
-- Before committing (ensures clean code)
-
----
-
-## 3E. QUICK MODE (when --quick flag detected)
-
-**Note**: `--quick` = validate + stop on first error. More strict than `--validate`.
-
-**Behavior**:
-- Same as `--validate` but **STOPS immediately** if any check fails
-- Does NOT attempt auto-fix
-- Useful for catching issues early
-
-**Display on error**:
-```
-══════════════════════════════════════════════════
-QUICK VALIDATION - STOPPED
-══════════════════════════════════════════════════
-Typecheck: ✗ 3 errors found
-
-Stopping execution. Fix errors and retry.
-══════════════════════════════════════════════════
-```
-
----
-
-## 3F. CONTINUE MODE (when --continue flag detected)
+## 3D. CONTINUE MODE (when --continue flag detected)
 
 **Purpose**: Resume execution from last session state after interruption.
 
@@ -436,33 +380,15 @@ Resuming Task 3...
    - **STOP** if something doesn't work as expected
    - **RETURN TO TASK**: If implementation reveals issues with task definition
 
-8. **VALIDATION** (only if `--validate` or `--quick` flag)
+8. **CODE SIMPLIFICATION**: Polish the implementation
 
-   **DEFAULT BEHAVIOR (no flag)**: Skip this step entirely.
-   - Validation is delegated to `/apex:4-examine`
-   - This keeps execute fast and focused on implementation
-   - Display:
-     ```
-     ══════════════════════════════════════════════════
-     Validation skipped (default behavior)
-     Run /apex:4-examine for comprehensive validation
-     ══════════════════════════════════════════════════
-     ```
+   After completing task implementation, launch `code-simplifier` agent on modified files:
+   - Use Task tool with `subagent_type: "code-simplifier"`
+   - Agent reviews for clarity, consistency, maintainability (preserves functionality)
 
-   **WITH `--validate` FLAG**: Run validation, attempt fixes
-   - See section 3D for details
+   **Skip if**: config-only changes, trivial fixes, or dry-run mode.
 
-   **WITH `--quick` FLAG**: Run validation, stop on error
-   - See section 3E for details
-
-9. **CONTINUOUS VALIDATION** (during implementation)
-   - This is NOT the same as step 8
-   - As you implement, verify code parses/compiles
-   - Catch obvious syntax errors immediately
-   - **Don't wait for step 8** to find broken code
-   - **NEVER** mark a task as complete if code doesn't compile
-
-10. **UPDATE TASK STATUS**: Mark completion in index.md
+9. **UPDATE TASK STATUS**: Mark completion in index.md
 
     ### Task-by-Task Mode
     - Edit `./.claude/tasks/<task-folder>/tasks/index.md`
@@ -472,7 +398,7 @@ Resuming Task 3...
     ### Plan Mode
     - Skip this step (no index.md exists)
 
-11. **UPDATE IMPLEMENTATION.MD**: Document work done
+10. **UPDATE IMPLEMENTATION.MD**: Document work done
 
     **CRITICAL**: Check if `implementation.md` already exists
     - If **EXISTS** → **APPEND** a new session entry (don't overwrite!)
@@ -595,7 +521,7 @@ Resuming Task 3...
          Implements: #issue-number (if applicable)
          ```
 
-12. **SHOW PROGRESS DASHBOARD**: Display visual progress summary
+11. **SHOW PROGRESS DASHBOARD**: Display visual progress summary
 
     ### Task-by-Task Mode
     After task completion, read `tasks/index.md` and display progress:
@@ -625,7 +551,7 @@ Resuming Task 3...
     ### Plan Mode
     - Skip dashboard (no task-level tracking)
 
-13. **FINAL REPORT**: Summarize to user
+12. **FINAL REPORT**: Summarize to user
     - Confirm task implementation complete
     - Highlight what was built
     - Show test results
@@ -715,7 +641,7 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 
 ```bash
 # Execute next pending task (auto-detects from index.md)
-# Validation SKIPPED by default - run /apex:4-examine after
+# Real-time validation via hook, comprehensive validation via /apex:4-examine
 /apex:3-execute 68-ai-template-creator
 
 # Execute specific task by number
@@ -737,21 +663,12 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 # DRY-RUN: Preview what a task would do without executing
 /apex:3-execute 68-ai-template-creator 3 --dry-run
 
-# VALIDATE: Run typecheck/lint after task (opt-in)
-/apex:3-execute 68-ai-template-creator 3 --validate
-
-# QUICK: Validate + stop on first error (stricter)
-/apex:3-execute 68-ai-template-creator 3 --quick
-
 # FORCE MODEL: Override Smart Model Selection
 /apex:3-execute 68-ai-template-creator 5 --force-opus    # Complex integration
 /apex:3-execute 68-ai-template-creator 2 --force-sonnet  # Keep simple even if scored high
 
-# COMBINED: Continue with validation
-/apex:3-execute 72-rename-feature --continue --validate
-
-# COMBINED: Parallel with forced model
-/apex:3-execute 72-rename-feature 3,4 --force-opus       # All tasks use Opus
+# COMBINED: Continue + parallel with forced model
+/apex:3-execute 72-rename-feature --parallel --force-opus
 ```
 
 ## Parallel Execution Example

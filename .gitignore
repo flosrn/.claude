@@ -12,6 +12,9 @@
 *.log
 *.tmp
 
+# Paste cache (clipboard temporary storage)
+paste-cache/
+
 # OS-specific files
 .DS_Store
 Thumbs.db

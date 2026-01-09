@@ -8,8 +8,7 @@
         "version": "1.0.0",
         "installedAt": "2025-12-29T20:45:14.758Z",
         "lastUpdated": "2025-12-29T20:45:14.758Z",
-        "gitCommitSha": "30506c9bf360fa3f4d5c1e5009644335c6df8852",
-        "isLocal": true
+        "gitCommitSha": "30506c9bf360fa3f4d5c1e5009644335c6df8852"
       }
     ],
     "next-react-optimizer@local": [
@@ -19,8 +18,7 @@
         "version": "1.0.0",
         "installedAt": "2025-12-29T20:45:14.758Z",
         "lastUpdated": "2025-12-29T20:45:14.758Z",
-        "gitCommitSha": "30506c9bf360fa3f4d5c1e5009644335c6df8852",
-        "isLocal": true
+        "gitCommitSha": "30506c9bf360fa3f4d5c1e5009644335c6df8852"
       }
     ],
     "typescript-lsp@claude-plugins-official": [
@@ -30,8 +28,17 @@
         "version": "1.0.0",
         "installedAt": "2025-12-29T20:45:14.758Z",
         "lastUpdated": "2025-12-29T20:45:14.758Z",
-        "gitCommitSha": "6d3752c000e2b3d0e6137bd7adb04895d6f40f14",
-        "isLocal": true
+        "gitCommitSha": "6d3752c000e2b3d0e6137bd7adb04895d6f40f14"
+      }
+    ],
+    "code-simplifier@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/code-simplifier/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-09T10:55:19.579Z",
+        "lastUpdated": "2026-01-09T10:55:19.579Z",
+        "gitCommitSha": "ee5a46cad78aac6fa724aca611541ab01048331c"
       }
     ]
   }

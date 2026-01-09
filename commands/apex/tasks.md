@@ -118,11 +118,11 @@ Parse the argument for flags:
      /apex:3-execute [folder-name] 3
      /apex:3-execute [folder-name] 4
 
-     # Parallel execution (after Task 1)
+     # Parallel execution (explicit)
      /apex:3-execute [folder-name] 2,3
 
-     # Auto-detect parallel tasks
-     /apex:3-execute [folder-name] --parallel
+     # Auto-detect parallel tasks (default behavior)
+     /apex:3-execute [folder-name]
      ```
 
      **Start with**: Task 1 - it has no dependencies.
@@ -141,9 +141,9 @@ Parse the argument for flags:
    - **Show Execution Strategy** with parallel notation: `Task 1 → [Task 2 ‖ Task 3] → Task 4`
    - Highlight parallelization opportunities
    - **STANDARD MODE**: Suggest commands:
-     - Sequential: `/apex:3-execute [folder] 1`
-     - Parallel: `/apex:3-execute [folder] 2,3` or `/apex:3-execute [folder] --parallel`
-     - Suggest starting with tasks that have no dependencies
+     - Auto (detects parallelism): `/apex:3-execute [folder]`
+     - Explicit parallel: `/apex:3-execute [folder] 2,3`
+     - Single task: `/apex:3-execute [folder] 1`
    - **YOLO MODE**: Say "YOLO mode: Session will exit. Execute phase requires manual review - run `/apex:3-execute [folder]` to start." then **STOP IMMEDIATELY**. YOLO stops at execute phase for safety.
 
 ## Task Quality Guidelines

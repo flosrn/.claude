@@ -1,6 +1,6 @@
 ---
 description: Execution phase - implement the plan step by step with ultra thinking
-argument-hint: <task-folder-path> [task-number(s)] [--parallel | --continue]
+argument-hint: <task-folder-path> [task-number(s)] [--force-sonnet | --force-opus]
 ---
 
 You are an implementation specialist. Execute plans precisely while maintaining code quality.
@@ -24,36 +24,25 @@ You are an implementation specialist. Execute plans precisely while maintaining 
    - Check output shows `analyze.md` exists
    - If missing, instruct user to run `/apex:1-analyze` first
 
-3. **DETECT EXECUTION MODE**: Check for individual task files and parallel execution
+3. **DETECT EXECUTION MODE**: Check for individual task files and determine execution strategy
    - Check if `./.claude/tasks/<task-folder>/tasks/` directory exists
    - If `tasks/` exists AND contains `task-XX.md` files → **USE TASK-BY-TASK MODE**
    - If `tasks/` does NOT exist → **USE PLAN MODE** (fallback to plan.md)
 
    **Parse argument for execution type**:
-   - `--parallel` flag → **PARALLEL AUTO-DETECT MODE**
-   - `--continue` flag → **CONTINUE MODE** (resume from last session state)
-   - `--dry-run` flag → **DRY-RUN MODE** (preview only, no changes)
    - `--force-sonnet` flag → **Override Smart Model Selection** (always use Sonnet)
    - `--force-opus` flag → **Override Smart Model Selection** (always use Opus)
    - Comma-separated numbers (e.g., `3,4`) → **PARALLEL EXPLICIT MODE**
    - Single number (e.g., `3`) → **SEQUENTIAL MODE** (single task)
-   - No number → **SEQUENTIAL MODE** (next incomplete task)
+   - No number → **AUTO MODE** (detect parallelizable tasks from `index.md`)
+
+   **Auto-parallel detection** (when no task number provided):
+   - Parse `index.md` dependency table to find ALL ready-to-execute tasks
+   - If 1 task ready → Sequential execution
+   - If 2+ tasks ready → Auto-parallel execution
+   - This is the DEFAULT behavior (no flag needed)
 
    **Validation strategy**: Real-time validation is handled by the `hook-ts-quality-gate.ts` PostToolUse hook (runs automatically on every TS/TSX file edit). Comprehensive validation is delegated to `/apex:4-examine`.
-
-   **Supported flag combinations**:
-   | Combination | Behavior |
-   |-------------|----------|
-   | `3,4 --parallel` | Invalid - use one or the other |
-   | `--parallel --force-opus` | Auto-detect parallel, all use Opus |
-   | `--continue --force-sonnet` | Resume + all tasks use Sonnet |
-
-   **IMPORTANT**: Task-by-task mode is preferred when available because:
-   - Individual tasks are smaller and more focused (~50 lines vs 400+ lines)
-   - Each task has clear success criteria
-   - Dependencies are explicitly defined
-   - Progress tracking is more granular
-   - **Parallel execution** is possible when dependencies allow
 
 3. **LOAD CONTEXT**: Read planning artifacts based on mode
 
@@ -64,19 +53,10 @@ You are an implementation specialist. Execute plans precisely while maintaining 
      - Execution order (which tasks can be parallel)
      - Overall progress tracking
 
-   #### Sequential Mode (default)
+   #### Sequential Mode (single task specified)
    - **IF specific task number provided** (e.g., `/apex:3-execute feature-name 3`):
      - Read ONLY `./.claude/tasks/<task-folder>/tasks/task-03.md`
      - Focus exclusively on that single task
-   - **IF no task number provided** (find next incomplete task):
-     ```bash
-     # Note: Use /usr/bin/grep to bypass rg alias, sed for portable extraction
-     # Note: Quotes around $() are required for zsh compatibility with pipes
-     NEXT_TASK="$(/usr/bin/grep "^- \[ \]" "./.claude/tasks/$FOLDER/tasks/index.md" 2>/dev/null | head -1 | sed 's/.*Task \([0-9]*\).*/\1/')" && \
-     echo "Next incomplete task: $NEXT_TASK"
-     ```
-     - Read that specific task file (e.g., `task-$NEXT_TASK.md`)
-     - Execute only that task in this session
 
    #### Parallel Explicit Mode (e.g., `3,4` or `3,4,5`)
    - Parse comma-separated task numbers from argument
@@ -87,26 +67,27 @@ You are an implementation specialist. Execute plans precisely while maintaining 
    - If dependency conflict: WARN user and suggest correct order
    - → **GO TO STEP 3B: PARALLEL EXECUTION**
 
-   #### Parallel Auto-Detect Mode (`--parallel`)
-   **Method 1**: Look for explicit patterns in `index.md`
-   - Parse `index.md` for "Execution Strategy" or parallel patterns
-   - Look for patterns like:
-     - `[Task X ‖ Task Y]` or `[Task X || Task Y]`
-     - "can be executed simultaneously"
-     - "Parallelization opportunity"
+   #### Auto Mode (no task number - DEFAULT)
+   **Automatic parallelization based on `index.md` dependency table.**
 
-   **Method 2**: Analyze dependency table (fallback)
-   If no explicit patterns found:
-   - Parse the dependency table from `index.md` (look for `| Task | Name | Dependencies |`)
-   - Identify ALL incomplete tasks (`- [ ]`)
-   - For each incomplete task, check if ALL its dependencies are complete
-   - Tasks with NO dependencies or ALL dependencies complete → **PARALLELIZABLE**
-   - If multiple tasks qualify → propose parallel execution
+   **Step 1**: Parse dependency table from `index.md`
+   - Look for `| Task | Name | Dependencies |` table
+   - Extract task numbers and their dependencies
 
-   **Final step**:
-   - Find the NEXT group of parallelizable incomplete tasks
-   - Read ALL task files in that parallel group
-   - → **GO TO STEP 3B: PARALLEL EXECUTION**
+   **Step 2**: Identify ready tasks
+   - Find ALL incomplete tasks (`- [ ]` in task list)
+   - For each incomplete task, check if ALL its dependencies are complete (`- [x]`)
+   - Tasks with NO dependencies or ALL dependencies complete → **READY**
+
+   **Step 3**: Determine execution strategy
+   - If 1 task ready → Execute sequentially (read single task file)
+   - If 2+ tasks ready → Execute in parallel (→ **GO TO STEP 3B**)
+
+   ```bash
+   # Find ready tasks (dependencies satisfied)
+   # Note: Use /usr/bin/grep to bypass rg alias
+   /usr/bin/grep -E "^\| [0-9]+ \|" "./.claude/tasks/$FOLDER/tasks/index.md"
+   ```
 
    ### Plan Mode (FALLBACK)
    - Read `./.claude/tasks/<task-folder>/analyze.md` for context
@@ -255,86 +236,6 @@ After all agents complete:
 
 ---
 
-## 3C. DRY-RUN MODE (only if --dry-run flag detected)
-
-**CRITICAL**: This mode previews task actions WITHOUT executing them.
-
-### Step 1: Identify Target Task
-- Parse task number from argument (or find first incomplete task)
-- Read the task file (e.g., `task-03.md`)
-
-### Step 2: Analyze Task Actions
-- Parse the task file for:
-  - Files mentioned in Context section
-  - Changes described in Proposed Solution
-  - Success Criteria requirements
-
-### Step 3: Display Preview
-Output the preview in this format:
-
-```
-══════════════════════════════════════════════════
-DRY-RUN: Task N - [Task Name]
-══════════════════════════════════════════════════
-
-Would read:
-  - src/path/to/context-file.ts
-  - src/path/to/pattern-file.ts:45-67
-
-Would modify:
-  - src/path/to/file.ts: [description from task]
-
-Would create:
-  - [new files if any]
-
-Would run:
-  - pnpm run typecheck
-  - pnpm run lint
-
-══════════════════════════════════════════════════
-Run without --dry-run to execute
-══════════════════════════════════════════════════
-```
-
-### Then → END (no further execution)
-
----
-
-## 3D. CONTINUE MODE (when --continue flag detected)
-
-**Purpose**: Resume execution from last session state after interruption.
-
-**Behavior**:
-1. Read `./.claude/tasks/<task-folder>/tasks/index.md`
-2. Find first incomplete task (`- [ ]`)
-3. Check if `implementation.md` has a "Session N" entry for this task
-4. If partial session found → Resume from last noted step
-5. If no partial session → Start fresh on that task
-
-**State detection** (from implementation.md):
-- Look for `### Session N - [date]` entries
-- Check `**Task(s) Completed**:` line
-- Identify any "In Progress" or incomplete markers
-
-**Display**:
-```
-══════════════════════════════════════════════════
-CONTINUE MODE
-══════════════════════════════════════════════════
-Last session: Session 2 (2026-01-07)
-Completed: Tasks 1, 2
-In progress: Task 3 (partial)
-
-Resuming Task 3...
-══════════════════════════════════════════════════
-```
-
-**If no previous state found**:
-- Behave like normal sequential mode
-- Start with first incomplete task
-
----
-
 4. **CREATE TODO LIST**: Track implementation progress
 
    ### Task-by-Task Mode
@@ -386,7 +287,7 @@ Resuming Task 3...
    - Use Task tool with `subagent_type: "code-simplifier"`
    - Agent reviews for clarity, consistency, maintainability (preserves functionality)
 
-   **Skip if**: config-only changes, trivial fixes, or dry-run mode.
+   **Skip if**: config-only changes or trivial fixes.
 
 9. **UPDATE TASK STATUS**: Mark completion in index.md
 
@@ -411,19 +312,8 @@ Resuming Task 3...
     ```markdown
     # Implementation: [Feature Name]
 
-    ## Overview
-    [Brief description of what this feature does - 1-2 sentences]
-
     ## Status: 🔄 In Progress
     **Progress**: X/Y tasks completed
-
-    ## Task Status
-
-    | Task | Description | Status | Session |
-    |------|-------------|--------|---------|
-    | 1 | [Task name from index.md] | ✅ Complete | Session 1 |
-    | 2 | [Task name] | ⏳ Pending | - |
-    | ... | ... | ... | ... |
 
     ---
 
@@ -433,45 +323,20 @@ Resuming Task 3...
 
     **Task(s) Completed**: Task N - [Name]
 
-    #### Changes Made
-    - [List specific changes]
+    **Files Changed:**
     - `path/to/file.ts` - [What was done]
 
-    #### Files Changed
-
-    **New Files:**
-    - `path/to/new-file.ts` - [Purpose]
-
-    **Modified Files:**
-    - `path/to/modified-file.ts` - [What changed]
-
-    #### Test Results
-    - Typecheck: ✓
-    - Lint: ✓
-    - Tests: ✓ [which tests ran]
-
-    #### Notes
-    - [Any deviations from plan]
-    - [Discoveries or learnings]
+    **Notes:**
+    - [Deviations, discoveries, issues]
 
     ---
-
-    ## Follow-up Tasks
-    - [Items discovered during implementation]
-
-    ## Technical Notes
-    - [Important patterns used]
-    - [Breaking changes or migrations]
 
     ## Suggested Commit
 
     ```
-    feat: [Feature name from task folder, kebab-case to sentence]
+    feat: [kebab-name to sentence]
 
-    - [Summary of key changes from session log]
-    - [Additional bullet points for major changes]
-
-    Implements: #issue-number (if applicable)
+    - [Key changes]
     ```
     ```
 
@@ -481,45 +346,19 @@ Resuming Task 3...
     2. **Update the Status section**:
        - Change progress count (X/Y tasks)
        - If all complete, change status to `## Status: ✅ Complete`
-    3. **Update the Task Status table**:
-       - Mark completed task(s) as `✅ Complete`
-       - Add session number
-    4. **APPEND a new Session entry** at the end of "## Session Log":
+    3. **APPEND a new Session entry** at the end of "## Session Log":
        ```markdown
        ### Session N - [YYYY-MM-DD]
 
        **Task(s) Completed**: Task X - [Name]
 
-       #### Changes Made
-       - [List specific changes]
+       **Files Changed:**
+       - [List files with descriptions]
 
-       #### Files Changed
-       **New Files:**
-       - [List new files]
-
-       **Modified Files:**
-       - [List modified files]
-
-       #### Test Results
-       - Typecheck: ✓/✗
-       - Lint: ✓/✗
-
-       #### Notes
+       **Notes:**
        - [Session-specific notes]
        ```
-    5. **Update Follow-up Tasks** if new items discovered
-    6. **Update Suggested Commit** when ALL tasks complete:
-       - Find or create `## Suggested Commit` section
-       - Generate commit message based on all changes:
-         ```
-         feat: [Feature name from folder]
-
-         - [Key change 1 from session logs]
-         - [Key change 2 from session logs]
-         - ...
-
-         Implements: #issue-number (if applicable)
-         ```
+    4. **Update Suggested Commit** when ALL tasks complete
 
 11. **SHOW PROGRESS DASHBOARD**: Display visual progress summary
 
@@ -624,7 +463,7 @@ Create middleware that extracts JWT from Authorization header...
 
 - **ULTRA THINK**: Before every file change
 - **ONE TASK AT A TIME**: Complete current task before moving to next (sequential mode)
-- **PARALLEL WHEN POSSIBLE**: Use `3,4` or `--parallel` for independent tasks
+- **AUTO-PARALLEL**: System automatically detects and runs independent tasks in parallel
 - **FOLLOW PATTERNS**: Use analysis findings as guide
 - **TEST AS YOU GO**: Validate continuously
 - **STAY IN SCOPE**: No scope creep ever
@@ -640,54 +479,35 @@ Correctness > Completeness > Speed. Working code that follows patterns and passe
 ## Usage Examples
 
 ```bash
-# Execute next pending task (auto-detects from index.md)
-# Real-time validation via hook, comprehensive validation via /apex:4-examine
+# AUTO MODE: Detects next tasks and parallelizes if possible
 /apex:3-execute 68-ai-template-creator
 
 # Execute specific task by number
 /apex:3-execute 68-ai-template-creator 3
 
-# Execute with plan.md fallback (if no tasks/ folder)
-/apex:3-execute 10-advent-won-prize-id-bug
-
-# CONTINUE: Resume from last interrupted session
-/apex:3-execute 68-ai-template-creator --continue
-
-# PARALLEL: Execute specific tasks simultaneously
-# Each task gets its own model based on complexity score
+# Explicit parallel: Execute specific tasks simultaneously
 /apex:3-execute 72-rename-feature 3,4
 
-# PARALLEL: Auto-detect parallelizable tasks from index.md
-/apex:3-execute 72-rename-feature --parallel
+# Plan mode fallback (if no tasks/ folder)
+/apex:3-execute 10-advent-won-prize-id-bug
 
-# DRY-RUN: Preview what a task would do without executing
-/apex:3-execute 68-ai-template-creator 3 --dry-run
-
-# FORCE MODEL: Override Smart Model Selection
-/apex:3-execute 68-ai-template-creator 5 --force-opus    # Complex integration
-/apex:3-execute 68-ai-template-creator 2 --force-sonnet  # Keep simple even if scored high
-
-# COMBINED: Continue + parallel with forced model
-/apex:3-execute 72-rename-feature --parallel --force-opus
+# Force model override
+/apex:3-execute 68-ai-template-creator 5 --force-opus
+/apex:3-execute 68-ai-template-creator 2 --force-sonnet
 ```
 
-## Parallel Execution Example
+## Auto-Parallel Example
 
-Given this execution strategy in `index.md`:
+Given this dependency structure in `index.md`:
 ```
-Task 1 → Task 2 → [Task 3 ‖ Task 4] → Task 5 → Task 6
+Task 1 → Task 2 → [Task 3 ‖ Task 4] → Task 5
 ```
 
-After completing Tasks 1 and 2:
+After Tasks 1-2 complete, running:
 ```bash
-# Option 1: Explicit parallel
-/apex:3-execute feature-name 3,4
-
-# Option 2: Auto-detect (will find Tasks 3,4 as next parallel group)
-/apex:3-execute feature-name --parallel
+/apex:3-execute feature-name
 ```
-
-Both options will launch 2 apex-executor agents simultaneously.
+Will automatically detect Tasks 3 & 4 as parallelizable and launch 2 agents.
 
 ---
 

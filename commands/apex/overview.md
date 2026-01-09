@@ -78,7 +78,7 @@ argument-hint: (no arguments - displays visual guide)
 │  PHASE 3: EXECUTE                              /apex:3-execute                │
 │  ───────────────                                                              │
 │  • Task-by-Task Mode (if tasks/ exists) or Plan Mode (fallback)              │
-│  • Sequential (default) or Parallel (3,4 or --parallel)                      │
+│  • Auto-parallel (detects from index.md) or explicit (3,4)                  │
 │  • Real-time validation via hook + code-simplifier polish pass              │
 │  • Output: implementation.md                                                  │
 └───────────────────────────────────────────────────────────────────────────────┘
@@ -331,7 +331,6 @@ $ /apex:handoff
 | **Start** (vague/exploratory) | `/apex:0-brainstorm "topic"` | Research first |
 | **Check progress** | `/apex:status folder` | Visual progress tree |
 | **Continue work** | `/apex:next folder` | Auto-detect next task |
-| **Resume interrupted** | `/apex:3-execute folder --continue` | Read impl.md state |
 | **Validate all** | `/apex:4-examine folder` | Technical + logical |
 | **Visual proof** | `/apex:5-browser-test folder` | GIF recording |
 | **Transfer context** | `/apex:handoff` | Generate seed.md |

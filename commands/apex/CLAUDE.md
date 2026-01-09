@@ -12,7 +12,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 | `/apex:1-analyze` | Gather context & research | `--yolo` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
-| `/apex:3-execute` | Implement changes | `--parallel`, `--continue`, `--dry-run`, `--force-sonnet`, `--force-opus` |
+| `/apex:3-execute` | Implement changes | `[task-nums]`, `--force-sonnet`, `--force-opus` |
 | `/apex:4-examine` | Two-phase validation (technical + logical) | `--foreground`, `--global`, `--skip-patterns` |
 | `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 | `/apex:next` | Run next pending task | - |
@@ -46,9 +46,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 **Background Mode**: Agents run asynchronously while asking clarifying questions. Default on analyze and examine phases.
 - Use `--foreground` on examine phase to disable background execution
 
-**Parallel Mode** (`3,4` or `--parallel`): Execute multiple tasks concurrently. Verify tasks don't depend on each other before using.
-
-**Continue Mode** (`--continue`): Resume execution from last session state. Reads progress from `implementation.md` and continues where interrupted.
+**Auto-Parallel Mode**: Execute automatically detects parallelizable tasks from `index.md` dependency table. Use explicit task numbers (e.g., `3,4`) to override.
 
 **Code Simplification**: Execute phase runs `code-simplifier` agent at the end of each task to polish code for clarity, consistency, and maintainability while preserving functionality.
 

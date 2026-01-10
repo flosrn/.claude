@@ -144,7 +144,7 @@ Parse the argument for flags:
      - Auto (detects parallelism): `/apex:3-execute [folder]`
      - Explicit parallel: `/apex:3-execute [folder] 2,3`
      - Single task: `/apex:3-execute [folder] 1`
-   - **YOLO MODE**: Say "YOLO mode: Session will exit. Execute phase requires manual review - run `/apex:3-execute [folder]` to start." then **STOP IMMEDIATELY**. YOLO stops at execute phase for safety.
+   - **YOLO MODE**: Say "YOLO mode: Session will exit. Next phase will start automatically in a new split." then **STOP IMMEDIATELY** - do NOT continue to the next phase. The hooks will handle automation.
 
 ## Task Quality Guidelines
 

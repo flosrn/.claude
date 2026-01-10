@@ -80,7 +80,7 @@ APEX is a structured methodology that breaks down complex coding tasks into mana
 | `/apex:1-analyze` | Gather context & research | `--yolo` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
-| `/apex:3-execute` | Implement changes | `--parallel`, `--dry-run`, `--quick`, `--force-sonnet`, `--force-opus` |
+| `/apex:3-execute` | Implement changes | `--yolo`, `--force-sonnet`, `--force-opus` |
 | `/apex:4-examine` | Two-phase validation | `--foreground`, `--global`, `--skip-patterns` |
 | `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 | `/apex:next` | Run next pending task | - |
@@ -123,15 +123,16 @@ User runs: /apex:1-analyze "Add auth" --yolo
          │    • Runs next command       │
          └──────────────────────────────┘
 
-⚠️ YOLO STOPS at /apex:3-execute (safety)
-   Manual review required before implementing
+✅ Full cycle: analyze → plan → execute
+   YOLO stops after execute starts (before examine)
 ```
 
 ### Supported Commands
 
 - `/apex:1-analyze --yolo` → Auto-continues to `/apex:2-plan`
 - `/apex:2-plan --yolo` → Auto-continues to `/apex:tasks` or `/apex:3-execute`
-- `/apex:tasks --yolo` → STOPS (safety measure before execution)
+- `/apex:tasks --yolo` → Auto-continues to `/apex:3-execute`
+- `/apex:3-execute --yolo` → Executes then STOPS (no auto-continue to examine)
 
 ### When to Use YOLO
 
@@ -366,7 +367,7 @@ Example: `Task 1 → [Task 2 ‖ Task 3] → Task 4`
 
 | Issue | Solution |
 |-------|----------|
-| YOLO doesn't continue | Verify `.yolo` file exists in task folder |
+| YOLO doesn't continue | Verify `.yolo` file exists in task folder, check `/tmp/.apex-yolo-continue` |
 | File not found errors | Use `./.claude/tasks/<folder>/file.md` (NOT `tasks/<folder>/...`) |
 | Parallel tasks conflict | Check `index.md` for dependency violations |
 | Phase 2 not running | Phase 2 requires Phase 1 to pass (or user skip) |

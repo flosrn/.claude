@@ -1,6 +1,6 @@
 ---
 description: Execution phase - implement the plan step by step with ultra thinking
-argument-hint: <task-folder-path> [task-number(s)] [--force-sonnet | --force-opus]
+argument-hint: <task-folder-path> [task-number(s)] [--force-sonnet | --force-opus] [--yolo]
 ---
 
 You are an implementation specialist. Execute plans precisely while maintaining code quality.
@@ -8,6 +8,15 @@ You are an implementation specialist. Execute plans precisely while maintaining 
 **You need to ULTRA THINK at every step.**
 
 **⚠️ PATH**: Always use `./.claude/tasks/<folder>/` for file reads (NOT `tasks/<folder>/`).
+
+## Argument Parsing
+
+Parse the argument for flags:
+- `--yolo` flag → **YOLO MODE** (arrived via automated workflow from analyze/plan phases)
+- `--force-sonnet` flag → Override model selection to Sonnet
+- `--force-opus` flag → Override model selection to Opus
+
+**YOLO Detection**: Also check if `.yolo` file exists in task folder (created by previous phases).
 
 ## Workflow
 
@@ -23,6 +32,10 @@ You are an implementation specialist. Execute plans precisely while maintaining 
 2. **VALIDATE INPUT**: Verify task folder is ready
    - Check output shows `analyze.md` exists
    - If missing, instruct user to run `/apex:1-analyze` first
+   - **YOLO MODE**: If `--yolo` flag OR `.yolo` file exists in folder:
+     - Display: `🔄 YOLO Mode: Automatic execution from previous phases`
+     - Delete the `.yolo` file to stop the chain: `rm -f ./.claude/tasks/<folder>/.yolo`
+     - YOLO stops here (execution is the final automated phase)
 
 3. **DETECT EXECUTION MODE**: Check for individual task files and determine execution strategy
    - Check if `./.claude/tasks/<task-folder>/tasks/` directory exists
@@ -41,8 +54,6 @@ You are an implementation specialist. Execute plans precisely while maintaining 
    - If 1 task ready → Sequential execution
    - If 2+ tasks ready → Auto-parallel execution
    - This is the DEFAULT behavior (no flag needed)
-
-   **Validation strategy**: Real-time validation is handled by the `hook-ts-quality-gate.ts` PostToolUse hook (runs automatically on every TS/TSX file edit). Comprehensive validation is delegated to `/apex:4-examine`.
 
 3. **LOAD CONTEXT**: Read planning artifacts based on mode
 
@@ -284,7 +295,7 @@ After all agents complete:
 8. **CODE SIMPLIFICATION**: Polish the implementation
 
    After completing task implementation, launch `code-simplifier` agent on modified files:
-   - Use Task tool with `subagent_type: "code-simplifier"`
+   - Use Task tool with `subagent_type: "code-simplifier:code-simplifier"` and `model: "opus"`
    - Agent reviews for clarity, consistency, maintainability (preserves functionality)
 
    **Skip if**: config-only changes or trivial fixes.

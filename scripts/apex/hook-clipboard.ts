@@ -31,11 +31,15 @@ const filePath = filePathMatch[1];
 // STEP 3: Fast path - detect APEX file pattern
 // Matches: .claude/tasks/<folder>/analyze.md, plan.md, or tasks/index.md
 const apexMatch = filePath.match(
-  /\.claude\/tasks\/([^/]+)\/(analyze|plan|tasks\/index)\.md$/
+  /\.claude\/tasks\/([^/]+)\/(analyze|plan|tasks\/index)\.md$/,
 );
 if (!apexMatch?.[1] || !apexMatch[2]) {
   // DEBUG: Log why we're exiting
-  console.log(JSON.stringify({ systemMessage: `⏭️ Not APEX file: ${filePath.slice(-50)}` }));
+  console.log(
+    JSON.stringify({
+      systemMessage: `⏭️ Not APEX file: ${filePath.slice(-50)}`,
+    }),
+  );
   process.exit(0); // EXIT RAPIDE - not an APEX file
 }
 
@@ -70,11 +74,17 @@ try {
 // Write tool: { type: "create" | "update", filePath }
 // Edit tool: { filePath, oldString, newString } (no type field)
 const response = hookData.tool_response;
-const isWriteSuccess = response && (response.type === "create" || response.type === "update");
-const isEditSuccess = response && response.filePath && response.oldString !== undefined;
+const isWriteSuccess =
+  response && (response.type === "create" || response.type === "update");
+const isEditSuccess =
+  response && response.filePath && response.oldString !== undefined;
 const isSuccess = isWriteSuccess || isEditSuccess || response?.success === true;
 if (!isSuccess) {
-  console.log(JSON.stringify({ systemMessage: `⏭️ Write/Edit not successful: ${JSON.stringify(response).slice(0, 100)}` }));
+  console.log(
+    JSON.stringify({
+      systemMessage: `⏭️ Write/Edit not successful: ${JSON.stringify(response).slice(0, 100)}`,
+    }),
+  );
   process.exit(0);
 }
 
@@ -82,7 +92,7 @@ if (!isSuccess) {
 function getNextCommand(
   phase: string,
   folder: string,
-  content: string | undefined
+  content: string | undefined,
 ): { command: string; reason?: string } {
   switch (phase) {
     case "analyze":
@@ -152,28 +162,16 @@ if (taskFolder) {
   if (await yoloFlag.exists()) {
     yoloMode = true;
 
-    // Determine if we should propagate --yolo
-    // Stop YOLO at execute phase (user needs to review each task)
-    const isExecutePhase = command.includes("/apex:3-execute");
+    // Propagate --yolo to all phases (analyze → plan → execute)
+    yoloCommand = `${command} --yolo`;
+    await copyToClipboard(yoloCommand);
 
-    if (!isExecutePhase) {
-      yoloCommand = `${command} --yolo`;
-      // Update clipboard with --yolo flag
-      await copyToClipboard(yoloCommand);
-    } else {
-      // Execute phase: delete the .yolo flag to stop the chain
-      await Bun.write(yoloFlagPath, "").catch(() => {});
-      try {
-        const { $ } = await import("bun");
-        await $`rm -f ${yoloFlagPath}`.quiet();
-      } catch {}
-    }
+    // Determine next phase for YOLO continuation
+    const nextPhase =
+      phase === "analyze" ? "plan" : phase === "plan" ? "tasks" : "execute";
 
-    // Create YOLO continue flag for Stop hook (only if not execute phase)
-    if (!isExecutePhase) {
-      const nextPhase =
-        phase === "analyze" ? "plan" : phase === "plan" ? "tasks" : "execute";
-
+    // Create YOLO continue flag for Stop hook
+    {
       // Extract project path from file path (everything before /.claude/)
       const projectPathMatch = filePath.match(/^(.+)\/\.claude\/tasks\//);
       const projectPath = projectPathMatch?.[1] || process.cwd();

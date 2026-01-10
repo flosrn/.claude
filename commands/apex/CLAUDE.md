@@ -12,7 +12,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 | `/apex:1-analyze` | Gather context & research | `--yolo` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
-| `/apex:3-execute` | Implement changes | `[task-nums]`, `--force-sonnet`, `--force-opus` |
+| `/apex:3-execute` | Implement changes | `[task-nums]`, `--force-sonnet`, `--force-opus`, `--yolo` |
 | `/apex:4-examine` | Two-phase validation (technical + logical) | `--foreground`, `--global`, `--skip-patterns` |
 | `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 | `/apex:next` | Run next pending task | - |
@@ -41,7 +41,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 
 ## Mode Flags
 
-**YOLO Mode** (`--yolo`): Auto-continues to next phase via hooks. Creates `.yolo` marker file. Stops at execute phase for safety.
+**YOLO Mode** (`--yolo`): Auto-continues to next phase via hooks. Creates `.yolo` marker file. Completes full cycle: analyze → plan → execute. Stops after execute starts (before examine).
 
 **Background Mode**: Agents run asynchronously while asking clarifying questions. Default on analyze and examine phases.
 - Use `--foreground` on examine phase to disable background execution
@@ -49,8 +49,6 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 **Auto-Parallel Mode**: Execute automatically detects parallelizable tasks from `index.md` dependency table. Use explicit task numbers (e.g., `3,4`) to override.
 
 **Code Simplification**: Execute phase runs `code-simplifier` agent at the end of each task to polish code for clarity, consistency, and maintainability while preserving functionality.
-
-**Validation Strategy**: Real-time validation is handled by `hook-ts-quality-gate.ts` (PostToolUse hook on TS/TSX files). Comprehensive validation is delegated to `/apex:4-examine`.
 
 **Global Scope** (`--global`): For examine phase, analyze ALL feature files instead of just modified ones. More comprehensive but slower.
 
@@ -197,7 +195,7 @@ The system uses portable constructs to avoid alias and shell compatibility issue
 | Issue | Solution |
 |-------|----------|
 | File not found errors | Use `./.claude/tasks/<folder>/file.md` (NOT `tasks/<folder>/...`) |
-| YOLO doesn't continue | Verify `.yolo` file exists in task folder |
+| YOLO doesn't continue | Verify `.yolo` file exists in task folder, check `/tmp/.apex-yolo-continue` |
 | Parallel tasks conflict | Check `index.md` for dependency violations |
 | Hook not triggering | Verify hook registration in settings.json |
 | Phase 2 not running | Phase 2 requires Phase 1 to pass (or user to skip) |

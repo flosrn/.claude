@@ -78,16 +78,25 @@ async function openNewTab(
       });
       await proc.exited;
 
-      // Step 2: AppleScript to create split, paste from clipboard, press return
+      // Step 2: AppleScript to create split, navigate to it, paste, press return
+      // NOTE: After Cmd+Shift+D, Ghostty creates split below but focus may stay on original
+      // Use Cmd+Alt+Down to explicitly move focus to the new pane
       const scriptContent = `tell application "Ghostty"
     activate
 end tell
-delay 0.5
+delay 0.3
 tell application "System Events" to tell process "Ghostty"
+    -- Create vertical split (new pane below)
     keystroke "d" using {command down, shift down}
 end tell
-delay 1.0
+delay 0.8
 tell application "System Events" to tell process "Ghostty"
+    -- Navigate to the new pane (down) to ensure focus is correct
+    key code 125 using {command down, option down}
+end tell
+delay 0.3
+tell application "System Events" to tell process "Ghostty"
+    -- Paste and execute
     keystroke "v" using {command down}
     delay 0.1
     keystroke return

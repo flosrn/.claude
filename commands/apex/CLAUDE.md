@@ -8,8 +8,8 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 
 | Command | Purpose | Key Flags |
 |---------|---------|-----------|
-| `/apex:0-brainstorm` | Adaptive research with smart agent routing | `<topic>` or `<folder>` |
-| `/apex:1-analyze` | Gather context & research | `--yolo` |
+| `/apex:0-brainstorm` | Adaptive research with smart agent routing | `<topic>` or `<folder>`, `--craftsman` |
+| `/apex:1-analyze` | Gather context & research | `--yolo`, `--craftsman` |
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
 | `/apex:3-execute` | Implement changes | `[task-nums]`, `--force-sonnet`, `--force-opus`, `--yolo` |
@@ -41,6 +41,8 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 > **NEVER "simplify" or "correct" this path.** Always use `./.claude/tasks/` exactly as written.
 
 ## Mode Flags
+
+**Craftsman Mode** (`--craftsman`): Invokes the `craftsman` skill before execution. Activates deep thinking mindset: question assumptions, obsess over details, plan like Da Vinci, simplify ruthlessly. Use for complex implementations where elegance matters.
 
 **Direct Mode** (`/apex:direct`): Skip analyze+plan phases for well-structured seeds. Saves ~50-55% tokens when seed.md contains concrete file paths, checkboxes, and specs. Use when `/apex:handoff` produced a complete, actionable seed.
 

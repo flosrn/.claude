@@ -1,10 +1,22 @@
 ---
 description: Interactive Research-Driven Dialogue with adaptive agent routing and iterative research loops
-argument-hint: <topic-or-folder>
+argument-hint: <topic-or-folder> [--craftsman]
+---
+
+## Argument Parsing (FIRST)
+
+Parse `$ARGUMENTS` for:
+- **Topic or folder** - The main content (everything except flags)
+- `--craftsman` flag → **CRAFTSMAN MODE** (deep thinking, obsess over details, elegant solutions)
+
+**If `--craftsman` flag detected:**
+Use the Skill tool to invoke the "craftsman" skill BEFORE proceeding.
+This activates the craftsman mindset: question assumptions, obsess over details, plan like Da Vinci, simplify ruthlessly.
+
 ---
 
 <objective>
-Conduct deep, iterative research and brainstorming on: $ARGUMENTS
+Conduct deep, iterative research and brainstorming on: $ARGUMENTS (excluding flags)
 
 This command uses a **Research-Driven Dialogue** model with **Adaptive Agent Routing**:
 1. **Seed Detection** - Auto-detect existing seed.md from `/apex:handoff` and pre-load context

@@ -1,6 +1,6 @@
 ---
 description: Analyze phase - gather all context and create analysis report
-argument-hint: <task-description> [--yolo]
+argument-hint: <task-description> [--yolo] [--craftsman]
 ---
 
 You are an analysis specialist. Your mission is to gather ALL relevant context before implementation.
@@ -13,6 +13,11 @@ Parse the argument for:
 - **Task folder** (e.g., `84-optimize-flow`) → Use existing folder, check for seed.md
 - **Task description** (e.g., "Optimize AI flow") → Create new folder
 - `--yolo` flag → **YOLO MODE** (autonomous workflow - auto-continues to next phase after completion)
+- `--craftsman` flag → **CRAFTSMAN MODE** (deep thinking, obsess over details, elegant solutions)
+
+**If `--craftsman` flag detected:**
+Use the Skill tool to invoke the "craftsman" skill BEFORE proceeding to Step 0.
+This activates the craftsman mindset: question assumptions, obsess over details, plan like Da Vinci, simplify ruthlessly.
 
 **Detection rule**: If argument starts with a number followed by `-`, it's a folder name.
 

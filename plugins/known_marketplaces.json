@@ -5,7 +5,7 @@
       "repo": "anthropics/claude-code"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-code-plugins",
-    "lastUpdated": "2026-01-11T19:12:18.139Z"
+    "lastUpdated": "2026-01-11T20:49:16.240Z"
   },
   "wd-marketplace": {
     "source": {
@@ -29,7 +29,7 @@
       "repo": "anthropics/claude-plugins-official"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-plugins-official",
-    "lastUpdated": "2026-01-11T20:14:32.139Z"
+    "lastUpdated": "2026-01-11T20:55:00.409Z"
   },
   "every-marketplace": {
     "source": {

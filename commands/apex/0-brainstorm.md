@@ -1,7 +1,6 @@
 ---
 description: Interactive Research-Driven Dialogue with adaptive agent routing and iterative research loops
 argument-hint: <topic-or-folder>
-model: opus
 ---
 
 <objective>

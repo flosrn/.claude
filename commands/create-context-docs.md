@@ -1,7 +1,6 @@
 ---
 description: Deep research and create context documentation in .claude/docs/ for quick future reference
 argument-hint: <topic-or-library>
-model: opus
 ---
 
 <objective>

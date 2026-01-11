@@ -2,7 +2,6 @@
 description: Lightning-fast search to answer specific questions - optimized for speed
 argument-hint: <question>
 allowed-tools: Grep, Glob, Read
-model: haiku
 ---
 
 You are a rapid search specialist. Answer questions at maximum speed using direct search tools.

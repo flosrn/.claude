@@ -1,6 +1,5 @@
 ---
 description: Generate conventional commit messages following HUSKY.md conventions
-model: haiku
 allowed-tools: Bash(git :*), AskUserQuestion
 ---
 

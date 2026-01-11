@@ -13,6 +13,7 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 | `/apex:2-plan` | Design implementation strategy | `--yolo` |
 | `/apex:tasks` | Divide plan into task files | `--yolo` |
 | `/apex:3-execute` | Implement changes | `[task-nums]`, `--force-sonnet`, `--force-opus`, `--yolo` |
+| `/apex:direct` | Execute directly from seed.md (skip analyze+plan) | `--force-sonnet`, `--force-opus` |
 | `/apex:4-examine` | Two-phase validation (technical + logical) | `--foreground`, `--global`, `--skip-patterns` |
 | `/apex:5-browser-test` | Browser testing with GIF | `--url=`, `--no-gif`, `--parallel` |
 | `/apex:next` | Run next pending task | - |
@@ -40,6 +41,8 @@ Multi-session workflow orchestrator: **A**nalyze → **P**lan → **E**xecute �
 > **NEVER "simplify" or "correct" this path.** Always use `./.claude/tasks/` exactly as written.
 
 ## Mode Flags
+
+**Direct Mode** (`/apex:direct`): Skip analyze+plan phases for well-structured seeds. Saves ~50-55% tokens when seed.md contains concrete file paths, checkboxes, and specs. Use when `/apex:handoff` produced a complete, actionable seed.
 
 **YOLO Mode** (`--yolo`): Auto-continues to next phase via hooks. Creates `.yolo` marker file. Completes full cycle: analyze → plan → execute. Stops after execute starts (before examine).
 
@@ -164,7 +167,9 @@ Execute phase automatically selects the optimal model (Sonnet vs Opus) per task 
 | `analyze.md` | `/apex:1-analyze` | Research findings, patterns, gotchas (includes Strategy Scores) |
 | `plan.md` | `/apex:2-plan` | File-by-file change plan (no code snippets) |
 | `tasks/` | `/apex:tasks` | Granular task breakdown with dependencies |
-| `implementation.md` | `/apex:3-execute` | Session log, changes made, test results |
+| `implementation.md` | `/apex:3-execute` or `/apex:direct` | Session log, changes made, test results |
+
+**Note**: `/apex:direct` skips `analyze.md` and `plan.md` creation, going directly from `seed.md` to `implementation.md`.
 
 ## Conventions
 

@@ -179,7 +179,7 @@ echo "/apex:1-analyze NN-task-name" | pbcopy
 
 ### 6. REPORT RESULT
 
-Display APEX-style output:
+Display APEX-style output with **both options**:
 
 ```
 ══════════════════════════════════════════════════
@@ -187,12 +187,21 @@ Display APEX-style output:
 ══════════════════════════════════════════════════
 📁 Created: ./.claude/tasks/84-optimize-ai-flow/seed.md
 
-## Next step (copied to clipboard)
+## Next Steps
 
+### Option A: Full APEX (recommended for complex/exploratory tasks)
 /apex:1-analyze 84-optimize-ai-flow
 
-The seed.md will be read automatically as initial context.
+### Option B: Direct Execution (saves ~50% tokens)
+/apex:direct 84-optimize-ai-flow
+↳ Use when seed has concrete file paths, checkboxes, and specs
+
 ══════════════════════════════════════════════════
+```
+
+**Clipboard**: Copy Option A by default (safer for most cases):
+```bash
+echo "/apex:1-analyze NN-task-name" | pbcopy
 ```
 
 ## Execution Rules

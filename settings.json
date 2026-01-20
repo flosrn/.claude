@@ -16,16 +16,6 @@
     "defaultMode": "default"
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-skill-suggester.ts"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
@@ -45,15 +35,6 @@
             "command": "bun /Users/flo/.claude/scripts/hook-ts-quality-gate.ts"
           }
         ]
-      },
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/apex/hook-clipboard.ts"
-          }
-        ]
       }
     ],
     "PreToolUse": [
@@ -70,27 +51,13 @@
     "Stop": [
       {
         "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-completion-handler.ts"
-          },
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"Task completed\" with title \"Claude Code\"'"
-          }
-        ]
+        "hooks": []
       }
     ],
     "Notification": [
       {
         "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay -v 0.1 /Users/flo/.claude/song/need-human.mp3"
-          }
-        ]
+        "hooks": []
       }
     ]
   },
@@ -104,7 +71,8 @@
     "next-react-optimizer@local": true,
     "typescript-lsp@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "claude-notifications-go@claude-notifications-go": true
   },
   "extraKnownMarketplaces": {
     "local": {

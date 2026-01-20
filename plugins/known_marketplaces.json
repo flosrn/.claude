@@ -1,0 +1,10 @@
+{
+  "claude-notifications-go": {
+    "source": {
+      "source": "github",
+      "repo": "777genius/claude-notifications-go"
+    },
+    "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-notifications-go",
+    "lastUpdated": "2026-01-20T09:36:58.547Z"
+  }
+}

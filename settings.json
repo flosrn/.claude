@@ -72,7 +72,8 @@
     "typescript-lsp@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "claude-notifications-go@claude-notifications-go": true
+    "claude-notifications-go@claude-notifications-go": true,
+    "marketing-skills@marketingskills": true
   },
   "extraKnownMarketplaces": {
     "local": {

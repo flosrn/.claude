@@ -10,6 +10,16 @@
         "lastUpdated": "2026-01-20T09:38:45.700Z",
         "gitCommitSha": "6d3c029e4918352ea044e2c4b156fb2c4d379ae8"
       }
+    ],
+    "marketing-skills@marketingskills": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/marketingskills/marketing-skills/df4c6bc132fe",
+        "version": "df4c6bc132fe",
+        "installedAt": "2026-01-20T14:13:46.932Z",
+        "lastUpdated": "2026-01-20T14:13:46.932Z",
+        "gitCommitSha": "df4c6bc132fe77294b24f254d627206edf7966ec"
+      }
     ]
   }
 }

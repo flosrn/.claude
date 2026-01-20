@@ -73,6 +73,6 @@
     }
   },
   "dailySpend": {
-    "enabled": false
+    "enabled": true
   }
 }

@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+# Claude Code Profile Switcher - Integrates with CC Mate
+# Usage: claude-profile [list|switch|current|open]
+
+CCCONFIG_DIR="$HOME/.ccconfig"
+STORES_FILE="$CCCONFIG_DIR/stores.json"
+CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+BOLD='\033[1m'
+
+show_help() {
+    echo -e "${BOLD}Claude Code Profile Switcher${NC}"
+    echo ""
+    echo "Usage: claude-profile <command>"
+    echo ""
+    echo "Commands:"
+    echo "  list      List all available profiles"
+    echo "  switch    Interactive profile selection"
+    echo "  current   Show current active profile"
+    echo "  open      Open CC Mate GUI"
+    echo "  help      Show this help"
+    echo ""
+    echo "Quick switch aliases:"
+    echo "  cc-main   Switch to Main profile"
+    echo "  cc-min    Switch to Minimal profile"
+    echo "  cc-exp    Switch to Experimental profile"
+    echo "  cc-focus  Switch to Focus Mode"
+    echo "  cc-perf   Switch to Performance profile"
+}
+
+list_profiles() {
+    if [[ ! -f "$STORES_FILE" ]]; then
+        echo -e "${RED}No profiles found. Open CC Mate to create profiles.${NC}"
+        exit 1
+    fi
+
+    echo -e "${BOLD}Available Profiles:${NC}"
+    echo ""
+
+    local current=$(jq -r '.configs[] | select(.using == true) | .id' "$STORES_FILE" 2>/dev/null)
+
+    jq -r '.configs[] | "\(.id)|\(.title)|\(.using)"' "$STORES_FILE" | while IFS='|' read -r id title using; do
+        if [[ "$using" == "true" ]]; then
+            echo -e "  ${GREEN}● $title${NC} (active)"
+        else
+            echo -e "  ${CYAN}○ $title${NC}"
+        fi
+    done
+}
+
+show_current() {
+    if [[ ! -f "$STORES_FILE" ]]; then
+        echo -e "${YELLOW}No CC Mate profiles configured yet.${NC}"
+        echo "Current settings: $CLAUDE_SETTINGS"
+        exit 0
+    fi
+
+    local current=$(jq -r '.configs[] | select(.using == true) | .title' "$STORES_FILE" 2>/dev/null)
+
+    if [[ -n "$current" && "$current" != "null" ]]; then
+        echo -e "${GREEN}Current profile: $current${NC}"
+    else
+        echo -e "${YELLOW}No profile currently active (using default settings)${NC}"
+    fi
+}
+
+switch_profile() {
+    if [[ ! -f "$STORES_FILE" ]]; then
+        echo -e "${RED}No profiles found. Open CC Mate first.${NC}"
+        exit 1
+    fi
+
+    echo -e "${BOLD}Select a profile:${NC}"
+    echo ""
+
+    local profiles=()
+    local ids=()
+    local i=1
+
+    while IFS='|' read -r id title using; do
+        profiles+=("$title")
+        ids+=("$id")
+        if [[ "$using" == "true" ]]; then
+            echo -e "  ${GREEN}$i) $title (active)${NC}"
+        else
+            echo -e "  $i) $title"
+        fi
+        ((i++))
+    done < <(jq -r '.configs[] | "\(.id)|\(.title)|\(.using)"' "$STORES_FILE")
+
+    echo ""
+    read -p "Enter number (1-$((i-1))): " choice
+
+    if [[ "$choice" =~ ^[0-9]+$ ]] && [[ "$choice" -ge 1 ]] && [[ "$choice" -lt "$i" ]]; then
+        local selected_id="${ids[$((choice-1))]}"
+        local selected_title="${profiles[$((choice-1))]}"
+
+        activate_profile "$selected_id" "$selected_title"
+    else
+        echo -e "${RED}Invalid selection${NC}"
+        exit 1
+    fi
+}
+
+activate_profile() {
+    local profile_id="$1"
+    local profile_title="$2"
+
+    # Get the settings for this profile
+    local settings=$(jq -r ".configs[] | select(.id == \"$profile_id\") | .settings" "$STORES_FILE")
+
+    if [[ -z "$settings" || "$settings" == "null" ]]; then
+        echo -e "${RED}Profile not found${NC}"
+        exit 1
+    fi
+
+    # Update stores.json to mark this profile as active
+    jq "(.configs[] | .using) = false | (.configs[] | select(.id == \"$profile_id\") | .using) = true" "$STORES_FILE" > "$STORES_FILE.tmp"
+    mv "$STORES_FILE.tmp" "$STORES_FILE"
+
+    # Write settings to ~/.claude/settings.json
+    echo "$settings" | jq '.' > "$CLAUDE_SETTINGS"
+
+    echo -e "${GREEN}✓ Switched to: $profile_title${NC}"
+    echo -e "${YELLOW}Note: Restart Claude Code to apply changes.${NC}"
+}
+
+switch_by_name() {
+    local name="$1"
+
+    if [[ ! -f "$STORES_FILE" ]]; then
+        echo -e "${RED}No profiles found.${NC}"
+        exit 1
+    fi
+
+    local profile=$(jq -r ".configs[] | select(.title | ascii_downcase | contains(\"$name\")) | \"\(.id)|\(.title)\"" "$STORES_FILE" | head -1)
+
+    if [[ -z "$profile" ]]; then
+        echo -e "${RED}Profile containing '$name' not found${NC}"
+        exit 1
+    fi
+
+    local id=$(echo "$profile" | cut -d'|' -f1)
+    local title=$(echo "$profile" | cut -d'|' -f2)
+
+    activate_profile "$id" "$title"
+}
+
+open_ccmate() {
+    echo -e "${BLUE}Opening CC Mate...${NC}"
+    open -a "CC Mate" 2>/dev/null || {
+        echo -e "${RED}CC Mate not found. Install with: brew install --cask ccmate${NC}"
+        exit 1
+    }
+}
+
+# Main command handler
+case "${1:-help}" in
+    list|ls)
+        list_profiles
+        ;;
+    switch|sw)
+        switch_profile
+        ;;
+    current|c)
+        show_current
+        ;;
+    open|o)
+        open_ccmate
+        ;;
+    main)
+        switch_by_name "main"
+        ;;
+    min|minimal)
+        switch_by_name "minimal"
+        ;;
+    exp|experimental)
+        switch_by_name "experimental"
+        ;;
+    focus)
+        switch_by_name "focus"
+        ;;
+    perf|performance)
+        switch_by_name "performance"
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        # Try to switch by name
+        switch_by_name "$1"
+        ;;
+esac

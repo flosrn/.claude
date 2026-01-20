@@ -1,0 +1,5 @@
+{
+  "name": "next-react-optimizer",
+  "version": "1.0.0",
+  "description": "Optimization patterns for Next.js 16 and React 19 including Cache Components, React Compiler, code splitting, and performance best practices"
+}

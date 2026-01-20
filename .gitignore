@@ -1,0 +1,92 @@
+# Sensitive files and directories
+/local/
+/todos/
+/config/notification_states.json
+/shell-snapshots/
+/ide/
+/projects/
+/statsig/
+/.credentials.json
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Paste cache (clipboard temporary storage)
+paste-cache/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.key
+*secret*
+*token*
+
+# Settings with potentially sensitive paths
+# Note: settings.json kept but reviewed for sensitive data
+
+# CCNotify database and logs
+/ccnotify/*.db
+/ccnotify/*.log*
+
+# TypeScript quality hooks cache
+/hooks/ts/quality-cache.json
+
+# Statusline spend tracking data
+/scripts/statusline/data/spend.json
+
+# Observability system
+/observability/apps/server/events.db*
+/observability/apps/server/node_modules/
+/observability/apps/client/node_modules/
+/observability/apps/client/dist/
+/observability/.pids
+/observability/logs/
+
+# Flashback memory system
+flashback/memory/CURRENT_SESSION.md
+flashback/memory/ARCHIVE/
+
+# Backup files
+*.bak
+backups/
+
+# Generated reports and analyses
+/reports/
+
+# Generated architecture diagrams
+docs/assets/
+
+# Claude Code frameworks (exclude all)
+.claude/
+
+# Debug and history files
+debug/
+file-history/
+history.jsonl
+
+# Python virtual environment
+skills/.venv/
+
+# Plugin cache (downloaded at runtime)
+plugins/cache/
+
+# Stats and tracking cache
+stats-cache.json
+
+# Task plans (temporary work files)
+plans/
+
+# Session image cache (screenshots shared during conversations)
+image-cache/
+
+# Chrome extension native host (machine-specific, version-dependent)
+chrome/

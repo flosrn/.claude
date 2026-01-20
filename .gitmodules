@@ -1,0 +1,9 @@
+[submodule "plugins/marketplaces/claude-code-plugins"]
+	path = plugins/marketplaces/claude-code-plugins
+	url = git@github.com:anthropics/claude-code-plugins.git
+[submodule "plugins/marketplaces/claude-plugins-official"]
+	path = plugins/marketplaces/claude-plugins-official
+	url = git@github.com:anthropics/claude-plugins-official.git
+[submodule "plugins/marketplaces/wd-marketplace"]
+	path = plugins/marketplaces/wd-marketplace
+	url = git@github.com:Para-FR/wd-framework.git

@@ -31,3 +31,15 @@ export interface HookOutput {
 		permissionDecisionReason: string;
 	};
 }
+
+export interface GitSecurityConfig {
+	enabled: boolean;
+	blockCommit: boolean;
+	blockPush: boolean;
+	blockForcePush: boolean;
+}
+
+export interface SecurityConfig {
+	gitSecurity: GitSecurityConfig;
+	updatedAt: string | null;
+}

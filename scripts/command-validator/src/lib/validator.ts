@@ -1,4 +1,8 @@
-import { SAFE_COMMANDS, SECURITY_RULES } from "./security-rules";
+import {
+	SAFE_COMMANDS,
+	SECURITY_RULES,
+	getGitSecurityPatterns,
+} from "./security-rules";
 import type { ValidationResult } from "./types";
 
 export class CommandValidator {
@@ -43,6 +47,15 @@ export class CommandValidator {
 				result.isValid = false;
 				result.severity = "CRITICAL";
 				result.violations.push(`Dangerous pattern detected: ${pattern.source}`);
+			}
+		}
+
+		// Check git security patterns (dynamically loaded from config)
+		for (const pattern of getGitSecurityPatterns()) {
+			if (pattern.test(command)) {
+				result.isValid = false;
+				result.severity = "CRITICAL";
+				result.violations.push(`Git security rule: ${pattern.source}`);
 			}
 		}
 
@@ -213,6 +226,15 @@ export class CommandValidator {
 				result.isValid = false;
 				result.severity = "CRITICAL";
 				result.violations.push(`Dangerous pattern detected: ${pattern.source}`);
+			}
+		}
+
+		// Check git security patterns (dynamically loaded from config)
+		for (const pattern of getGitSecurityPatterns()) {
+			if (pattern.test(command)) {
+				result.isValid = false;
+				result.severity = "CRITICAL";
+				result.violations.push(`Git security rule: ${pattern.source}`);
 			}
 		}
 

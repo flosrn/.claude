@@ -8,13 +8,17 @@
 		"./security-rules": "./src/lib/security-rules.ts"
 	},
 	"bin": {
-		"validate-command": "./src/cli.ts"
+		"validate-command": "./src/cli.ts",
+		"git-security": "./src/git-security.ts"
 	},
 	"scripts": {
 		"test": "vitest",
 		"test:ui": "vitest --ui",
 		"lint": "biome check --write .",
-		"format": "biome format --write ."
+		"format": "biome format --write .",
+		"security": "bun src/git-security.ts",
+		"security:on": "bun src/git-security.ts on",
+		"security:off": "bun src/git-security.ts off"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.2",

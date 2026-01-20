@@ -1,6 +1,53 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { SecurityRules } from "./types";
+import type { SecurityConfig, SecurityRules } from "./types";
+
+const CONFIG_PATH = join(import.meta.dir, "../../data/security-config.json");
+
+function loadSecurityConfig(): SecurityConfig {
+	try {
+		const file = Bun.file(CONFIG_PATH);
+		// Sync read for config (fast, small file)
+		const content = require(CONFIG_PATH);
+		return content as SecurityConfig;
+	} catch {
+		// Default config if file doesn't exist or is invalid
+		return {
+			gitSecurity: {
+				enabled: true,
+				blockCommit: true,
+				blockPush: true,
+				blockForcePush: true,
+			},
+			updatedAt: null,
+		};
+	}
+}
+
+export function getGitSecurityPatterns(): RegExp[] {
+	const config = loadSecurityConfig();
+	const patterns: RegExp[] = [];
+
+	if (!config.gitSecurity.enabled) {
+		return patterns;
+	}
+
+	if (config.gitSecurity.blockCommit) {
+		patterns.push(/git\s+commit/i);
+	}
+
+	if (config.gitSecurity.blockForcePush) {
+		patterns.push(/git\s+push\s+(--force|-f)/i);
+	}
+
+	if (config.gitSecurity.blockPush) {
+		patterns.push(/git\s+push\s+.*\b(main|master|production|develop)\b/i);
+	}
+
+	return patterns;
+}
+
+export { loadSecurityConfig, CONFIG_PATH };
 
 export const SECURITY_RULES: SecurityRules = {
   CRITICAL_COMMANDS: [
@@ -53,10 +100,7 @@ export const SECURITY_RULES: SecurityRules = {
   ],
 
   DANGEROUS_PATTERNS: [
-    // Git operations requiring approval
-    /git\s+commit/i,
-    /git\s+push\s+(--force|-f)/i,
-    /git\s+push\s+.*\b(main|master|production|develop)\b/i,
+    // Git operations are now handled dynamically via getGitSecurityPatterns()
 
     // File system destruction
     /rm\s+.*-rf\s*\/\s*$/i,

@@ -32,14 +32,6 @@
             "command": "node \"$HOME/.claude/hooks/gsd-check-update.js\""
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$HOME/.claude/hooks/gsd-intel-session.js\""
-          }
-        ]
       }
     ],
     "PostToolUse": [
@@ -49,14 +41,6 @@
           {
             "type": "command",
             "command": "bun /Users/flo/.claude/scripts/hook-ts-quality-gate.ts"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$HOME/.claude/hooks/gsd-intel-index.js\""
           }
         ]
       }
@@ -76,14 +60,6 @@
       {
         "matcher": "",
         "hooks": []
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$HOME/.claude/hooks/gsd-intel-prune.js\""
-          }
-        ]
       }
     ],
     "Notification": [

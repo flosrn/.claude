@@ -3,6 +3,6 @@ description: Quick commit and push with minimal, clean messages
 allowed-tools: Task
 ---
 
-Delegate this task to the **git-committer** agent.
+Delegate this task to the **git-committer** agent using **model: haiku**.
 
 Context to pass: $ARGUMENTS

@@ -10,15 +10,58 @@ Model Context Protocol enables Claude Code to:
 - Use custom tools
 - Provide prompts and completions
 
-## Configuration
+## Configuration Scopes
 
-MCP servers are configured in `.claude/mcp.json`:
+MCP servers can be configured at two levels:
 
-### Basic Configuration
+### 1. Global (User-Scoped) - `~/.claude.json`
+
+For MCP servers available across ALL projects, add them to the `mcpServers` section in `~/.claude.json`:
+
 ```json
 {
   "mcpServers": {
     "server-name": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "package-name"],
+      "env": {
+        "API_KEY": "your-api-key"
+      }
+    }
+  },
+  // ... other global settings
+}
+```
+
+**Important:** `~/.claude.json` contains many other settings (numStartups, projects, etc.). Only edit the `mcpServers` section.
+
+### 2. Project-Scoped - `.mcp.json`
+
+For MCP servers specific to a single project, create `.mcp.json` at the project root:
+
+```json
+{
+  "mcpServers": {
+    "project-specific-server": {
+      "command": "npx",
+      "args": ["-y", "some-mcp-server"],
+      "env": {}
+    }
+  }
+}
+```
+
+Alternatively, use `/mcp` command in Claude Code to manage project MCP servers via UI.
+
+## Configuration Format
+
+### Basic Structure
+```json
+{
+  "mcpServers": {
+    "server-name": {
+      "type": "stdio",
       "command": "command-to-run",
       "args": ["arg1", "arg2"],
       "env": {
@@ -29,22 +72,36 @@ MCP servers are configured in `.claude/mcp.json`:
 }
 ```
 
-### Example Configuration
+### Example: Global Configuration (`~/.claude.json`)
 ```json
 {
   "mcpServers": {
-    "filesystem": {
+    "firecrawl": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/allowed/path"],
-      "env": {}
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-your-api-key"
+      }
     },
     "github": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
-    },
+    }
+  },
+  "numStartups": 100,
+  // ... other existing settings
+}
+```
+
+### Example: Project Configuration (`.mcp.json`)
+```json
+{
+  "mcpServers": {
     "postgres": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-postgres"],
@@ -197,20 +254,21 @@ Connect to MCP servers over HTTP/SSE:
 
 Use environment variables for sensitive data:
 
-### .env File
+### Shell Environment
+Export variables in your shell profile (`~/.zshrc` or `~/.bashrc`):
 ```bash
-# .claude/.env
-GITHUB_TOKEN=ghp_xxxxx
-DATABASE_URL=postgresql://user:pass@localhost/db
-BRAVE_API_KEY=BSAxxxxx
-API_TOKEN=token_xxxxx
+export GITHUB_TOKEN=ghp_xxxxx
+export FIRECRAWL_API_KEY=fc-xxxxx
+export BRAVE_API_KEY=BSAxxxxx
 ```
 
-### Reference in mcp.json
+### Reference in Configuration
+Environment variables can be referenced with `${VAR_NAME}` syntax:
 ```json
 {
   "mcpServers": {
     "github": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
@@ -220,6 +278,8 @@ API_TOKEN=token_xxxxx
   }
 }
 ```
+
+**Note:** You can also hardcode values directly in `env` if you prefer not to use shell variables.
 
 ## Testing MCP Servers
 

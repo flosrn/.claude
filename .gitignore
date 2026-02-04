@@ -1,0 +1,33 @@
+# Session & cache files
+cache/
+debug/
+file-history/
+history.jsonl
+image-cache/
+paste-cache/
+plans/
+projects/
+shell-snapshots/
+stats-cache.json
+statsig/
+tasks/
+todos/
+telemetry/
+session-env/
+tool-usage.log
+
+# Symlinks to base config (managed by CWM)
+scripts
+plugins
+
+# Backups
+*.backup/
+*.backup
+
+# OS files
+.DS_Store
+
+# Sensitive
+credentials.json
+*.key
+*.pem

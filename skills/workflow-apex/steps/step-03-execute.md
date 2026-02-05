@@ -79,7 +79,18 @@ bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "in_progr
 
 Append logs to `{output_dir}/03-execute.md` as you work.
 
-### 2. Create Todos from Plan
+### 2. Git Checkpoint (safety net)
+
+Create a lightweight checkpoint before making changes:
+
+```bash
+git stash push -m "apex-checkpoint: {task_id} pre-execute" --include-untracked 2>/dev/null; git stash pop 2>/dev/null
+git add -A && git commit --allow-empty -m "apex: checkpoint before execute ({task_id})" --no-verify
+```
+
+This enables `git reset HEAD~1` to rollback if execution breaks the codebase.
+
+### 3. Create Todos from Plan
 
 Convert each file change from the plan into todos:
 
@@ -96,7 +107,7 @@ Becomes:
 
 Use TodoWrite to create the full list.
 
-### 3. Execute File by File
+### 4. Execute File by File
 
 For each todo:
 
@@ -132,7 +143,7 @@ Make changes specified in the plan:
 **Timestamp:** {ISO}
 ```
 
-### 4. Handle Blockers
+### 5. Handle Blockers
 
 **If `{auto_mode}` = true:**
 → Make reasonable decision and continue
@@ -153,7 +164,7 @@ questions:
     multiSelect: false
 ```
 
-### 5. Verify Implementation
+### 6. Verify Implementation
 
 After completing all todos:
 
@@ -163,7 +174,7 @@ pnpm run typecheck && pnpm run lint --fix
 
 Fix any errors immediately.
 
-### 6. Implementation Summary
+### 7. Implementation Summary
 
 ```
 **Implementation Complete**
@@ -197,7 +208,7 @@ questions:
     multiSelect: false
 ```
 
-### 7. Complete Save Output (if save_mode)
+### 8. Complete Save Output (if save_mode)
 
 **If `{save_mode}` = true:**
 

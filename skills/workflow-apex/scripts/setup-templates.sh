@@ -68,6 +68,12 @@ TEMPLATE_DIR="${SKILL_DIR}/templates"
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
+# Escape special characters for sed replacement strings
+# Handles: \ & | (our delimiter) and newlines
+escape_sed_replacement() {
+    printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
+}
+
 # Function to replace template variables
 render_template() {
     local template_file="$1"
@@ -83,9 +89,17 @@ render_template() {
     local pr_status="⏭ Skip"
     [[ "$PR_MODE" == "true" ]] && pr_status="⏸ Pending"
 
+    # Escape user-provided values (may contain special chars)
+    local safe_task_desc
+    safe_task_desc=$(escape_sed_replacement "$TASK_DESCRIPTION")
+    local safe_original_input
+    safe_original_input=$(escape_sed_replacement "$ORIGINAL_INPUT")
+    local safe_branch_name
+    safe_branch_name=$(escape_sed_replacement "$BRANCH_NAME")
+
     # Read template and replace variables
     sed -e "s|{{task_id}}|${TASK_ID}|g" \
-        -e "s|{{task_description}}|${TASK_DESCRIPTION}|g" \
+        -e "s|{{task_description}}|${safe_task_desc}|g" \
         -e "s|{{timestamp}}|${TIMESTAMP}|g" \
         -e "s|{{auto_mode}}|${AUTO_MODE}|g" \
         -e "s|{{examine_mode}}|${EXAMINE_MODE}|g" \
@@ -95,9 +109,9 @@ render_template() {
         -e "s|{{branch_mode}}|${BRANCH_MODE}|g" \
         -e "s|{{pr_mode}}|${PR_MODE}|g" \
         -e "s|{{interactive_mode}}|${INTERACTIVE_MODE}|g" \
-        -e "s|{{branch_name}}|${BRANCH_NAME}|g" \
+        -e "s|{{branch_name}}|${safe_branch_name}|g" \
         -e "s|{{feature_name}}|${FEATURE_NAME}|g" \
-        -e "s|{{original_input}}|${ORIGINAL_INPUT}|g" \
+        -e "s|{{original_input}}|${safe_original_input}|g" \
         -e "s|{{examine_status}}|${examine_status}|g" \
         -e "s|{{test_status}}|${test_status}|g" \
         -e "s|{{pr_status}}|${pr_status}|g" \

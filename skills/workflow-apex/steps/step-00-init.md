@@ -211,7 +211,31 @@ IF a flag was changed from true → false on resume:
 
 **If {resume_task} is NOT set:** → Skip directly to step 3
 
-### 3. Run Optional Sub-Steps
+### 3. Pre-flight Checks
+
+**Run these lightweight checks before proceeding:**
+
+```bash
+# Check task description is not empty
+if [[ -z "{task_description}" ]]; then
+  echo "Error: No task description provided"
+  exit 1
+fi
+
+# Warn about uncommitted changes (don't block)
+if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+  echo "⚠ Warning: Uncommitted changes detected"
+fi
+
+# Check not on detached HEAD
+if ! git symbolic-ref HEAD &>/dev/null; then
+  echo "⚠ Warning: Detached HEAD state"
+fi
+```
+
+**These are warnings, not blockers** — APEX will proceed regardless. The user can decide whether to address them.
+
+### 4. Run Optional Sub-Steps
 
 **Load sub-steps in order (if flags enabled):**
 
@@ -231,7 +255,7 @@ IF {economy_mode} = true:
   → Apply economy overrides
 ```
 
-### 4. Create Output Structure (if save_mode)
+### 5. Create Output Structure (if save_mode)
 
 **If `{save_mode}` = true:**
 
@@ -265,7 +289,7 @@ This script:
 - Only creates files for enabled steps (examine, tests, PR)
 - Outputs the generated `{task_id}` for use in subsequent steps
 
-### 5. Initialize and Proceed
+### 6. Initialize and Proceed
 
 **Always (regardless of auto_mode):**
 

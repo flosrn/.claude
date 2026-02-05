@@ -239,6 +239,15 @@ This is one of the THREE transition points that requires user confirmation:
 3. review → resolve/test (THIS ONE)
 </critical>
 
+**Persist user choice (if save_mode):**
+
+Append to `{output_dir}/00-context.md` under `### User Choices`:
+```markdown
+- **step-05 → next:** {chosen option} (e.g., "resolve", "skip-to-tests", "skip-resolution")
+```
+
+This ensures the next step knows which path was chosen after resume.
+
 ### 8. Complete Save Output (if save_mode)
 
 **If `{save_mode}` = true:**

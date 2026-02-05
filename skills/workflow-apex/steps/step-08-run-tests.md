@@ -96,10 +96,12 @@ curl -s http://localhost:3000 > /dev/null 2>&1 && echo "Server running"
 ### 3. Handle Missing Services
 
 **If `{auto_mode}` = true:**
-→ Start services automatically:
+→ Start services automatically with PID tracking:
 ```bash
 pnpm run dev &
+DEV_SERVER_PID=$!
 sleep 5
+echo "Dev server started (PID: $DEV_SERVER_PID)"
 ```
 
 **If `{auto_mode}` = false:**
@@ -241,7 +243,23 @@ questions:
 - src/utils/validation.test.ts - 2 tests
 ```
 
-### 9. Complete Save Output (if save_mode)
+### 9. Cleanup Background Services
+
+**If any background services were started:**
+
+```bash
+# Kill dev server if we started it
+if [[ -n "$DEV_SERVER_PID" ]]; then
+  kill $DEV_SERVER_PID 2>/dev/null
+  echo "Dev server stopped (PID: $DEV_SERVER_PID)"
+fi
+```
+
+<critical>
+ALWAYS clean up background processes, even if tests fail or the step is interrupted.
+</critical>
+
+### 10. Complete Save Output (if save_mode)
 
 **If `{save_mode}` = true:**
 
@@ -256,7 +274,7 @@ Append to `{output_dir}/08-run-tests.md`:
 **Timestamp:** {ISO timestamp}
 ```
 
-### 10. Determine Next Step
+### 11. Determine Next Step
 
 **If `{examine_mode}` = true:**
 → Load step-05-examine.md

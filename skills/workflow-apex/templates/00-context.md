@@ -64,3 +64,7 @@ _Defined during step-01-analyze_
 ### Step Context
 
 _Brief summaries added as steps complete_
+
+### User Choices
+
+_Decisions recorded at interactive transition points_

@@ -29,6 +29,16 @@ previous_step: step-08-run-tests.md (or step-04-validate.md if no tests)
 - Previous steps completed: analyze, plan, execute, validate (+ optional: tests, examine)
 - All implementation should be done at this point
 
+## CONTEXT RESTORATION (resume mode):
+
+<critical>
+If this step was loaded via `/apex -r {task_id}` resume:
+
+1. Read `{output_dir}/00-context.md` → restore flags, task info, branch_name, task_id
+2. All state variables are now available from the restored context
+3. Proceed with normal execution below
+</critical>
+
 ## YOUR TASK:
 
 Finalize the APEX workflow by committing remaining changes, pushing to remote, and creating a pull request.

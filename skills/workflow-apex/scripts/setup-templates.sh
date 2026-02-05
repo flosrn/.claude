@@ -96,6 +96,7 @@ render_template() {
         -e "s|{{pr_mode}}|${PR_MODE}|g" \
         -e "s|{{interactive_mode}}|${INTERACTIVE_MODE}|g" \
         -e "s|{{branch_name}}|${BRANCH_NAME}|g" \
+        -e "s|{{feature_name}}|${FEATURE_NAME}|g" \
         -e "s|{{original_input}}|${ORIGINAL_INPUT}|g" \
         -e "s|{{examine_status}}|${examine_status}|g" \
         -e "s|{{test_status}}|${test_status}|g" \

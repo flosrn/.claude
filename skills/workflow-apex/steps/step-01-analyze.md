@@ -41,6 +41,16 @@ Before exploring, THINK about what information you need and launch the RIGHT age
 - Codebase state is unknown - must be discovered
 - Don't assume knowledge about the codebase
 
+## CONTEXT RESTORATION (resume mode):
+
+<critical>
+If this step was loaded via `/apex -r {task_id}` resume:
+
+1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
+2. All state variables are now available from the restored context
+3. Proceed with normal execution below
+</critical>
+
 ## YOUR TASK:
 
 Gather ALL relevant context about WHAT CURRENTLY EXISTS in the codebase related to the task.
@@ -134,11 +144,11 @@ Task: {task_description}
 
 **Available Agent Types:**
 
-| Agent | Use When |
-|-------|----------|
-| `explore-codebase` | Need to find existing patterns, related files, utilities |
-| `explore-docs` | Unfamiliar library API, need current syntax, complex feature |
-| `websearch` | Need common approaches, best practices, gotchas |
+| Agent | Type | Use When |
+|-------|------|----------|
+| `Explore` | built-in | Find existing patterns, related files, utilities |
+| `explore-docs` | custom | Unfamiliar library API, need current syntax (uses Context7) |
+| `websearch` | built-in | Common approaches, best practices, gotchas |
 
 **Decision Matrix:**
 
@@ -158,7 +168,7 @@ Task: {task_description}
 
 **Agent Prompts:**
 
-**`explore-codebase`** - Use for finding existing code:
+**`Explore`** (built-in) - Use for finding existing code:
 ```
 Find existing code related to: {specific_area}
 
@@ -171,7 +181,7 @@ Report:
 DO NOT suggest implementations.
 ```
 
-**`explore-docs`** - Use ONLY when you need specific library knowledge:
+**`explore-docs`** (custom, Context7) - Use when you need specific library knowledge:
 ```
 Research {library_name} documentation for: {specific_question}
 
@@ -181,7 +191,7 @@ Find:
 3. Configuration needed
 ```
 
-**`websearch`** - Use for approaches and gotchas:
+**`websearch`** (built-in) - Use for approaches and gotchas:
 ```
 Search: {specific_question_or_approach}
 
@@ -194,20 +204,20 @@ Find common patterns and pitfalls.
 
 **Simple task** (fix button styling) → 1 agent:
 ```
-[Task: explore-codebase - find button components and styling patterns]
+[Task: Explore - find button components and styling patterns]
 ```
 
 **Medium task** (add user profile page) → 3 agents:
 ```
-[Task: explore-codebase - find user-related components and data fetching patterns]
-[Task: explore-codebase - find page layout and routing patterns]
+[Task: Explore - find user-related components and data fetching patterns]
+[Task: Explore - find page layout and routing patterns]
 [Task: websearch - Next.js profile page best practices]
 ```
 
 **Complex task** (add Stripe subscriptions) → 6 agents:
 ```
-[Task: explore-codebase - find existing payment/billing code]
-[Task: explore-codebase - find user account and settings patterns]
+[Task: Explore - find existing payment/billing code]
+[Task: Explore - find user account and settings patterns]
 [Task: explore-docs - Stripe subscription API and webhooks]
 [Task: explore-docs - Stripe Customer Portal integration]
 [Task: websearch - Stripe subscriptions Next.js implementation]
@@ -274,7 +284,13 @@ Based on "{task_description}" and existing patterns:
 _These will be refined in the planning step._
 ```
 
-**If `{save_mode}` = true:** Update 00-context.md with acceptance criteria
+**If `{save_mode}` = true:** Update 00-context.md acceptance criteria section (replace `_Defined during step-01-analyze_` with the inferred AC)
+
+**State Snapshot Update (if save_mode):**
+
+Update `{output_dir}/00-context.md` State Snapshot section:
+1. Set `**next_step:** 02-plan`
+2. Append to `### Step Context`: `- **01-analyze:** {one-line summary of key findings}`
 
 ### 6. Present Context Summary
 
@@ -353,9 +369,30 @@ bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "in_progress
 
 ## NEXT STEP:
 
-Always proceed directly to `./step-02-plan.md` after presenting context summary.
+### Session Boundary
+
+```
+IF auto_mode = true:
+  → Load ./step-02-plan.md directly (chain all steps)
+
+IF auto_mode = false:
+  → Mark step complete in progress table (if save_mode):
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "complete"
+  → Update State Snapshot (next_step + step context) in 00-context.md
+  → Display:
+
+    ═══════════════════════════════════════
+      STEP 01 COMPLETE: Analyze
+    ═══════════════════════════════════════
+      Key findings: {count} files, {count} patterns
+      Resume: /apex -r {task_id}
+      Next: Step 02 - Plan (Strategic Design)
+    ═══════════════════════════════════════
+
+  → STOP. Do NOT load the next step.
+```
 
 <critical>
 Remember: Analysis is ONLY about "What exists?" - save all planning for step-02!
-Do NOT ask for confirmation - proceed directly!
+In auto_mode, proceed directly without stopping.
 </critical>

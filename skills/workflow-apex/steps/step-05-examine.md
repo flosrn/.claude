@@ -33,6 +33,17 @@ next_step: steps/step-06-resolve.md
 - Now looking for issues that tests miss
 - Adversarial mindset - assume bugs exist
 
+## CONTEXT RESTORATION (resume mode):
+
+<critical>
+If this step was loaded via `/apex -r {task_id}` resume:
+
+1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
+2. Read `{output_dir}/03-execute.md` → restore execution log (files modified)
+3. All state variables are now available from the restored context
+4. Proceed with normal execution below
+</critical>
+
 ## YOUR TASK:
 
 Conduct an adversarial code review to identify security vulnerabilities, logic flaws, and quality issues.
@@ -104,33 +115,33 @@ Group files: source, tests, config, other.
 **If `{economy_mode}` = false:**
 → Launch parallel review agents
 
-**CRITICAL: Launch ALL in a SINGLE message:**
+**CRITICAL: Launch ALL in a SINGLE message using Task tool with `code-reviewer` agent:**
 
-**Agent 1: Security** (`code-reviewer`)
+**Agent 1** (`code-reviewer` — focus: security)
 ```
-Review for OWASP Top 10:
-- Injection flaws
-- Auth/authz issues
-- Data exposure
-- Security misconfiguration
-```
+Focus: security
+Files: {list of modified source files}
+Context: {task_description}
 
-**Agent 2: Logic** (`code-reviewer`)
-```
-Review for:
-- Edge cases not handled
-- Race conditions
-- Null handling
-- Incorrect logic
+Review these files for security vulnerabilities (OWASP Top 10).
 ```
 
-**Agent 3: Clean Code** (`code-reviewer`)
+**Agent 2** (`code-reviewer` — focus: logic)
 ```
-Review for:
-- SOLID violations
-- Code smells
-- Complexity issues
-- Duplication >20 lines
+Focus: logic
+Files: {list of modified source files}
+Context: {task_description}
+
+Review these files for logic errors, edge cases, and race conditions.
+```
+
+**Agent 3** (`code-reviewer` — focus: clean-code)
+```
+Focus: clean-code
+Files: {list of modified source files}
+Context: {task_description}
+
+Review these files for SOLID violations, complexity, and duplication.
 ```
 
 **Agent 4: Vercel/Next.js Best Practices** (CONDITIONAL)
@@ -277,18 +288,44 @@ Append to `{output_dir}/05-examine.md`:
 
 ## NEXT STEP:
 
-After user confirms via AskUserQuestion (or auto-proceed):
+**Determine next step based on user choice/flags:**
+- **"Resolve findings":** next = `06-resolve`
+- **"Skip to tests" (and test_mode):** next = `07-tests`
+- **"Skip resolution" + test_mode:** next = `07-tests`
+- **"Skip resolution" + pr_mode:** next = `09-finish`
+- **"Skip resolution" (no more steps):** Workflow complete
 
-**If user chooses "Resolve findings":** → Load `./step-06-resolve.md`
+### Session Boundary
 
-**If user chooses "Skip to tests" (and test_mode):** → Load `./step-07-tests.md`
+```
+IF auto_mode = true:
+  → Load the determined next step directly (chain all steps)
 
-**If user chooses "Skip resolution":**
-- **If test_mode:** → Load `./step-07-tests.md`
-- **If pr_mode:** → Load `./step-09-finish.md` to create pull request
-- **Otherwise:** → Workflow complete - show summary
+IF auto_mode = false AND workflow not complete:
+  → Mark step complete in progress table (if save_mode):
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "complete"
+  → Update State Snapshot in 00-context.md:
+    1. Set next_step to the determined next step
+    2. Append to Step Context: "- **05-examine:** {count} findings ({count} blocking)"
+  → Display:
+
+    ═══════════════════════════════════════
+      STEP 05 COMPLETE: Examine
+    ═══════════════════════════════════════
+      Findings: {count} ({blocking} blocking)
+      Resume: /apex -r {task_id}
+      Next: Step {NN} - {description}
+    ═══════════════════════════════════════
+
+  → STOP. Do NOT load the next step.
+
+IF workflow complete:
+  → Show final APEX WORKFLOW COMPLETE summary
+  → STOP.
+```
 
 <critical>
 Remember: Be SKEPTICAL - your job is to find problems, not approve code!
 This step MUST ask before proceeding (unless auto_mode).
+In auto_mode, proceed directly without stopping.
 </critical>

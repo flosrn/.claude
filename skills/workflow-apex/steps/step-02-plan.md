@@ -32,6 +32,17 @@ next_step: steps/step-03-execute.md
 - User has NOT approved any changes yet
 - Plan must be complete before execution
 
+## CONTEXT RESTORATION (resume mode):
+
+<critical>
+If this step was loaded via `/apex -r {task_id}` resume:
+
+1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
+2. Read `{output_dir}/01-analyze.md` → restore analysis findings (files, patterns, utilities)
+3. All state variables are now available from the restored context
+4. Proceed with normal execution below
+</critical>
+
 ## YOUR TASK:
 
 Transform analysis findings into a comprehensive, executable, file-by-file implementation plan.
@@ -257,8 +268,32 @@ Append to `{output_dir}/02-plan.md`:
 
 ## NEXT STEP:
 
-After user approves via AskUserQuestion (or auto-proceed), load `./step-03-execute.md`
+### Session Boundary
+
+```
+IF auto_mode = true:
+  → Load ./step-03-execute.md directly (chain all steps)
+
+IF auto_mode = false:
+  → Mark step complete in progress table (if save_mode):
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "complete"
+  → Update State Snapshot in 00-context.md:
+    1. Set next_step to 03-execute
+    2. Append to Step Context: "- **02-plan:** {one-line summary of plan}"
+  → Display:
+
+    ═══════════════════════════════════════
+      STEP 02 COMPLETE: Plan
+    ═══════════════════════════════════════
+      {count} files planned, {count} new files
+      Resume: /apex -r {task_id}
+      Next: Step 03 - Execute (Implementation)
+    ═══════════════════════════════════════
+
+  → STOP. Do NOT load the next step.
+```
 
 <critical>
 Remember: Planning is ONLY about designing the approach - save all implementation for step-03!
+In auto_mode, proceed directly without stopping.
 </critical>

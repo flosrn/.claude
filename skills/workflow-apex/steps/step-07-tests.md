@@ -32,6 +32,17 @@ next_step: steps/step-08-run-tests.md
 - Existing tests show conventions to follow
 - Focus on creating RIGHT tests, not just tests
 
+## CONTEXT RESTORATION (resume mode):
+
+<critical>
+If this step was loaded via `/apex -r {task_id}` resume:
+
+1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
+2. Read `{output_dir}/03-execute.md` → restore execution log (files modified)
+3. All state variables are now available from the restored context
+4. Proceed with normal execution below
+</critical>
+
 ## YOUR TASK:
 
 Analyze existing test patterns and create appropriate tests for the implementation.
@@ -243,8 +254,32 @@ Append to `{output_dir}/07-tests.md`:
 
 ## NEXT STEP:
 
-After tests created, load `./step-08-run-tests.md`
+### Session Boundary
+
+```
+IF auto_mode = true:
+  → Load ./step-08-run-tests.md directly (chain all steps)
+
+IF auto_mode = false:
+  → Mark step complete in progress table (if save_mode):
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "07" "tests" "complete"
+  → Update State Snapshot in 00-context.md:
+    1. Set next_step to 08-run-tests
+    2. Append to Step Context: "- **07-tests:** {count} test files created"
+  → Display:
+
+    ═══════════════════════════════════════
+      STEP 07 COMPLETE: Tests
+    ═══════════════════════════════════════
+      {count} test files, {count} test cases
+      Resume: /apex -r {task_id}
+      Next: Step 08 - Run Tests (Fix Loop)
+    ═══════════════════════════════════════
+
+  → STOP. Do NOT load the next step.
+```
 
 <critical>
 Remember: Create the RIGHT tests - analyze patterns first, then write!
+In auto_mode, proceed directly without stopping.
 </critical>

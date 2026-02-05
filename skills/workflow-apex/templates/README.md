@@ -42,6 +42,32 @@ Templates use `{{variable}}` syntax for placeholders:
 | `{{examine_status}}` | Progress status for examine steps | `⏸ Pending` or `⏭ Skip` |
 | `{{test_status}}` | Progress status for test steps | `⏸ Pending` or `⏭ Skip` |
 | `{{pr_status}}` | Progress status for PR step | `⏸ Pending` or `⏭ Skip` |
+| `{{feature_name}}` | Kebab-case feature name (without number prefix) | `add-auth-middleware` |
+
+## State Snapshot
+
+The `00-context.md` template includes a **State Snapshot** section after the Progress table. This section enables reliable cross-session resume:
+
+```markdown
+## State Snapshot
+
+**feature_name:** {feature_name}
+**next_step:** {step_id}
+
+### Acceptance Criteria
+{AC list from step-01}
+
+### Step Context
+- **01-analyze:** {summary}
+- **02-plan:** {summary}
+...
+```
+
+**How it works:**
+- `next_step` is updated at the end of each step to indicate where to resume
+- `Acceptance Criteria` is populated during step-01 analysis
+- `Step Context` accumulates one-line summaries as steps complete
+- On resume (`/apex -r`), step-00 reads this section to determine the target step and restore context
 
 ## Setup Script
 

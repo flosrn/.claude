@@ -33,6 +33,17 @@ next_step: steps/step-05-examine.md
 - Failures may be code bugs or test bugs
 - Loop until all green or user decides to skip
 
+## CONTEXT RESTORATION (resume mode):
+
+<critical>
+If this step was loaded via `/apex -r {task_id}` resume:
+
+1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
+2. Read `{output_dir}/07-tests.md` → restore test file list and test plan
+3. All state variables are now available from the restored context
+4. Proceed with normal execution below
+</critical>
+
 ## YOUR TASK:
 
 Run tests, fix any failures, and loop until ALL tests pass.
@@ -298,11 +309,41 @@ questions:
 
 ## NEXT STEP:
 
-Based on flags (check in order):
-- **If examine_mode:** Load `./step-05-examine.md`
-- **If pr_mode:** Load `./step-09-finish.md` to create pull request
-- **Otherwise:** Workflow complete - show summary
+**Determine next step based on flags (check in order):**
+- **If examine_mode:** next = `05-examine`
+- **If pr_mode:** next = `09-finish`
+- **Otherwise:** Workflow complete
+
+### Session Boundary
+
+```
+IF auto_mode = true:
+  → Load the determined next step directly (chain all steps)
+
+IF auto_mode = false AND workflow not complete:
+  → Mark step complete in progress table (if save_mode):
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "08" "run-tests" "complete"
+  → Update State Snapshot in 00-context.md:
+    1. Set next_step to the determined next step
+    2. Append to Step Context: "- **08-run-tests:** All tests passing ({count} tests)"
+  → Display:
+
+    ═══════════════════════════════════════
+      STEP 08 COMPLETE: Run Tests
+    ═══════════════════════════════════════
+      {count} tests passing in {attempts} attempts
+      Resume: /apex -r {task_id}
+      Next: Step {NN} - {description}
+    ═══════════════════════════════════════
+
+  → STOP. Do NOT load the next step.
+
+IF workflow complete:
+  → Show final APEX WORKFLOW COMPLETE summary
+  → STOP.
+```
 
 <critical>
 Remember: Loop until ALL tests pass - don't give up after first failure!
+In auto_mode, proceed directly without stopping.
 </critical>

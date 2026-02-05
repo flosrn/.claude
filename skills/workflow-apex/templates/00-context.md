@@ -49,3 +49,18 @@ _To be defined in step-01-analyze.md_
 | 07-tests | {{test_status}} | |
 | 08-run-tests | {{test_status}} | |
 | 09-finish | {{pr_status}} | |
+
+---
+
+## State Snapshot
+
+**feature_name:** {{feature_name}}
+**next_step:** 01-analyze
+
+### Acceptance Criteria
+
+_Defined during step-01-analyze_
+
+### Step Context
+
+_Brief summaries added as steps complete_

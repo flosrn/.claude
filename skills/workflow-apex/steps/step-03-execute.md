@@ -33,6 +33,18 @@ next_step: steps/step-04-validate.md
 - Patterns to follow are documented from step-01
 - Don't add features - stick to the plan
 
+## CONTEXT RESTORATION (resume mode):
+
+<critical>
+If this step was loaded via `/apex -r {task_id}` resume:
+
+1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
+2. Read `{output_dir}/02-plan.md` → restore the implementation plan
+3. **Partial work detection:** Run `git diff --name-only` to check what files have already been modified
+4. Cross-reference modified files with the plan → skip already-completed items when creating todos
+5. Proceed with normal execution below (only remaining plan items)
+</critical>
+
 ## YOUR TASK:
 
 Execute the approved implementation plan file-by-file, tracking progress with todos.
@@ -232,8 +244,32 @@ Append to `{output_dir}/03-execute.md`:
 
 ## NEXT STEP:
 
-After implementation complete, load `./step-04-validate.md`
+### Session Boundary
+
+```
+IF auto_mode = true:
+  → Load ./step-04-validate.md directly (chain all steps)
+
+IF auto_mode = false:
+  → Mark step complete in progress table (if save_mode):
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
+  → Update State Snapshot in 00-context.md:
+    1. Set next_step to 04-validate
+    2. Append to Step Context: "- **03-execute:** {count} files modified, all todos complete"
+  → Display:
+
+    ═══════════════════════════════════════
+      STEP 03 COMPLETE: Execute
+    ═══════════════════════════════════════
+      {count} files modified, {count} todos completed
+      Resume: /apex -r {task_id}
+      Next: Step 04 - Validate (Self-Check)
+    ═══════════════════════════════════════
+
+  → STOP. Do NOT load the next step.
+```
 
 <critical>
 Remember: Execution is about following the plan - don't redesign or add features!
+In auto_mode, proceed directly without stopping.
 </critical>

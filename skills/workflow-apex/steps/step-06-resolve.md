@@ -32,6 +32,17 @@ next_step: COMPLETE
 - User may want different resolution strategies
 - Must validate after any changes
 
+## CONTEXT RESTORATION (resume mode):
+
+<critical>
+If this step was loaded via `/apex -r {task_id}` resume:
+
+1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
+2. Read `{output_dir}/05-examine.md` → restore findings table and todos
+3. All state variables are now available from the restored context
+4. Proceed with normal execution below
+</critical>
+
 ## YOUR TASK:
 
 Address adversarial review findings interactively - fix real issues, dismiss noise, discuss uncertain items.
@@ -228,10 +239,41 @@ Append to `{output_dir}/06-resolve.md`:
 
 ## NEXT STEP:
 
-Based on flags:
-- **If pr_mode:** Load `./step-09-finish.md` to create pull request
-- **Otherwise:** Workflow complete - show summary
+**Determine next step based on flags:**
+- **If test_mode (and tests not yet done):** next = `07-tests`
+- **If pr_mode:** next = `09-finish`
+- **Otherwise:** Workflow complete
+
+### Session Boundary
+
+```
+IF auto_mode = true:
+  → Load the determined next step directly (chain all steps)
+
+IF auto_mode = false AND workflow not complete:
+  → Mark step complete in progress table (if save_mode):
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "complete"
+  → Update State Snapshot in 00-context.md:
+    1. Set next_step to the determined next step
+    2. Append to Step Context: "- **06-resolve:** {fixed} fixed, {skipped} skipped"
+  → Display:
+
+    ═══════════════════════════════════════
+      STEP 06 COMPLETE: Resolve
+    ═══════════════════════════════════════
+      Fixed: {count} | Skipped: {count}
+      Resume: /apex -r {task_id}
+      Next: Step {NN} - {description}
+    ═══════════════════════════════════════
+
+  → STOP. Do NOT load the next step.
+
+IF workflow complete:
+  → Show final APEX WORKFLOW COMPLETE summary
+  → STOP.
+```
 
 <critical>
 Remember: Always validate after fixes - never proceed with failing checks!
+In auto_mode, proceed directly without stopping.
 </critical>

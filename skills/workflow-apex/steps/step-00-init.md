@@ -117,6 +117,14 @@ Other:
   Remainder        → {task_description}
 ```
 
+**Step 2b: Auto-enable save_mode for step-by-step mode:**
+
+```
+IF {auto_mode} = false AND {save_mode} = false:
+    {save_mode} = true
+    (Required for resume between sessions)
+```
+
 **Step 3: Generate feature_name and task_id:**
 
 ```
@@ -138,25 +146,68 @@ If {resume_task} is NOT set, skip directly to step 3.
 
 **If `{resume_task}` is set:**
 
-1. **Search for matching task:**
+**Step 2a: Find matching task folder:**
 
-   ```bash
-   ls .claude/output/apex/ | grep "^{resume_task}"
-   ```
+```bash
+ls .claude/output/apex/ | grep "{resume_task}"
+```
 
-2. **If exact match found:**
-   - Read `00-context.md` to restore state variables
-   - Scan step files to find last completed step (check for completion marker)
-   - Load next incomplete step
-   - **STOP** - do not continue with fresh init
+- **Exact match** (e.g., `01-add-auth`): use it
+- **Single partial match** (e.g., `-r 01` matches `01-add-auth`): use it
+- **Multiple matches**: list them and ask user to specify
+- **No match**: list available tasks, ask user to provide correct ID
 
-3. **If partial match (e.g., `-r 01`):**
-   - If single match: use it
-   - If multiple matches: list them and ask user to specify
+**Step 2b: Restore state from `00-context.md`:**
 
-4. **If no match found:**
-   - List available tasks
-   - Ask user to provide correct ID
+1. Read `{output_dir}/00-context.md`
+2. Restore ALL flags from Configuration table: `{auto_mode}`, `{examine_mode}`, `{save_mode}`, `{test_mode}`, `{economy_mode}`, `{branch_mode}`, `{pr_mode}`, `{interactive_mode}`
+3. Restore task info: `{task_id}`, `{task_description}`, `{feature_name}`, `{branch_name}`
+4. Restore acceptance criteria from State Snapshot section
+
+**Step 2c: Apply flag overrides from current command:**
+
+Any flags passed with the resume command override the stored values.
+Example: `/apex -a -r 01` resumes task 01 with `{auto_mode} = true` even if it was stored as `false`.
+
+**Step 2d: Re-evaluate Skip/Pending after flag overrides:**
+
+```
+IF a flag was changed from false → true on resume:
+    Update Progress table entries for affected steps:
+    - {examine_mode} true → 05-examine, 06-resolve: ⏭ Skip → ⏸ Pending
+    - {test_mode} true → 07-tests, 08-run-tests: ⏭ Skip → ⏸ Pending
+    - {pr_mode} true → 09-finish: ⏭ Skip → ⏸ Pending
+
+IF a flag was changed from true → false on resume:
+    Update Progress table entries for affected steps:
+    - {examine_mode} false → 05-examine, 06-resolve: ⏸ Pending → ⏭ Skip
+    - {test_mode} false → 07-tests, 08-run-tests: ⏸ Pending → ⏭ Skip
+    - {pr_mode} false → 09-finish: ⏸ Pending → ⏭ Skip
+```
+
+**Step 2e: Determine resume target step:**
+
+1. Read `next_step` from State Snapshot section
+2. **Fallback** (if `next_step` missing): parse Progress table for first row that is NOT `✓ Complete` and NOT `⏭ Skip`
+3. **Handle "⏳ In Progress"**: this means a step crashed mid-execution → restart that step
+
+**Step 2f: Show resume summary and load target step:**
+
+```
+✓ APEX RESUMED: {task_description}
+
+| Variable | Value |
+|----------|-------|
+| `{task_id}` | {task_id} |
+| Resuming at | step-{next_step} |
+| `{auto_mode}` | true/false |
+| `{save_mode}` | true/false |
+| Flags overridden | {list any changed flags, or "none"} |
+
+→ Loading step-{next_step}...
+```
+
+**Then load the target step directly. Do NOT continue with fresh init steps 3-5.**
 
 **If {resume_task} is NOT set:** → Skip directly to step 3
 
@@ -279,10 +330,12 @@ KEEP OUTPUT MINIMAL:
 
 After showing initialization summary, always proceed directly to `./step-01-analyze.md`
 
+**Note:** Step-00-init and step-01-analyze always run together in the same session. The first session boundary (stop point when `auto_mode=false`) is at the END of step-01-analyze. See step-01 for session boundary details.
+
 <critical>
 Remember:
 - Step-00 is an INITIALIZER, not a GATEKEEPER
 - Output MUST be compact: one table, no verbose logs
 - Use `{variable}` notation to show available state
-- Proceed immediately - never block!
+- Proceed immediately to step-01 - never block!
 </critical>

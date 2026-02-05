@@ -9,16 +9,18 @@ Execute systematic implementation workflows using the APEX methodology. This ski
 </objective>
 
 <quick_start>
-**Basic usage:**
+**Step-by-step mode (default):** Each step runs in its own session. Resume with `/apex -r`.
 
 ```bash
 /apex add authentication middleware
+# → Runs step-00 + step-01, stops with resume command
+# → /apex -r 01-add-authentication-middleware  (next session)
 ```
 
-**Recommended workflow (autonomous with save):**
+**Autonomous mode:** All steps chain in one session.
 
 ```bash
-/apex -a -s implement user registration
+/apex -a implement user registration
 ```
 
 **With adversarial review:**
@@ -29,8 +31,8 @@ Execute systematic implementation workflows using the APEX methodology. This ski
 
 **Flags:**
 
-- `-a` (auto): Skip confirmations
-- `-s` (save): Save outputs to `.claude/output/apex/`
+- `-a` (auto): Chain all steps in one session (skip confirmations)
+- `-s` (save): Save outputs to `.claude/output/apex/` (auto-enabled when not `-a`)
 - `-x` (examine): Include adversarial code review
 - `-t` (test): Create and run tests
 - `-pr` (pull-request): Create PR at end
@@ -44,7 +46,7 @@ See `<parameters>` for complete flag list.
 **Enable flags (turn ON):**
 | Short | Long | Description |
 |-------|------|-------------|
-| `-a` | `--auto` | Autonomous mode: skip confirmations, auto-approve plans |
+| `-a` | `--auto` | Autonomous mode: chain all steps in one session, skip confirmations |
 | `-x` | `--examine` | Auto-examine mode: proceed to adversarial review |
 | `-s` | `--save` | Save mode: output each step to `.claude/output/apex/` |
 | `-t` | `--test` | Test mode: include test creation and runner steps |
@@ -86,6 +88,12 @@ See `<parameters>` for complete flag list.
 # Resume previous task
 /apex -r 01-auth-middleware
 /apex -r 01  # Partial match
+
+# Resume with flag override (enable auto mode)
+/apex -a -r 01
+
+# Resume with additional flags (add tests mid-workflow)
+/apex -t -r 01
 
 # Economy mode (save tokens)
 /apex -e add auth middleware
@@ -159,20 +167,25 @@ All outputs saved to PROJECT directory (where Claude Code is running):
 
 When provided, step-00 will:
 
-1. Locate the task folder in `.claude/output/apex/`
-2. Restore state from `00-context.md`
-3. Find the last completed step
-4. Continue from the next step
+1. **Find task folder:** `ls .claude/output/apex/ | grep {resume_task}` (exact or partial match)
+2. **Restore state:** Read `00-context.md` → all flags, task info, acceptance criteria, step context
+3. **Apply overrides:** Any flags passed with `-r` override stored values (e.g., `/apex -a -r 01` enables auto_mode)
+4. **Re-evaluate steps:** If flags changed (e.g., `-t` added), update Progress table Skip→Pending
+5. **Find resume target:** Read `next_step` from State Snapshot (fallback: first non-Complete/non-Skip row in Progress table)
+6. **Handle crashes:** "⏳ In Progress" status = crashed step → restart it
+7. **Load target step:** Each step has a Context Restoration block that reads its required prior outputs
+
+**Error handling:**
+- `/apex -r` without prior `-s`: no output dir → clear error message
+- No match found → list available tasks, ask user to specify
 
 Supports partial matching (e.g., `-r 01` finds `01-add-auth-middleware`).
-
-For implementation details, see `steps/step-00-init.md`.
 </resume_workflow>
 
 <workflow>
 **Standard flow:**
 1. Parse flags and task description
-2. If `-r`: Execute resume workflow
+2. If `-r`: Execute resume workflow (restore state, load target step)
 3. If `-s`: Create output folder and 00-context.md
 4. Load step-01-analyze.md → gather context
 5. Load step-02-plan.md → create strategy
@@ -183,7 +196,52 @@ For implementation details, see `steps/step-00-init.md`.
 10. If `-x` or user requests: Load step-05-examine.md → adversarial review
 11. If findings: Load step-06-resolve.md → fix findings
 12. If `-pr`: Load step-09-finish.md → create pull request
+
+**Session behavior:**
+- `auto_mode=false` (default): Each step stops after completion with a resume command. Steps 00+01 run together as the first session.
+- `auto_mode=true` (`-a`): All steps chain in a single session (no stops).
 </workflow>
+
+<stop_resume>
+**Step-by-step mode (auto_mode=false):**
+
+When `auto_mode` is false (default), APEX runs one step per session:
+
+1. **First session:** step-00-init + step-01-analyze run together
+   - `save_mode` is auto-enabled (required for resume)
+   - After step-01 completes: saves state, shows resume command, **STOPS**
+2. **Each subsequent session:** `/apex -r {task_id}` runs one step
+   - Restores all state from `00-context.md` + previous step outputs
+   - Executes the step
+   - Saves state, shows resume command, **STOPS**
+
+**Session boundary display:**
+```
+═══════════════════════════════════════
+  STEP {NN} COMPLETE: {name}
+═══════════════════════════════════════
+  {summary}
+  Resume: /apex -r {task_id}
+  Next: Step {NN} - {description}
+═══════════════════════════════════════
+```
+
+**Context restoration per step:**
+
+| Step | Reads on Resume |
+|------|-----------------|
+| 01-analyze | 00-context.md only |
+| 02-plan | 00-context.md + 01-analyze.md |
+| 03-execute | 00-context.md + 02-plan.md (+ git diff for partial work) |
+| 04-validate | 00-context.md + 03-execute.md |
+| 05-examine | 00-context.md + 03-execute.md |
+| 06-resolve | 00-context.md + 05-examine.md |
+| 07-tests | 00-context.md + 03-execute.md |
+| 08-run-tests | 00-context.md + 07-tests.md |
+| 09-finish | 00-context.md only |
+
+**State Snapshot** (in 00-context.md): tracks `next_step`, acceptance criteria, and per-step context summaries for reliable cross-session state transfer.
+</stop_resume>
 
 <state_variables>
 **Persist throughout all steps:**
@@ -202,6 +260,7 @@ For implementation details, see `steps/step-00-init.md`.
 | `{branch_mode}`         | boolean | Verify not on main, create branch if needed            |
 | `{pr_mode}`             | boolean | Create pull request at end                             |
 | `{interactive_mode}`    | boolean | Configure flags interactively                          |
+| `{next_step}`           | string  | Next step to execute (persisted in State Snapshot)     |
 | `{resume_task}`         | string  | Task ID to resume (if -r provided)                     |
 | `{output_dir}`          | string  | Full path to output directory                          |
 | `{branch_name}`         | string  | Created branch name (if branch_mode)                   |
@@ -230,7 +289,7 @@ After initialization, step-00 loads step-01-analyze.md.
 | Step | File                         | Purpose                                              |
 | ---- | ---------------------------- | ---------------------------------------------------- |
 | 00   | `steps/step-00-init.md`      | Parse flags, create output folder, initialize state  |
-| 01   | `steps/step-01-analyze.md`   | Smart context gathering with 1-10 parallel agents based on complexity |
+| 01   | `steps/step-01-analyze.md`   | Smart context gathering with 1-10 parallel agents (built-in + custom) |
 | 02   | `steps/step-02-plan.md`      | File-by-file implementation strategy                 |
 | 03   | `steps/step-03-execute.md`   | Todo-driven implementation                           |
 | 04   | `steps/step-04-validate.md`  | Self-check and validation                            |
@@ -250,15 +309,19 @@ After initialization, step-00 loads step-01-analyze.md.
 - **Follow next_step directive** at end of each step
 - **Save outputs** if `{save_mode}` = true (append to step file)
 - **Use parallel agents** for independent exploration tasks
+- **Session boundary:** When `auto_mode=false`, each step STOPS after completion and displays a resume command. When `auto_mode=true`, steps chain directly. See `<stop_resume>` for details.
 
 ## 🧠 Smart Agent Strategy in Analyze Phase
 
 The analyze phase (step-01) uses **adaptive agent launching** (unless economy_mode):
 
 **Available agents:**
-- `explore-codebase` - Find existing patterns, files, utilities
-- `explore-docs` - Research library docs (use when unfamiliar with API)
-- `websearch` - Find approaches, best practices, gotchas
+- `Explore` (built-in) - Find existing patterns, files, utilities
+- `explore-docs` (custom) - Research library docs via Context7 (use when unfamiliar with API)
+- `websearch` (built-in) - Find approaches, best practices, gotchas
+
+**Review agents (step-05):**
+- `code-reviewer` (custom) - Adversarial review with focus areas (security, logic, clean-code)
 
 **Launch 1-10 agents based on task complexity:**
 

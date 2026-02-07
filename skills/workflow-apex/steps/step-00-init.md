@@ -53,6 +53,7 @@ examine_mode: false # -x: Auto-proceed to adversarial review
 save_mode: false # -s: Save outputs to .claude/output/apex/
 test_mode: false # -t: Include test creation and runner steps
 economy_mode: false # -e: No subagents, save tokens (for limited plans)
+team_mode: false # -w: Use Agent Teams for parallel execution (requires -a, incompatible with -e)
 branch_mode: false # -b: Verify not on main, create branch if needed
 pr_mode: false # -pr: Create pull request at end (enables -b)
 interactive_mode: false # -i: Configure flags interactively
@@ -81,6 +82,7 @@ interactive_mode: false # -i: Configure flags interactively
 {save_mode}    = <default>
 {test_mode}    = <default>
 {economy_mode} = <default>
+{team_mode}    = <default>
 {branch_mode}  = <default>
 {pr_mode}      = <default>
 {interactive_mode} = <default>
@@ -95,6 +97,7 @@ Enable flags (lowercase - turn ON):
   -s or --save     → {save_mode} = true
   -t or --test     → {test_mode} = true
   -e or --economy  → {economy_mode} = true
+  -w or --team     → {team_mode} = true
 
 Disable flags (UPPERCASE - turn OFF):
   -A or --no-auto         → {auto_mode} = false
@@ -102,6 +105,7 @@ Disable flags (UPPERCASE - turn OFF):
   -S or --no-save         → {save_mode} = false
   -T or --no-test         → {test_mode} = false
   -E or --no-economy      → {economy_mode} = false
+  -W or --no-team         → {team_mode} = false
   -B or --no-branch       → {branch_mode} = false
   -PR or --no-pull-request → {pr_mode} = false
 
@@ -123,6 +127,15 @@ Other:
 IF {auto_mode} = false AND {save_mode} = false:
     {save_mode} = true
     (Required for resume between sessions)
+```
+
+**Step 2c: Team mode validation:**
+
+```
+IF {team_mode} = true AND {economy_mode} = true:
+    → WARNING: "Team mode (-w) is incompatible with economy mode (-e). Disabling economy mode."
+    → {economy_mode} = false
+
 ```
 
 **Step 3: Generate feature_name and task_id:**
@@ -168,6 +181,14 @@ ls .claude/output/apex/ | grep "{resume_task}"
 
 Any flags passed with the resume command override the stored values.
 Example: `/apex -a -r 01` resumes task 01 with `{auto_mode} = true` even if it was stored as `false`.
+
+**Step 2c-post: Re-run validations after flag overrides:**
+
+```
+After restoring flags from 00-context.md and applying any CLI flag overrides:
+→ Re-run Step 2b (save_mode auto-enable) and Step 2c (team mode checks) validations
+  to ensure restored+overridden flags are consistent.
+```
 
 **Step 2d: Re-evaluate Skip/Pending after flag overrides:**
 
@@ -274,7 +295,8 @@ bash {skill_dir}/scripts/setup-templates.sh \
   "{pr_mode}" \
   "{interactive_mode}" \
   "{branch_name}" \
-  "{original_input}"
+  "{original_input}" \
+  "{team_mode}"
 ```
 
 **Note:** Pass `{feature_name}` (without number prefix), NOT `{task_id}`.
@@ -306,6 +328,7 @@ Show COMPACT initialization summary (one table, then proceed immediately):
 | `{save_mode}` | true/false |
 | `{test_mode}` | true/false |
 | `{economy_mode}` | true/false |
+| `{team_mode}` | true/false |
 | `{branch_mode}` | true/false |
 | `{pr_mode}` | true/false |
 

@@ -1,7 +1,7 @@
 ---
 name: apex
 description: Systematic implementation using APEX methodology (Analyze-Plan-Execute-eXamine) with parallel agents, self-validation, and optional adversarial review. Use when implementing features, fixing bugs, or making code changes that benefit from structured workflow.
-argument-hint: "[-a] [-x] [-s] [-t] [-b] [-pr] [-i] [-r <task-id>] <task description>"
+argument-hint: "[-a] [-x] [-s] [-t] [-w] [-b] [-pr] [-i] [-r <task-id>] <task description>"
 ---
 
 <objective>
@@ -35,6 +35,7 @@ Execute systematic implementation workflows using the APEX methodology. This ski
 - `-s` (save): Save outputs to `.claude/output/apex/` (auto-enabled when not `-a`)
 - `-x` (examine): Include adversarial code review
 - `-t` (test): Create and run tests
+- `-w` (team): Use Agent Teams for parallel research, execution, and review
 - `-pr` (pull-request): Create PR at end
 
 See `<parameters>` for complete flag list.
@@ -51,6 +52,7 @@ See `<parameters>` for complete flag list.
 | `-s` | `--save` | Save mode: output each step to `.claude/output/apex/` |
 | `-t` | `--test` | Test mode: include test creation and runner steps |
 | `-e` | `--economy` | Economy mode: no subagents, save tokens (for limited plans) |
+| `-w` | `--team` | Team mode: use Agent Teams for parallel research, execution, and review (incompatible with `-e`) |
 | `-r` | `--resume` | Resume mode: continue from a previous task |
 | `-b` | `--branch` | Branch mode: verify not on main, create branch if needed |
 | `-pr` | `--pull-request` | PR mode: create pull request at end (enables -b) |
@@ -64,6 +66,7 @@ See `<parameters>` for complete flag list.
 | `-S` | `--no-save` | Disable save mode |
 | `-T` | `--no-test` | Disable test mode |
 | `-E` | `--no-economy` | Disable economy mode |
+| `-W` | `--no-team` | Disable team mode |
 | `-B` | `--no-branch` | Disable branch mode |
 | `-PR` | `--no-pull-request` | Disable PR mode |
 </flags>
@@ -97,6 +100,10 @@ See `<parameters>` for complete flag list.
 
 # Economy mode (save tokens)
 /apex -e add auth middleware
+
+# Team mode (parallel execution with Agent Teams)
+/apex -w implement full-stack feature
+/apex -w -a -x implement dashboard with backend API
 
 # Interactive flag config
 /apex -i add auth middleware
@@ -257,6 +264,7 @@ When `auto_mode` is false (default), APEX runs one step per session:
 | `{save_mode}`           | boolean | Save outputs to .claude/output/apex/                   |
 | `{test_mode}`           | boolean | Include test steps (07-08)                             |
 | `{economy_mode}`        | boolean | No subagents, direct tool usage only                   |
+| `{team_mode}`           | boolean | Use Agent Teams for parallel execution in step-03      |
 | `{branch_mode}`         | boolean | Verify not on main, create branch if needed            |
 | `{pr_mode}`             | boolean | Create pull request at end                             |
 | `{interactive_mode}`    | boolean | Configure flags interactively                          |
@@ -290,10 +298,13 @@ After initialization, step-00 loads step-01-analyze.md.
 | ---- | ---------------------------- | ---------------------------------------------------- |
 | 00   | `steps/step-00-init.md`      | Parse flags, create output folder, initialize state  |
 | 01   | `steps/step-01-analyze.md`   | Smart context gathering with 1-10 parallel agents (built-in + custom) |
+| 01b  | `steps/step-01b-team-analyze.md` | Agent Team parallel research (if team_mode)         |
 | 02   | `steps/step-02-plan.md`      | File-by-file implementation strategy                 |
-| 03   | `steps/step-03-execute.md`   | Todo-driven implementation                           |
+| 03   | `steps/step-03-execute.md`   | Todo-driven implementation (solo)                    |
+| 03b  | `steps/step-03b-team-execute.md` | Agent Team parallel implementation (if team_mode)  |
 | 04   | `steps/step-04-validate.md`  | Self-check and validation                            |
 | 05   | `steps/step-05-examine.md`   | Adversarial code review (optional)                   |
+| 05b  | `steps/step-05b-team-examine.md` | Agent Team parallel adversarial review (if team_mode) |
 | 06   | `steps/step-06-resolve.md`   | Finding resolution (optional)                        |
 | 07   | `steps/step-07-tests.md`     | Test analysis and creation (if --test)               |
 | 08   | `steps/step-08-run-tests.md` | Test runner loop until green (if --test)             |
@@ -310,6 +321,7 @@ After initialization, step-00 loads step-01-analyze.md.
 - **Save outputs** if `{save_mode}` = true (append to step file)
 - **Use parallel agents** for independent exploration tasks
 - **Session boundary:** When `auto_mode=false`, each step STOPS after completion and displays a resume command. When `auto_mode=true`, steps chain directly. See `<stop_resume>` for details.
+- **Team mode:** When `{team_mode}=true`, Agent Teams parallelize three phases: research (`step-01b-team-analyze.md`), implementation (`step-03b-team-execute.md`), and adversarial review (`step-05b-team-examine.md`). Researchers share findings cross-domain; reviewers challenge each other's findings. Incompatible with `-e` (economy mode).
 
 ## 🧠 Smart Agent Strategy in Analyze Phase
 

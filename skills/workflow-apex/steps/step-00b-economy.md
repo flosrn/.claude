@@ -10,6 +10,10 @@ load_condition: economy_mode = true
 
 These instructions OVERRIDE the default behavior in all steps to save tokens by avoiding subagent launches.
 
+<critical>
+**Incompatibility:** Economy mode is incompatible with team mode (`-w`). Team mode requires subagents (Agent Teams) which economy mode prohibits. If both are enabled, step-00-init will produce an error and stop the workflow.
+</critical>
+
 ---
 
 <why_economy_mode>

@@ -44,6 +44,15 @@ If this step was loaded via `/apex -r {task_id}` resume:
 4. Proceed with normal execution below
 </critical>
 
+## TEAM MODE BRANCHING:
+
+<critical>
+IF {team_mode} = true:
+  → Do NOT execute this file.
+  → Load `./step-05b-team-examine.md` instead.
+  → That file handles parallel adversarial review via Agent Teams.
+</critical>
+
 ## YOUR TASK:
 
 Conduct an adversarial code review to identify security vulnerabilities, logic flaws, and quality issues.

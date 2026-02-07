@@ -14,6 +14,7 @@
 | Save mode (`-s`) | {{save_mode}} |
 | Test mode (`-t`) | {{test_mode}} |
 | Economy mode (`-e`) | {{economy_mode}} |
+| Team mode (`-w`) | {{team_mode}} |
 | Branch mode (`-b`) | {{branch_mode}} |
 | PR mode (`-pr`) | {{pr_mode}} |
 | Interactive mode (`-i`) | {{interactive_mode}} |

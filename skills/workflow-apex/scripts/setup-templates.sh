@@ -20,6 +20,7 @@ PR_MODE="${9:-false}"
 INTERACTIVE_MODE="${10:-false}"
 BRANCH_NAME="${11:-}"
 ORIGINAL_INPUT="${12:-}"
+TEAM_MODE="${13:-false}"
 
 # Validate required arguments
 if [[ -z "$FEATURE_NAME" ]]; then
@@ -109,6 +110,7 @@ render_template() {
         -e "s|{{branch_mode}}|${BRANCH_MODE}|g" \
         -e "s|{{pr_mode}}|${PR_MODE}|g" \
         -e "s|{{interactive_mode}}|${INTERACTIVE_MODE}|g" \
+        -e "s|{{team_mode}}|${TEAM_MODE}|g" \
         -e "s|{{branch_name}}|${safe_branch_name}|g" \
         -e "s|{{feature_name}}|${FEATURE_NAME}|g" \
         -e "s|{{original_input}}|${safe_original_input}|g" \

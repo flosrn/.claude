@@ -51,6 +51,15 @@ If this step was loaded via `/apex -r {task_id}` resume:
 3. Proceed with normal execution below
 </critical>
 
+## TEAM MODE BRANCHING:
+
+<critical>
+IF {team_mode} = true:
+  → Do NOT execute this file.
+  → Load `./step-01b-team-analyze.md` instead.
+  → That file handles parallel research via Agent Teams.
+</critical>
+
 ## YOUR TASK:
 
 Gather ALL relevant context about WHAT CURRENTLY EXISTS in the codebase related to the task.

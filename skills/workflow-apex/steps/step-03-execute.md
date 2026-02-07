@@ -45,6 +45,15 @@ If this step was loaded via `/apex -r {task_id}` resume:
 5. Proceed with normal execution below (only remaining plan items)
 </critical>
 
+## TEAM MODE BRANCHING:
+
+<critical>
+IF {team_mode} = true:
+  → Do NOT execute this file.
+  → Load `./step-03b-team-execute.md` instead.
+  → That file handles parallel execution via Agent Teams.
+</critical>
+
 ## YOUR TASK:
 
 Execute the approved implementation plan file-by-file, tracking progress with todos.
@@ -84,8 +93,7 @@ Append logs to `{output_dir}/03-execute.md` as you work.
 Create a lightweight checkpoint before making changes:
 
 ```bash
-git stash push -m "apex-checkpoint: {task_id} pre-execute" --include-untracked 2>/dev/null; git stash pop 2>/dev/null
-git add -A && git commit --allow-empty -m "apex: checkpoint before execute ({task_id})" --no-verify
+git add -A && git commit --allow-empty -m "apex: checkpoint before execute ({task_id})"
 ```
 
 This enables `git reset HEAD~1` to rollback if execution breaks the codebase.

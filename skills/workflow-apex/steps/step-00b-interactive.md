@@ -43,6 +43,7 @@ Show current flag values:
 | Save (`-s`) | {save_mode ? "✓ ON" : "✗ OFF"} | Save outputs to files |
 | Test (`-t`) | {test_mode ? "✓ ON" : "✗ OFF"} | Include test steps |
 | Economy (`-e`) | {economy_mode ? "✓ ON" : "✗ OFF"} | No subagents |
+| Team (`-w`) | {team_mode ? "✓ ON" : "✗ OFF"} | Parallel Agent Teams |
 | Branch (`-b`) | {branch_mode ? "✓ ON" : "✗ OFF"} | Verify/create branch |
 | PR (`-pr`) | {pr_mode ? "✓ ON" : "✗ OFF"} | Create pull request |
 ```
@@ -74,6 +75,8 @@ questions:
   - header: "More"
     question: "Select additional flags to TOGGLE:"
     options:
+      - label: "Team mode"
+        description: "{team_mode ? 'Disable' : 'Enable'} - parallel execution with Agent Teams (incompatible with economy)"
       - label: "Economy mode"
         description: "{economy_mode ? 'Disable' : 'Enable'} - no subagents, save tokens"
       - label: "Branch mode"
@@ -93,14 +96,23 @@ IF "Auto mode" selected → {auto_mode} = !{auto_mode}
 IF "Examine mode" selected → {examine_mode} = !{examine_mode}
 IF "Save mode" selected → {save_mode} = !{save_mode}
 IF "Test mode" selected → {test_mode} = !{test_mode}
+IF "Team mode" selected → {team_mode} = !{team_mode}
 IF "Economy mode" selected → {economy_mode} = !{economy_mode}
 IF "Branch mode" selected → {branch_mode} = !{branch_mode}
 IF "PR mode" selected → {pr_mode} = !{pr_mode}
 ```
 
-**Special rule:** If PR mode enabled, auto-enable branch mode:
+**Special rules (applied after ALL toggles):**
+
+If PR mode enabled, auto-enable branch mode:
 ```
 IF {pr_mode} = true → {branch_mode} = true
+```
+
+Enforce team+economy mutual exclusion (fires regardless of which was toggled):
+```
+IF {team_mode} = true AND {economy_mode} = true → {economy_mode} = false
+    → Show warning: "Team mode is incompatible with economy mode (economy disabled)."
 ```
 
 ### 5. Show Final Configuration
@@ -116,6 +128,7 @@ Display updated configuration:
 | Save | {save_mode ? "✓ ON" : "✗ OFF"} |
 | Test | {test_mode ? "✓ ON" : "✗ OFF"} |
 | Economy | {economy_mode ? "✓ ON" : "✗ OFF"} |
+| Team | {team_mode ? "✓ ON" : "✗ OFF"} |
 | Branch | {branch_mode ? "✓ ON" : "✗ OFF"} |
 | PR | {pr_mode ? "✓ ON" : "✗ OFF"} |
 ```

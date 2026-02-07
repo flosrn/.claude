@@ -172,6 +172,41 @@ questions:
 
 **If `{save_mode}` = true:** Append full plan to 02-plan.md
 
+### 4b. Domain Partitioning (if team_mode)
+
+**If `{team_mode}` = true, add a "Domain Partitioning" section to the plan:**
+
+This section groups file changes into independent domains for parallel execution by Agent Team teammates. Each domain becomes one teammate's scope.
+
+```markdown
+### Domain Partitioning
+
+**Domain 1: {domain_name}** (e.g., "backend", "frontend", "shared/types")
+- `src/api/route.ts` - changes described above
+- `src/api/handler.ts` - changes described above
+
+**Domain 2: {domain_name}**
+- `src/components/Form.tsx` - changes described above
+- `src/components/Display.tsx` - changes described above
+
+**Domain 3: {domain_name}** (if needed)
+- `src/types/index.ts` - changes described above
+
+**Execution Order:**
+- Domain 3 (shared/types) → Domain 1, Domain 2 (can run in parallel after Domain 3)
+
+**Partitioning Rules:**
+- No file appears in more than one domain
+- Shared dependencies (types, utils) are in their own domain and execute first
+- Each domain is independently implementable
+```
+
+**Verification checklist for partitioning:**
+- [ ] No file overlap between domains
+- [ ] Shared dependencies identified and ordered first
+- [ ] Each domain is self-contained (no cross-domain implementation dependencies)
+- [ ] Domains are roughly balanced in size
+
 ### 5. Verify Plan Completeness
 
 Checklist:
@@ -181,6 +216,7 @@ Checklist:
 - [ ] Test coverage - all paths have test strategy
 - [ ] In scope - no scope creep
 - [ ] AC mapped - every criterion has implementation
+- [ ] Domain partitioning valid (if team_mode) - no file overlap, dependencies ordered
 
 ### 6. Present Plan for Approval
 

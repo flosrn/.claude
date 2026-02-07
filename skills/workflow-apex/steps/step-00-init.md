@@ -173,7 +173,7 @@ ls .claude/output/apex/ | grep "{resume_task}"
 **Step 2b: Restore state from `00-context.md`:**
 
 1. Read `{output_dir}/00-context.md`
-2. Restore ALL flags from Configuration table: `{auto_mode}`, `{examine_mode}`, `{save_mode}`, `{test_mode}`, `{economy_mode}`, `{branch_mode}`, `{pr_mode}`, `{interactive_mode}`
+2. Restore ALL flags from Configuration table: `{auto_mode}`, `{examine_mode}`, `{save_mode}`, `{test_mode}`, `{economy_mode}`, `{team_mode}`, `{branch_mode}`, `{pr_mode}`, `{interactive_mode}`
 3. Restore task info: `{task_id}`, `{task_description}`, `{feature_name}`, `{branch_name}`
 4. Restore acceptance criteria from State Snapshot section
 

@@ -143,21 +143,58 @@ TaskCreate:
     ## Context:
     {task_description}
 
-    ## Focus areas:
-    - OWASP Top 10 vulnerabilities
-    - SQL/NoSQL injection
-    - XSS (cross-site scripting)
-    - Authentication and authorization flaws
-    - Secrets or credentials in code
-    - Input validation gaps
-    - Insecure deserialization
-    - Security misconfigurations
+    ## Focus areas (from code-review-mastery):
+
+    ### A01: Broken Access Control
+    - Authorization checks on EVERY request (not just UI)
+    - Server-side enforcement (never trust client)
+    - IDOR protection: Users can't access others' data by changing IDs
+    - No privilege escalation paths (horizontal or vertical)
+    - Default deny policy (explicit allow required)
+
+    ### A02: Security Misconfiguration
+    - No default credentials
+    - Debug mode disabled in production
+    - Error messages don't expose internals
+
+    ### A04: Cryptographic Failures
+    - Password hashing: bcrypt/Argon2/scrypt (NOT MD5/SHA1)
+    - No hardcoded encryption keys
+
+    ### A05: Injection
+    - SQL: Parameterized queries ONLY (no string concatenation)
+    - Command: No eval(), exec(), system() with user input
+    - XSS: Output encoding context-appropriate
+    - Template: No user input in template names
+
+    ### Input Validation
+    - Server-side validation on ALL inputs
+    - Allowlist approach (whitelist known-good)
+    - Validate: type, length, format, range
+    - File uploads: extension + MIME + content inspection
+    - Regex reviewed for ReDoS vulnerabilities
+
+    ### Authentication & Sessions
+    - Session tokens: ≥128 bits entropy, HttpOnly+Secure+SameSite
+    - Error messages: Generic ("Invalid credentials"), no user enumeration
+    - Lockout: Exponential delay after failed attempts
+
+    ### CSRF Protection
+    - Tokens in state-changing requests (POST, PUT, DELETE)
+    - SameSite=Lax minimum on cookies
+
+    ### Search Patterns (run these)
+    - Hardcoded secrets: password.*=.*['"], api[_-]?key.*=
+    - Dangerous functions: eval(, exec(, system(, shell_exec(
+    - SQL injection risk: query(*['"].*+, execute(*f['"]
 
     ## Rules:
     - Read each file carefully
     - Report findings with file:line references
     - Classify severity: CRITICAL / HIGH / MEDIUM / LOW
+    - Use format: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How
     - DO NOT suggest fixes - only identify problems
+    - Do NOT speculate — only report findings you can point to in the code
   activeForm: "Reviewing security"
 ```
 
@@ -174,21 +211,51 @@ TaskCreate:
     ## Context:
     {task_description}
 
-    ## Focus areas:
-    - Edge cases not handled
-    - Null/undefined checks missing
-    - Race conditions
-    - Error handling gaps
-    - Off-by-one errors
-    - Incorrect boolean logic
-    - Unreachable code paths
-    - State management issues
+    ## Focus areas (from code-review-mastery):
+
+    ### Edge Cases
+    - Null/undefined inputs at every function entry
+    - Empty arrays/strings/objects
+    - Boundary values (0, -1, MAX_INT, empty string)
+    - Single element vs multiple element collections
+    - Unicode/special characters in string inputs
+
+    ### Error Handling
+    - Every async operation has error handling (try/catch, .catch)
+    - Errors propagated correctly (not swallowed silently)
+    - Resource cleanup in error paths (connections, file handles, timers)
+    - Retry logic has backoff and max attempts
+    - Meaningful error messages (not generic "something went wrong")
+
+    ### Race Conditions
+    - Shared state accessed by multiple async paths
+    - Check-then-act patterns (TOCTOU vulnerabilities)
+    - Missing locks/mutexes on critical sections
+    - Event ordering assumptions that may not hold
+    - Concurrent modification of collections
+
+    ### Logic Verification
+    - Boolean expressions correct (De Morgan's law violations)
+    - Off-by-one errors in loops, slices, and array indexing
+    - Unreachable code paths / dead code
+    - Switch/case missing break or default
+    - Comparison operators (=== vs ==, < vs <=)
+    - Integer overflow / floating point precision
+
+    ### State Management
+    - State transitions are valid (no impossible states)
+    - Initialization before use
+    - Cleanup/reset when component unmounts or scope ends
+    - No stale closures or references
+    - Promises/async properly awaited (no fire-and-forget)
 
     ## Rules:
     - Read each file carefully
     - Report findings with file:line references
     - Classify severity: CRITICAL / HIGH / MEDIUM / LOW
+    - Use format: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How
     - DO NOT suggest fixes - only identify problems
+    - Do NOT speculate — only report findings you can point to in the code
   activeForm: "Reviewing logic"
 ```
 
@@ -205,21 +272,56 @@ TaskCreate:
     ## Context:
     {task_description}
 
-    ## Focus areas:
-    - SOLID principle violations
-    - Excessive complexity (cyclomatic, cognitive)
-    - Code duplication
-    - Poor naming conventions
-    - Missing or misleading abstractions
-    - Tight coupling
-    - God objects or functions
-    - Pattern inconsistency with existing codebase
+    ## Focus areas (from code-review-mastery):
+
+    ### SOLID Violations
+    | Principle | Violation Sign |
+    |-----------|----------------|
+    | Single Responsibility | Class/function does multiple things |
+    | Open/Closed | Adding features requires changing existing code |
+    | Liskov Substitution | Subclass breaks when used as parent |
+    | Interface Segregation | Implementing unused interface methods |
+    | Dependency Inversion | Direct instantiation of dependencies |
+
+    ### Critical Code Smells (Must Flag)
+    | Smell | Detection |
+    |-------|-----------|
+    | Duplicated Code | Same logic in 2+ places |
+    | Large Function | >50 lines or multiple responsibilities |
+    | Long Parameter List | >3 parameters without object |
+    | Feature Envy | Method uses another class's data more than its own |
+    | God Object | One class/module controls everything |
+
+    ### Medium Code Smells (Suggest Fix)
+    | Smell | Detection |
+    |-------|-----------|
+    | Deep Nesting | >3 levels of indentation |
+    | Magic Numbers | Unexplained literal values |
+    | Dead Code | Commented-out or unreachable code |
+    | Shotgun Surgery | Small change requires touching many files |
+
+    ### Metrics Thresholds
+    | Metric | Target | Warning | Critical |
+    |--------|--------|---------|----------|
+    | Cognitive complexity | <15/fn | 15-25 | >25 |
+    | Function size | <20 lines | 30-50 | >50 |
+    | Parameters | ≤3 | 4 | >5 |
+    | Nesting depth | ≤2 | 3 | >3 |
+    | Cyclomatic complexity | 1-4 | 5-7 | >10 |
+
+    ### Pattern Consistency
+    - Follows existing codebase patterns and conventions
+    - Naming: verbs for functions, nouns for classes, descriptive and searchable
+    - No abbreviations (getTransaction not getTx)
+    - Comments explain WHY, not WHAT
 
     ## Rules:
     - Read each file carefully
     - Report findings with file:line references
     - Classify severity: CRITICAL / HIGH / MEDIUM / LOW
+    - Use format: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How
     - DO NOT suggest fixes - only identify problems
+    - Do NOT speculate — only report findings you can point to in the code
   activeForm: "Reviewing quality"
 ```
 
@@ -281,18 +383,19 @@ Task:
     (set owner to "security-reviewer"), then review all listed files.
 
     ## Critical Rules
-    1. Read the task description for your file list and focus areas
+    1. Read the task description CAREFULLY for your checklists and focus areas
     2. Read EVERY file before reporting findings
     3. Find problems only - DO NOT suggest fixes
-    4. Report each finding with: severity, file:line, description
-    5. Focus on OWASP Top 10, injection, auth, secrets, input validation
-    6. Mark your task as completed when done
-    7. Send a message to the team lead with your findings in this format:
+    4. For each finding use: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How at file:line
+    5. Follow the detailed checklist in your task description (OWASP categories, search patterns, etc.)
+    6. Do NOT speculate — only report findings you can point to in the code (Iron Law: evidence before claims)
+    7. Mark your task as completed when done
+    8. Send a message to the team lead with your findings in this format:
 
     ## Findings
-    | Severity | Location | Issue |
-    |----------|----------|-------|
-    | CRITICAL | file.ts:42 | Description |
+    | Severity | Location | What | Why | How |
+    |----------|----------|------|-----|-----|
+    | [BLOCKING] | file.ts:42 | SQL injection | User input concatenated in query | Use parameterized query |
 ```
 
 **Logic Reviewer:**
@@ -311,18 +414,19 @@ Task:
     (set owner to "logic-reviewer"), then review all listed files.
 
     ## Critical Rules
-    1. Read the task description for your file list and focus areas
+    1. Read the task description CAREFULLY for your checklists and focus areas
     2. Read EVERY file before reporting findings
     3. Find problems only - DO NOT suggest fixes
-    4. Report each finding with: severity, file:line, description
-    5. Focus on edge cases, null checks, race conditions, error handling
-    6. Mark your task as completed when done
-    7. Send a message to the team lead with your findings in this format:
+    4. For each finding use: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How at file:line
+    5. Follow the detailed checklist in your task description (edge cases, race conditions, state, etc.)
+    6. Do NOT speculate — only report findings you can point to in the code (Iron Law: evidence before claims)
+    7. Mark your task as completed when done
+    8. Send a message to the team lead with your findings in this format:
 
     ## Findings
-    | Severity | Location | Issue |
-    |----------|----------|-------|
-    | HIGH | file.ts:78 | Description |
+    | Severity | Location | What | Why | How |
+    |----------|----------|------|-----|-----|
+    | [BLOCKING] | file.ts:78 | Missing null check | Will crash if user is undefined | Add guard clause |
 ```
 
 **Quality Reviewer:**
@@ -341,18 +445,19 @@ Task:
     (set owner to "quality-reviewer"), then review all listed files.
 
     ## Critical Rules
-    1. Read the task description for your file list and focus areas
+    1. Read the task description CAREFULLY for your checklists, metrics thresholds, and focus areas
     2. Read EVERY file before reporting findings
     3. Find problems only - DO NOT suggest fixes
-    4. Report each finding with: severity, file:line, description
-    5. Focus on SOLID violations, complexity, duplication, naming
-    6. Mark your task as completed when done
-    7. Send a message to the team lead with your findings in this format:
+    4. For each finding use: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How at file:line
+    5. Follow the detailed checklist in your task description (SOLID, code smells, metrics thresholds, etc.)
+    6. Do NOT speculate — only report findings you can point to in the code (Iron Law: evidence before claims)
+    7. Mark your task as completed when done
+    8. Send a message to the team lead with your findings in this format:
 
     ## Findings
-    | Severity | Location | Issue |
-    |----------|----------|-------|
-    | MEDIUM | file.ts:15 | Description |
+    | Severity | Location | What | Why | How |
+    |----------|----------|------|-----|-----|
+    | [SUGGESTION] | file.ts:15 | Cognitive complexity 22 | Exceeds 15/fn threshold, hard to maintain | Extract helper functions |
 ```
 
 **Vercel Reviewer (CONDITIONAL — only if `{nextjs_detected}` = true):**
@@ -371,18 +476,19 @@ Task:
     (set owner to "vercel-reviewer"), then review all listed files.
 
     ## Critical Rules
-    1. Read the task description for your file list and focus areas
+    1. Read the task description CAREFULLY for your checklists and focus areas
     2. Read EVERY file before reporting findings
     3. Find problems only - DO NOT suggest fixes
-    4. Report each finding with: severity, file:line, description
-    5. Focus on server/client boundaries, bundle optimization, data fetching
-    6. Mark your task as completed when done
-    7. Send a message to the team lead with your findings in this format:
+    4. For each finding use: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How at file:line
+    5. Follow the detailed checklist in your task description (server/client boundaries, bundle, data fetching, etc.)
+    6. Do NOT speculate — only report findings you can point to in the code (Iron Law: evidence before claims)
+    7. Mark your task as completed when done
+    8. Send a message to the team lead with your findings in this format:
 
     ## Findings
-    | Severity | Location | Issue |
-    |----------|----------|-------|
-    | HIGH | page.tsx:20 | Description |
+    | Severity | Location | What | Why | How |
+    |----------|----------|------|-----|-----|
+    | [BLOCKING] | page.tsx:20 | Sequential awaits | 3 DB calls run in series, 2s latency | Use Promise.all() |
 ```
 
 **Log each spawn (if save_mode):**

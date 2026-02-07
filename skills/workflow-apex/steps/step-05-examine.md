@@ -132,7 +132,55 @@ Focus: security
 Files: {list of modified source files}
 Context: {task_description}
 
-Review these files for security vulnerabilities (OWASP Top 10).
+Review these files for security vulnerabilities using this checklist:
+
+## A01: Broken Access Control
+- Authorization checks on EVERY request (not just UI)
+- Server-side enforcement (never trust client)
+- IDOR protection: Users can't access others' data by changing IDs
+- No privilege escalation paths (horizontal or vertical)
+- Default deny policy (explicit allow required)
+
+## A02: Security Misconfiguration
+- No default credentials
+- Debug mode disabled in production
+- Error messages don't expose internals
+
+## A04: Cryptographic Failures
+- Password hashing: bcrypt/Argon2/scrypt (NOT MD5/SHA1)
+- No hardcoded encryption keys
+
+## A05: Injection
+- SQL: Parameterized queries ONLY (no string concatenation)
+- Command: No eval(), exec(), system() with user input
+- XSS: Output encoding context-appropriate
+- Template: No user input in template names
+
+## Input Validation
+- Server-side validation on ALL inputs
+- Allowlist approach (whitelist known-good)
+- Validate: type, length, format, range
+- File uploads: extension + MIME + content inspection
+- Regex reviewed for ReDoS vulnerabilities
+
+## Authentication & Sessions
+- Session tokens: ≥128 bits entropy, HttpOnly+Secure+SameSite
+- Error messages: Generic ("Invalid credentials"), no user enumeration
+- Lockout: Exponential delay after failed attempts
+
+## CSRF Protection
+- Tokens in state-changing requests (POST, PUT, DELETE)
+- SameSite=Lax minimum on cookies
+
+## Search Patterns (run these)
+- Hardcoded secrets: password.*=.*['"], api[_-]?key.*=
+- Dangerous functions: eval(, exec(, system(, shell_exec(
+- SQL injection risk: query(*['"].*+, execute(*f['"]
+
+## Findings Format
+For each finding: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How
+Example: "[BLOCKING] SQL injection at auth.ts:34. Query uses string concatenation with user input, allowing query modification. Fix: Use parameterized query."
+Do NOT speculate — only report findings you can point to in the code.
 ```
 
 **Agent 2** (`code-reviewer` — focus: logic)
@@ -141,7 +189,48 @@ Focus: logic
 Files: {list of modified source files}
 Context: {task_description}
 
-Review these files for logic errors, edge cases, and race conditions.
+Review these files for logic errors using this checklist:
+
+## Edge Cases
+- Null/undefined inputs at every function entry
+- Empty arrays/strings/objects
+- Boundary values (0, -1, MAX_INT, empty string)
+- Single element vs multiple element collections
+- Unicode/special characters in string inputs
+
+## Error Handling
+- Every async operation has error handling (try/catch, .catch)
+- Errors propagated correctly (not swallowed silently)
+- Resource cleanup in error paths (connections, file handles, timers)
+- Retry logic has backoff and max attempts
+- Meaningful error messages (not generic "something went wrong")
+
+## Race Conditions
+- Shared state accessed by multiple async paths
+- Check-then-act patterns (TOCTOU vulnerabilities)
+- Missing locks/mutexes on critical sections
+- Event ordering assumptions that may not hold
+- Concurrent modification of collections
+
+## Logic Verification
+- Boolean expressions correct (De Morgan's law violations)
+- Off-by-one errors in loops, slices, and array indexing
+- Unreachable code paths / dead code
+- Switch/case missing break or default
+- Comparison operators (=== vs ==, < vs <=)
+- Integer overflow / floating point precision
+
+## State Management
+- State transitions are valid (no impossible states)
+- Initialization before use
+- Cleanup/reset when component unmounts or scope ends
+- No stale closures or references
+- Promises/async properly awaited (no fire-and-forget)
+
+## Findings Format
+For each finding: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How
+Severity: CRITICAL (data loss/crash) > HIGH (will cause bugs) > MEDIUM (should fix) > LOW (minor)
+Do NOT speculate — only report findings you can point to in the code.
 ```
 
 **Agent 3** (`code-reviewer` — focus: clean-code)
@@ -150,7 +239,53 @@ Focus: clean-code
 Files: {list of modified source files}
 Context: {task_description}
 
-Review these files for SOLID violations, complexity, and duplication.
+Review these files for code quality using these criteria:
+
+## SOLID Violations
+| Principle | Violation Sign |
+|-----------|----------------|
+| Single Responsibility | Class/function does multiple things |
+| Open/Closed | Adding features requires changing existing code |
+| Liskov Substitution | Subclass breaks when used as parent |
+| Interface Segregation | Implementing unused interface methods |
+| Dependency Inversion | Direct instantiation of dependencies |
+
+## Critical Code Smells (Must Flag)
+| Smell | Detection |
+|-------|-----------|
+| Duplicated Code | Same logic in 2+ places |
+| Large Function | >50 lines or multiple responsibilities |
+| Long Parameter List | >3 parameters without object |
+| Feature Envy | Method uses another class's data more than its own |
+| God Object | One class/module controls everything |
+
+## Medium Code Smells (Suggest Fix)
+| Smell | Detection |
+|-------|-----------|
+| Deep Nesting | >3 levels of indentation |
+| Magic Numbers | Unexplained literal values |
+| Dead Code | Commented-out or unreachable code |
+| Shotgun Surgery | Small change requires touching many files |
+
+## Metrics Thresholds
+| Metric | Target | Warning | Critical |
+|--------|--------|---------|----------|
+| Cognitive complexity | <15/fn | 15-25 | >25 |
+| Function size | <20 lines | 30-50 | >50 |
+| Parameters | ≤3 | 4 | >5 |
+| Nesting depth | ≤2 | 3 | >3 |
+| Cyclomatic complexity | 1-4 | 5-7 | >10 |
+
+## Pattern Consistency
+- Follows existing codebase patterns and conventions
+- Naming: verbs for functions, nouns for classes, descriptive and searchable
+- No abbreviations (getTransaction not getTx)
+- Comments explain WHY, not WHAT
+
+## Findings Format
+For each finding: [BLOCKING/CRITICAL/SUGGESTION] What + Why + How
+Severity: CRITICAL (security/data loss) > HIGH (significant bug) > MEDIUM (should fix) > LOW (minor)
+Do NOT speculate — only report findings you can point to in the code.
 ```
 
 **Agent 4: Vercel/Next.js Best Practices** (CONDITIONAL)

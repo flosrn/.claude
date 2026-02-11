@@ -184,36 +184,41 @@ Both MUST pass.
 
 ### 8. Determine Next Step
 
-**Decision tree:**
+**Decision tree (determines next_step for State Snapshot, NOT immediate loading):**
 
 ```
 IF {test_mode} = true:
-    → Load step-07-tests.md (test analysis and creation)
+    → next_step = 07-tests
 
 ELSE IF {examine_mode} = true:
-    → Load step-05-examine.md (adversarial review)
+    → next_step = 05-examine
 
 ELSE IF {auto_mode} = false:
-    → Ask user:
+    → Ask user what the next step should be:
 ```
 
 ```yaml
 questions:
   - header: "Next"
-    question: "Validation complete. What would you like to do?"
+    question: "Validation complete. What should the next step be?"
     options:
-      - label: "Run adversarial review"
-        description: "Deep review for security, logic, and quality"
+      - label: "Adversarial review"
+        description: "Queue deep review for next session"
       - label: "Complete workflow"
-        description: "Skip review and finalize"
+        description: "No more steps needed"
       - label: "Add tests"
-        description: "Create additional tests first"
+        description: "Queue test creation for next session"
     multiSelect: false
 ```
 
+<critical>
+The user's choice determines which step is saved as next_step in the State Snapshot.
+It does NOT mean "load that step now". The session boundary below controls when to stop.
+</critical>
+
 ```
 ELSE:
-    → Complete workflow (show final summary)
+    → Workflow complete (no next_step)
 ```
 
 ### 9. Complete Save Output (if save_mode)
@@ -272,6 +277,11 @@ Append to `{output_dir}/04-validate.md`:
 
 ### Session Boundary
 
+<critical>
+THIS SECTION IS MANDATORY. Even if the user chose a next step above, you MUST follow this session boundary logic.
+The user's choice determines what is saved as next_step, NOT whether to load it now.
+</critical>
+
 ```
 IF auto_mode = true:
   → Load the determined next step directly (chain all steps)
@@ -292,7 +302,8 @@ IF auto_mode = false AND workflow not complete:
       Next: Step {NN} - {description}
     ═══════════════════════════════════════
 
-  → STOP. Do NOT load the next step.
+  → STOP. Do NOT load the next step. Do NOT proceed to the chosen step.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 
 IF workflow complete (no more steps):
   → Show final APEX WORKFLOW COMPLETE summary
@@ -301,5 +312,6 @@ IF workflow complete (no more steps):
 
 <critical>
 Remember: NEVER proceed with failing checks - fix everything first!
-In auto_mode, proceed directly without stopping.
+In auto_mode=true, proceed directly without stopping.
+In auto_mode=false, ALWAYS STOP after displaying the resume command — even if the user chose a next step.
 </critical>

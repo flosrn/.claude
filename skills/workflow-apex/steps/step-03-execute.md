@@ -198,23 +198,28 @@ Fix any errors immediately.
 ```
 
 **If `{auto_mode}` = true:**
-→ Proceed to validation
+→ Continue to section 8 (save output)
 
 **If `{auto_mode}` = false:**
 
 ```yaml
 questions:
   - header: "Execute"
-    question: "Implementation complete. Ready to validate?"
+    question: "Implementation complete. Review the summary above."
     options:
-      - label: "Proceed to validation (Recommended)"
-        description: "Run typecheck, lint, and tests"
+      - label: "Looks good (Recommended)"
+        description: "Mark step complete and finish this session"
       - label: "Review changes"
         description: "I want to review what was changed"
       - label: "Make adjustments"
         description: "I want to modify something"
     multiSelect: false
 ```
+
+<critical>
+After user confirms, continue to section 8 (save output) then follow the NEXT STEP session boundary logic.
+User confirmation does NOT mean "load step-04 now". The session boundary controls whether to stop or continue.
+</critical>
 
 ### 8. Complete Save Output (if save_mode)
 
@@ -265,6 +270,11 @@ Append to `{output_dir}/03-execute.md`:
 
 ### Session Boundary
 
+<critical>
+THIS SECTION IS MANDATORY. Even if the user confirmed above, you MUST follow this session boundary logic.
+User confirmation does NOT mean "skip to step-04". It means the step is validated and can be marked complete.
+</critical>
+
 ```
 IF auto_mode = true:
   → Load ./step-04-validate.md directly (chain all steps)
@@ -285,10 +295,12 @@ IF auto_mode = false:
       Next: Step 04 - Validate (Self-Check)
     ═══════════════════════════════════════
 
-  → STOP. Do NOT load the next step.
+  → STOP. Do NOT load the next step. Do NOT proceed to step-04-validate.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 
 <critical>
 Remember: Execution is about following the plan - don't redesign or add features!
-In auto_mode, proceed directly without stopping.
+In auto_mode=true, proceed directly without stopping.
+In auto_mode=false, ALWAYS STOP after displaying the resume command — even if the user said "looks good".
 </critical>

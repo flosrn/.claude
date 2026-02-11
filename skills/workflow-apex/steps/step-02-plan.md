@@ -236,7 +236,7 @@ Checklist:
 ```
 
 **If `{auto_mode}` = true:**
-→ Skip confirmation, proceed directly to execution
+→ Skip confirmation, proceed directly to section 7
 
 **If `{auto_mode}` = false:**
 
@@ -245,8 +245,8 @@ questions:
   - header: "Plan"
     question: "Review the implementation plan. Ready to proceed?"
     options:
-      - label: "Approve and execute (Recommended)"
-        description: "Plan looks good, start implementation"
+      - label: "Approve plan (Recommended)"
+        description: "Plan looks good, save and finish this step"
       - label: "Adjust plan"
         description: "I want to modify specific parts"
       - label: "Ask questions"
@@ -255,6 +255,11 @@ questions:
         description: "Revise the entire plan"
     multiSelect: false
 ```
+
+<critical>
+After user approves the plan, continue to section 7 (save output) then follow the NEXT STEP session boundary logic.
+Approval does NOT mean "start executing" — it means the plan is validated. The session boundary in NEXT STEP controls whether to stop or continue.
+</critical>
 
 ### 7. Complete Save Output (if save_mode)
 
@@ -306,6 +311,11 @@ Append to `{output_dir}/02-plan.md`:
 
 ### Session Boundary
 
+<critical>
+THIS SECTION IS MANDATORY. Even if the user approved the plan above, you MUST follow this session boundary logic.
+User approval of the plan does NOT mean "skip to step-03". It means the plan is validated and this step can be marked complete.
+</critical>
+
 ```
 IF auto_mode = true:
   → Load ./step-03-execute.md directly (chain all steps)
@@ -326,10 +336,12 @@ IF auto_mode = false:
       Next: Step 03 - Execute (Implementation)
     ═══════════════════════════════════════
 
-  → STOP. Do NOT load the next step.
+  → STOP. Do NOT load the next step. Do NOT proceed to step-03-execute.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 
 <critical>
 Remember: Planning is ONLY about designing the approach - save all implementation for step-03!
-In auto_mode, proceed directly without stopping.
+In auto_mode=true, proceed directly without stopping.
+In auto_mode=false, ALWAYS STOP after displaying the resume command — even if the user said "approve".
 </critical>

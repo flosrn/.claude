@@ -322,7 +322,8 @@ Present summary and proceed directly to planning:
 ```
 
 <critical>
-Do NOT ask for user confirmation here - always proceed directly to step-02-plan.
+Do NOT ask for user confirmation here - skip directly to section 7 (save output) then follow the NEXT STEP session boundary logic.
+The session boundary controls whether to stop or continue — NOT this section.
 </critical>
 
 ### 7. Complete Save Output (if save_mode)
@@ -380,6 +381,10 @@ bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "in_progress
 
 ### Session Boundary
 
+<critical>
+THIS SECTION IS MANDATORY. Follow this session boundary logic regardless of what happened above.
+</critical>
+
 ```
 IF auto_mode = true:
   → Load ./step-02-plan.md directly (chain all steps)
@@ -398,10 +403,12 @@ IF auto_mode = false:
       Next: Step 02 - Plan (Strategic Design)
     ═══════════════════════════════════════
 
-  → STOP. Do NOT load the next step.
+  → STOP. Do NOT load the next step. Do NOT proceed to step-02-plan.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 
 <critical>
 Remember: Analysis is ONLY about "What exists?" - save all planning for step-02!
-In auto_mode, proceed directly without stopping.
+In auto_mode=true, proceed directly without stopping.
+In auto_mode=false, ALWAYS STOP after displaying the resume command.
 </critical>

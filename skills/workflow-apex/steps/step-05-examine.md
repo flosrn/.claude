@@ -363,24 +363,22 @@ For each finding:
 ```yaml
 questions:
   - header: "Review"
-    question: "Review complete. How would you like to proceed?"
+    question: "Review complete. What should the next step be?"
     options:
       - label: "Resolve findings (Recommended)"
-        description: "Address the identified issues"
+        description: "Queue finding resolution for next session"
       - label: "Skip to tests"
-        description: "Skip resolution, proceed to test creation"
+        description: "Queue test creation instead"
       - label: "Skip resolution"
-        description: "Accept findings, don't make changes"
+        description: "Accept findings as-is, no changes needed"
       - label: "Discuss findings"
         description: "I want to discuss specific findings"
     multiSelect: false
 ```
 
 <critical>
-This is one of the THREE transition points that requires user confirmation:
-1. plan → execute
-2. validate → review
-3. review → resolve/test (THIS ONE)
+The user's choice determines which step is saved as next_step in the State Snapshot.
+It does NOT mean "load that step now". The session boundary below controls when to stop.
 </critical>
 
 **Persist user choice (if save_mode):**
@@ -450,6 +448,11 @@ Append to `{output_dir}/05-examine.md`:
 
 ### Session Boundary
 
+<critical>
+THIS SECTION IS MANDATORY. Even if the user chose a next step above, you MUST follow this session boundary logic.
+The user's choice determines what is saved as next_step, NOT whether to load it now.
+</critical>
+
 ```
 IF auto_mode = true:
   → Load the determined next step directly (chain all steps)
@@ -470,7 +473,8 @@ IF auto_mode = false AND workflow not complete:
       Next: Step {NN} - {description}
     ═══════════════════════════════════════
 
-  → STOP. Do NOT load the next step.
+  → STOP. Do NOT load the next step. Do NOT proceed to the chosen step.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 
 IF workflow complete:
   → Show final APEX WORKFLOW COMPLETE summary
@@ -479,6 +483,6 @@ IF workflow complete:
 
 <critical>
 Remember: Be SKEPTICAL - your job is to find problems, not approve code!
-This step MUST ask before proceeding (unless auto_mode).
-In auto_mode, proceed directly without stopping.
+In auto_mode=true, proceed directly without stopping.
+In auto_mode=false, ALWAYS STOP after displaying the resume command — even if the user chose "resolve findings".
 </critical>

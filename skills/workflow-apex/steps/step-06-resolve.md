@@ -246,6 +246,10 @@ Append to `{output_dir}/06-resolve.md`:
 
 ### Session Boundary
 
+<critical>
+THIS SECTION IS MANDATORY. Follow this session boundary logic regardless of what happened above.
+</critical>
+
 ```
 IF auto_mode = true:
   → Load the determined next step directly (chain all steps)
@@ -266,7 +270,8 @@ IF auto_mode = false AND workflow not complete:
       Next: Step {NN} - {description}
     ═══════════════════════════════════════
 
-  → STOP. Do NOT load the next step.
+  → STOP. Do NOT load the next step. Do NOT proceed to the next step.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 
 IF workflow complete:
   → Show final APEX WORKFLOW COMPLETE summary
@@ -275,5 +280,6 @@ IF workflow complete:
 
 <critical>
 Remember: Always validate after fixes - never proceed with failing checks!
-In auto_mode, proceed directly without stopping.
+In auto_mode=true, proceed directly without stopping.
+In auto_mode=false, ALWAYS STOP after displaying the resume command.
 </critical>

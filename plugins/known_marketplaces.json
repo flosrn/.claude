@@ -5,7 +5,7 @@
       "repo": "anthropics/claude-code"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-code-plugins",
-    "lastUpdated": "2026-01-11T20:49:16.240Z"
+    "lastUpdated": "2026-02-11T05:51:20.232Z"
   },
   "wd-marketplace": {
     "source": {
@@ -13,7 +13,7 @@
       "repo": "Para-FR/wd-framework"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/wd-marketplace",
-    "lastUpdated": "2026-01-06T20:43:57.935Z"
+    "lastUpdated": "2026-02-11T05:51:31.641Z"
   },
   "local": {
     "source": {
@@ -29,7 +29,7 @@
       "repo": "anthropics/claude-plugins-official"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-plugins-official",
-    "lastUpdated": "2026-01-11T20:55:00.409Z"
+    "lastUpdated": "2026-02-11T05:51:38.304Z"
   },
   "every-marketplace": {
     "source": {
@@ -37,6 +37,6 @@
       "url": "https://github.com/EveryInc/compound-engineering-plugin.git"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/every-marketplace",
-    "lastUpdated": "2025-12-24T06:27:55.527Z"
+    "lastUpdated": "2026-02-11T05:51:42.224Z"
   }
 }

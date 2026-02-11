@@ -2,6 +2,18 @@ import { SAFE_COMMANDS, SECURITY_RULES } from "./security-rules";
 import type { ValidationResult } from "./types";
 
 export class CommandValidator {
+	private static readonly TRUSTED_SSH_HOSTS = ["vps"];
+
+	private isTrustedSshCommand(command: string): boolean {
+		const trimmed = command.trim();
+		for (const host of CommandValidator.TRUSTED_SSH_HOSTS) {
+			if (trimmed.startsWith(`ssh ${host} `) || trimmed.startsWith(`ssh ${host} '`) || trimmed.startsWith(`rsync `) && trimmed.includes(`${host}:`)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	validate(command: string, toolName = "Unknown"): ValidationResult {
 		const result: ValidationResult = {
 			isValid: true,
@@ -13,6 +25,11 @@ export class CommandValidator {
 		if (!command || typeof command !== "string") {
 			result.isValid = false;
 			result.violations.push("Invalid command format");
+			return result;
+		}
+
+		// Trusted SSH commands to known hosts bypass all checks
+		if (this.isTrustedSshCommand(command)) {
 			return result;
 		}
 
@@ -183,6 +200,10 @@ export class CommandValidator {
 		if (!command || typeof command !== "string") {
 			result.isValid = false;
 			result.violations.push("Invalid command format");
+			return result;
+		}
+
+		if (this.isTrustedSshCommand(command)) {
 			return result;
 		}
 

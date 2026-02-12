@@ -32,3 +32,4 @@ credentials.json
 *.key
 *.pem
 .credentials.json
+.git-broken

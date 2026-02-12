@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# run-hook — Environment-aware hook runner for Claude Code
+# Resolves paths and adapts behavior based on Mac vs VPS.
+#
+# Usage in settings.json:
+#   "command": "$HOME/.claude/scripts/run-hook <script-name> [args...]"
+#
+# Examples:
+#   run-hook hook-git-context.ts
+#   run-hook command-validator/src/cli.ts
+#   run-hook --sound finish.mp3       (macOS-only, silent skip on Linux)
+
+set -euo pipefail
+
+# ─── Environment Detection ───────────────────────────────────────────
+CLAUDE_DIR="$HOME/.claude"
+SCRIPTS_DIR="$CLAUDE_DIR/scripts"
+OS="$(uname -s)"
+
+# ─── Special Commands ────────────────────────────────────────────────
+
+# --sound <file>: Play sound (macOS only, skip silently on Linux)
+if [[ "${1:-}" == "--sound" ]]; then
+    if [[ "$OS" == "Darwin" ]]; then
+        SOUND_FILE="${2:-}"
+        VOLUME="${3:-0.1}"
+        if [[ -f "$CLAUDE_DIR/song/$SOUND_FILE" ]]; then
+            afplay -v "$VOLUME" "$CLAUDE_DIR/song/$SOUND_FILE" &
+        fi
+    fi
+    # Linux/VPS: exit silently
+    exit 0
+fi
+
+# ─── Script Resolution ──────────────────────────────────────────────
+
+HOOK_SCRIPT="${1:-}"
+shift || true
+
+if [[ -z "$HOOK_SCRIPT" ]]; then
+    echo "Usage: run-hook <script-name> [args...]" >&2
+    exit 1
+fi
+
+SCRIPT_PATH="$SCRIPTS_DIR/$HOOK_SCRIPT"
+
+if [[ ! -f "$SCRIPT_PATH" ]]; then
+    # Don't fail the hook chain — just warn and exit clean
+    echo "[run-hook] Script not found: $SCRIPT_PATH" >&2
+    exit 0
+fi
+
+# ─── Install deps if needed (first run after sync) ──────────────────
+
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+if [[ -f "$SCRIPT_DIR/package.json" && ! -d "$SCRIPT_DIR/node_modules" ]]; then
+    (cd "$SCRIPT_DIR" && bun install --silent 2>/dev/null) || true
+fi
+
+# ─── Run ─────────────────────────────────────────────────────────────
+exec bun "$SCRIPT_PATH" "$@"

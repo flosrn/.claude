@@ -8,7 +8,11 @@
     "CLAUDE_CODE_EFFORT_LEVEL": "high",
     "MAX_MCP_OUTPUT_TOKENS": "50000",
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
-    "BASH_MAX_TIMEOUT_MS": "600000"
+    "BASH_MAX_TIMEOUT_MS": "600000",
+    "GIT_AUTHOR_NAME": "Claude Code",
+    "GIT_COMMITTER_NAME": "Claude Code",
+    "GIT_AUTHOR_EMAIL": "flosrn@users.noreply.github.com",
+    "GIT_COMMITTER_EMAIL": "flosrn@users.noreply.github.com"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -56,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-git-context.ts"
+            "command": "$HOME/.claude/bin/run-hook hook-git-context.ts"
           }
         ]
       }
@@ -67,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/command-validator/src/cli.ts"
+            "command": "$HOME/.claude/bin/run-hook command-validator/src/cli.ts"
           }
         ]
       }
@@ -78,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-ts-quality-gate.ts"
+            "command": "$HOME/.claude/bin/run-hook hook-ts-quality-gate.ts"
           }
         ]
       }
@@ -89,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun /Users/flo/.claude/scripts/hook-completion-handler.ts"
+            "command": "$HOME/.claude/bin/run-hook hook-completion-handler.ts"
           }
         ]
       }
@@ -100,7 +104,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay -v 0.1 /Users/flo/.claude/song/need-human.mp3"
+            "command": "$HOME/.claude/bin/run-hook --sound need-human.mp3"
           }
         ]
       }
@@ -108,7 +112,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bun /Users/flo/.claude/scripts/statusline/src/index.ts",
+    "command": "$HOME/.claude/bin/run-hook statusline/src/index.ts",
     "padding": 0
   },
   "spinnerTipsEnabled": false,

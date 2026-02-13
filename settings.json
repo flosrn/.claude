@@ -115,9 +115,14 @@
     "command": "$HOME/.claude/bin/run-hook statusline/src/index.ts",
     "padding": 0
   },
-  "spinnerTipsEnabled": false,
-  "alwaysThinkingEnabled": true,
   "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
     "marketing-skills@marketingskills": true
-  }
+  },
+  "spinnerTipsEnabled": false,
+  "alwaysThinkingEnabled": true
 }

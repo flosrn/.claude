@@ -1,42 +1,18 @@
 {
-  "claude-code-plugins": {
-    "source": {
-      "source": "github",
-      "repo": "anthropics/claude-code"
-    },
-    "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-code-plugins",
-    "lastUpdated": "2026-02-11T05:51:20.232Z"
-  },
-  "wd-marketplace": {
-    "source": {
-      "source": "github",
-      "repo": "Para-FR/wd-framework"
-    },
-    "installLocation": "/Users/flo/.claude/plugins/marketplaces/wd-marketplace",
-    "lastUpdated": "2026-02-11T05:51:31.641Z"
-  },
-  "local": {
-    "source": {
-      "source": "directory",
-      "path": "/Users/flo/.claude/plugins/local"
-    },
-    "installLocation": "/Users/flo/.claude/plugins/local",
-    "lastUpdated": "2026-01-09T19:36:52.139Z"
-  },
   "claude-plugins-official": {
     "source": {
       "source": "github",
       "repo": "anthropics/claude-plugins-official"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-plugins-official",
-    "lastUpdated": "2026-02-11T05:51:38.304Z"
+    "lastUpdated": "2026-02-13T02:59:03.152Z"
   },
-  "every-marketplace": {
+  "marketingskills": {
     "source": {
-      "source": "git",
-      "url": "https://github.com/EveryInc/compound-engineering-plugin.git"
+      "source": "github",
+      "repo": "coreyhaines31/marketingskills"
     },
-    "installLocation": "/Users/flo/.claude/plugins/marketplaces/every-marketplace",
-    "lastUpdated": "2026-02-11T05:51:42.224Z"
+    "installLocation": "/Users/flo/.claude/plugins/marketplaces/marketingskills",
+    "lastUpdated": "2026-02-13T05:35:01.529Z"
   }
 }

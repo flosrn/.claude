@@ -54,7 +54,8 @@ export const SECURITY_RULES: SecurityRules = {
 
   DANGEROUS_PATTERNS: [
     // Git operations requiring approval
-    /git\s+commit/i,
+    // git commit: skipped when ALLOW_GIT_COMMIT=1
+    ...(process.env.ALLOW_GIT_COMMIT === "1" ? [] : [/git\s+commit/i]),
     /git\s+push\s+(--force|-f)/i,
     /git\s+push\s+.*\b(main|master|production|develop)\b/i,
 

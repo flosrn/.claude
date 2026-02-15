@@ -12,7 +12,8 @@
     "GIT_AUTHOR_NAME": "Claude Code",
     "GIT_COMMITTER_NAME": "Claude Code",
     "GIT_AUTHOR_EMAIL": "flosrn@users.noreply.github.com",
-    "GIT_COMMITTER_EMAIL": "flosrn@users.noreply.github.com"
+    "GIT_COMMITTER_EMAIL": "flosrn@users.noreply.github.com",
+    "ALLOW_GIT_COMMIT": "1"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -121,8 +122,10 @@
     "claude-code-setup@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
-    "marketing-skills@marketingskills": true
+    "marketing-skills@marketingskills": false,
+    "superpowers@claude-plugins-official": true
   },
   "spinnerTipsEnabled": false,
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }

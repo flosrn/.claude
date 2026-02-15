@@ -175,14 +175,100 @@ Produce the final brainstorm output in this format:
 ```
 </generate_output>
 
+<design_bridge>
+**3. Design Bridge** (conditional - only if topic is about building/implementing something)
+
+**DETECT:** Is `{topic}` about building, implementing, creating, or modifying something concrete (a feature, tool, component, system)?
+
+- If **YES** → Execute the Design Bridge below
+- If **NO** (pure research, comparison, decision-making) → Skip to step 4 (Save)
+
+**WHY:** Research without design leaves a gap. The best research in the world is useless if it doesn't translate into a clear, validated design before implementation. This bridge absorbs the interactive design validation from brainstorming best practices.
+
+---
+
+**3a. Propose 2-3 Approaches**
+
+Based on ALL research findings (Phases 1-3), propose concrete implementation approaches:
+
+```markdown
+---
+
+### Design: Implementation Approaches
+
+Based on the research above, here are the concrete approaches:
+
+#### Approach A: [Name] (Recommended)
+- **Architecture:** [High-level structure]
+- **Key components:** [What to build]
+- **Tradeoffs:** [What you gain vs what you accept]
+- **Confidence:** [High/Medium/Low] based on research
+- **Why recommended:** [Grounded in specific research findings]
+
+#### Approach B: [Name]
+- **Architecture:** [High-level structure]
+- **Key components:** [What to build]
+- **Tradeoffs:** [What you gain vs what you accept]
+- **When to prefer:** [Conditions where B beats A]
+
+#### Approach C: [Name] (optional - only if genuinely different)
+- **Architecture:** [High-level structure]
+- **Key components:** [What to build]
+- **When to prefer:** [Niche conditions]
+```
+
+**3b. Present Design Overview**
+
+For the recommended approach, present a design overview scaled to complexity:
+
+```markdown
+### Design Overview
+
+**Architecture:**
+[2-5 sentences - how the system is structured]
+
+**Components & Data Flow:**
+[What pieces exist, how data moves between them]
+
+**Error Handling & Edge Cases:**
+[Key failure modes identified by the Skeptic lens]
+
+**Testing Strategy:**
+[What to test, informed by research findings]
+```
+
+**3c. Validate with User**
+
+Use `AskUserQuestion` to validate the approach:
+
+```
+Question: "Which approach should we implement?"
+Options:
+- "Approach A: [name] (Recommended)" - [1-line rationale]
+- "Approach B: [name]" - [1-line rationale]
+- "Approach C: [name]" - [1-line rationale] (if applicable)
+- "Just the research, no implementation" - Keep research output only
+```
+
+Store chosen approach in `{chosen_approach}`.
+
+If user chose "Just the research" → skip to Save step.
+</design_bridge>
+
 <save_final>
-**3. Save Final Output** (if `{save_file}` is true)
+**4. Save Final Output** (if `{save_file}` is true)
 
 Append to `{session_path}`:
 ```markdown
 ## Phase 4: Action Crystallization
 
 [Complete final output above]
+
+[If Design Bridge was executed:]
+## Design Decision
+
+**Chosen approach:** [Approach name]
+**Rationale:** [Why this approach was selected]
 
 ---
 
@@ -195,8 +281,65 @@ Append to `{session_path}`:
 Also announce: "Session saved to `{session_path}`"
 </save_final>
 
+<implementation_handoff>
+**5. Implementation Handoff** (only if Design Bridge was completed and user chose an approach)
+
+**CRITICAL:** This is the bridge between research and implementation. The brainstorm output becomes APEX input.
+
+**5a. Save design context file:**
+
+Write to `.claude/output/brainstorm/{topic-slug}-{date}-design.md`:
+```markdown
+# Design Context: {topic}
+
+> **Source:** Brainstorm session ({current_date})
+> **Approach:** {chosen_approach}
+> **Confidence:** {overall_confidence}
+
+## Research-Backed Design
+
+[Architecture, components, data flow from Design Overview]
+
+## Key Constraints (from research)
+
+- [Constraint from Skeptic's warnings]
+- [Constraint from Expert's priorities]
+- [Constraint from Pragmatist's 80/20]
+
+## Acceptance Criteria
+
+- [ ] [Derived from research insights + design]
+- [ ] [Derived from research insights + design]
+- [ ] [Derived from research insights + design]
+
+## What to Watch Out For
+
+- [Risk identified in contrarian view]
+- [Open question that needs validation during implementation]
+```
+
+**5b. Offer APEX handoff:**
+
+Present the user with the next step:
+
+```
+---
+
+**Research + Design complete.** Ready to implement.
+
+**Design context saved to:** `.claude/output/brainstorm/{topic-slug}-{date}-design.md`
+
+**To implement with APEX:**
+`/apex -a {topic-slug}` — then reference the design context file during the Analyze phase.
+
+Or start APEX manually and point it to the design file for a head start on step-01 (Analyze).
+```
+
+**DO NOT automatically invoke APEX.** The user decides when and how to start implementation.
+</implementation_handoff>
+
 <completion>
-**4. Completion Message**
+**6. Completion Message**
 
 ```
 ---
@@ -206,8 +349,11 @@ Also announce: "Session saved to `{session_path}`"
 This research covered:
 - Broad exploration with parallel agents
 - Skeptical challenge of all findings
-- Analysis through 5 expert perspectives
+- Analysis through [3 or 5] expert perspectives
 - Crystallization into actionable recommendations
+[If Design Bridge completed:]
+- Design validation with [2-3] approaches evaluated
+- Implementation handoff prepared for APEX
 
 **Confidence summary:**
 - [# High confidence] insights
@@ -215,8 +361,8 @@ This research covered:
 - [# Low confidence] insights
 
 **Next steps are clear:** [summarize top 1-2 actions]
-
-**Open for follow-up:** Ask me to dig deeper on any specific area.
+[If design completed:] **Implementation ready:** Use `/apex` with the saved design context.
+[If research only:] **Open for follow-up:** Ask me to dig deeper on any specific area.
 ```
 </completion>
 
@@ -257,6 +403,10 @@ This research covered:
 - Open questions acknowledge what we don't know
 - Sources cited for key claims
 - Complete output format followed
+- [If implementable topic:] 2-3 approaches proposed with tradeoffs
+- [If implementable topic:] Design overview with architecture, components, error handling
+- [If implementable topic:] User validated chosen approach
+- [If implementable topic:] Design context file saved for APEX handoff
 </success_metrics>
 
 <failure_modes>
@@ -267,6 +417,10 @@ This research covered:
 - "Next steps" that are too generic to act on
 - Forgetting to cite sources
 - Rushing the synthesis without ULTRA THINK
+- [Design Bridge:] Proposing approaches not grounded in research findings
+- [Design Bridge:] Skipping design for "simple" implementable topics
+- [Design Bridge:] Auto-invoking APEX without user consent
+- [Design Bridge:] Design overview too vague (must include architecture + components + error handling)
 </failure_modes>
 
 ---
@@ -274,12 +428,14 @@ This research covered:
 <workflow_complete>
 ## Workflow Complete
 
-The brainstorm-skills workflow has completed all 4 phases:
+The brainstorm-skills workflow has completed all phases:
 
 1. ✅ **Expansive Exploration** - Cast wide net
 2. ✅ **Critical Challenge** - Stress-tested findings
-3. ✅ **Multi-Lens Synthesis** - 5 perspectives analyzed
+3. ✅ **Multi-Lens Synthesis** - [3 or 5] perspectives analyzed
 4. ✅ **Action Crystallization** - Clear recommendations
+5. ✅ **Design Bridge** - Approaches evaluated, design validated *(if implementable topic)*
+6. ✅ **Implementation Handoff** - Design context ready for APEX *(if user chose to implement)*
 
-The user now has battle-tested insights ready for action.
+The user now has battle-tested insights — and a clear path to implementation if needed.
 </workflow_complete>

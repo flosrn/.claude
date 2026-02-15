@@ -123,7 +123,7 @@
     "code-review@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
     "marketing-skills@marketingskills": false,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": false
   },
   "spinnerTipsEnabled": false,
   "alwaysThinkingEnabled": true,

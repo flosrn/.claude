@@ -79,6 +79,9 @@ Each phase transitions naturally to the next, building deeper understanding.
 3. Load step-02-challenge.md → stress-test findings **(skipped if fast_mode)**
 4. Load step-03-synthesize.md → multi-perspective analysis (3 perspectives if fast_mode)
 5. Load step-04-action.md → crystallize into action
+   - If topic is about building/implementing → **Design Bridge**: propose 2-3 approaches, present design overview, validate with user
+   - If user chooses to implement → **APEX Handoff**: save design context file, show `/apex` command
+   - If pure research → end with recommendations
 </workflow>
 </quick_start>
 
@@ -124,4 +127,6 @@ Each step is a separate file for progressive context loading:
 - Clear recommendation with confidence level
 - Contrarian view presented
 - Actionable insights produced
+- [If implementable topic:] 2-3 approaches proposed with tradeoffs and design overview
+- [If implementable topic:] Design context file saved for APEX handoff
 </success_criteria>

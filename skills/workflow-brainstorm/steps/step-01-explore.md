@@ -36,10 +36,75 @@ From SKILL.md entry point:
 
 <execution_sequence>
 
+<smart_scoping>
+**0. Smart Scope Clarification** (skip if `{fast_mode}` = true)
+
+Before researching, analyze `{topic}` for what's **clear vs ambiguous**:
+
+**Step 0a: Parse the user's description**
+- What is the user asking about? (core subject)
+- What's their intent? (build something, evaluate options, learn, investigate a problem)
+- What constraints are mentioned or implied?
+- What's left ambiguous or could be interpreted multiple ways?
+
+**Step 0b: Decide whether to ask**
+
+```
+IF the topic is clear and specific (e.g., "best practices for API rate limiting in Express.js"):
+  → Skip to section 1. No questions needed.
+
+IF there are genuine ambiguities that would change the research direction:
+  → Ask 1 targeted AskUserQuestion (see below)
+  → Do NOT ask generic context questions — only ask about things that are truly unclear
+```
+
+**Step 0c: Ask targeted question (only if ambiguity detected)**
+
+The question must be DERIVED from the topic, not a generic template. Examples:
+
+```yaml
+# Example: topic = "authentication for my app"
+# Ambiguity: many auth approaches, don't know the stack
+questions:
+  - header: "Auth scope"
+    question: "Authentication covers a lot of ground. What's most important to research?"
+    options:
+      - label: "Auth provider comparison"
+        description: "Clerk vs Auth.js vs Supabase Auth vs custom"
+      - label: "Auth architecture patterns"
+        description: "JWT vs sessions, middleware design, token refresh"
+      - label: "Full auth implementation"
+        description: "End-to-end: signup, login, protected routes, roles"
+    multiSelect: false
+
+# Example: topic = "improve performance of my Next.js app"
+# Ambiguity: performance could mean many things
+questions:
+  - header: "Perf focus"
+    question: "Performance optimization has many angles. Where's the pain?"
+    options:
+      - label: "Initial page load (Core Web Vitals)"
+        description: "LCP, FID, CLS — what users see first"
+      - label: "Runtime performance"
+        description: "Slow interactions, heavy re-renders, memory leaks"
+      - label: "Build & deploy speed"
+        description: "Slow builds, large bundles, cold starts"
+      - label: "Database / API latency"
+        description: "Slow queries, N+1 problems, caching strategy"
+    multiSelect: true
+```
+
+**Rules for this question:**
+- ONLY ask if the answer would materially change what you research
+- Prefer multiple-choice options derived from the topic
+- 1 question maximum — don't interrogate the user
+- If in doubt, skip and research broadly
+</smart_scoping>
+
 <parse_topic>
 **1. Parse and Expand Topic Scope**
 
-Analyze the topic to identify:
+Analyze the topic (refined by user answer if Phase 0 asked a question) to identify:
 - **Core question**: What exactly are we researching?
 - **Adjacent areas**: What related topics might inform this?
 - **Key terms**: What should we search for?
@@ -121,11 +186,31 @@ Return file paths with line numbers.
 </parallel_agents>
 
 <interactive_check>
-**3. Quick Check** (skip if `{fast_mode}`)
+**3. Research Direction Check** (skip if `{fast_mode}`)
 
-If NOT in fast mode, briefly ask:
+After initial research, present the most interesting directions discovered and let the user steer:
 
-"Initial research done on **{topic}**. Any specific angle you want me to focus on? (or 'continue')"
+```yaml
+questions:
+  - header: "Directions"
+    question: "Initial research on {topic} found several directions. Which should I dig deeper into?"
+    options:
+      - label: "{discovered_direction_1}"
+        description: "{why this direction emerged from research}"
+      - label: "{discovered_direction_2}"
+        description: "{why this direction emerged from research}"
+      - label: "{discovered_direction_3}"
+        description: "{why this direction emerged from research}"
+      - label: "All look relevant"
+        description: "Continue with broad coverage"
+    multiSelect: true
+```
+
+**Rules:**
+- Options MUST come from actual research findings — not generic placeholders
+- Use the most divergent/interesting directions found, not obvious ones
+- If research found a surprising or controversial angle, include it as an option
+- User's selection narrows the focus for Phases 2-3
 </interactive_check>
 
 <synthesize>

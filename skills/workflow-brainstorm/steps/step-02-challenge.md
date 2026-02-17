@@ -180,8 +180,49 @@ After challenging Phase 1 findings, my view has shifted:
 Store in `{phase_2_challenges}`
 </synthesize_challenges>
 
+<validate_with_user>
+**6. Validate Challenge Findings with User**
+
+Present the key shifts from challenge and check if the user agrees or wants to redirect:
+
+```yaml
+questions:
+  - header: "Challenges"
+    question: "After stress-testing, here's what changed. Does this match your intuition?"
+    options:
+      - label: "Makes sense, continue"
+        description: "The challenge findings align with what I expected"
+      - label: "I disagree with a reversal"
+        description: "One of the reversed/weakened findings shouldn't have been"
+      - label: "Missing a key concern"
+        description: "There's a risk or angle you didn't challenge"
+      - label: "Dig deeper on something"
+        description: "I want more investigation on a specific finding"
+    multiSelect: false
+```
+
+**Before the question, present a concise summary:**
+
+```
+**Challenge Results:**
+- **Survived:** {count} findings held up under scrutiny
+- **Weakened:** {count} findings lost confidence
+- **Reversed:** {count} findings were wrong
+
+**Biggest shift:** {the most significant change in understanding}
+**Key assumption uncovered:** {the most important hidden assumption found}
+```
+
+**If user selects "I disagree" or "Missing a concern" or "Dig deeper":**
+→ Ask a follow-up freeform question to understand what they want to adjust
+→ Incorporate their feedback into `{phase_2_challenges}` before proceeding
+
+**If user selects "Makes sense":**
+→ Continue to Phase 3
+</validate_with_user>
+
 <save_progress>
-**6. Save Progress** (if `{save_file}` is true)
+**7. Save Progress** (if `{save_file}` is true)
 
 Append to `{session_path}`:
 ```markdown

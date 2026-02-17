@@ -75,13 +75,21 @@ Each phase transitions naturally to the next, building deeper understanding.
 <workflow>
 
 1. Parse flags and topic
-2. Load step-01-explore.md → cast wide net
-3. Load step-02-challenge.md → stress-test findings **(skipped if fast_mode)**
-4. Load step-03-synthesize.md → multi-perspective analysis (3 perspectives if fast_mode)
+2. Load step-01-explore.md → smart scope clarification (if ambiguous) → cast wide net → validate research directions with user
+3. Load step-02-challenge.md → stress-test findings → validate challenge results with user **(skipped if fast_mode)**
+4. Load step-03-synthesize.md → multi-perspective analysis → validate synthesis with user (3 perspectives if fast_mode)
 5. Load step-04-action.md → crystallize into action
-   - If topic is about building/implementing → **Design Bridge**: propose 2-3 approaches, present design overview, validate with user
+   - If topic is about building/implementing → **Design Bridge**: propose 2-3 approaches → user picks → present design section-by-section with validation at each step
    - If user chooses to implement → **APEX Handoff**: save design context file, show `/apex` command
    - If pure research → end with recommendations
+
+**User interaction points (standard mode):**
+- Phase 1: Smart scope question (only if ambiguous) + research direction check
+- Phase 2: Challenge validation (agree/disagree with findings)
+- Phase 3: Synthesis validation (convergence/tension alignment check)
+- Phase 4: Approach selection + section-by-section design approval
+
+**Fast mode (`-f`):** All interactive checkpoints are skipped except Phase 4 approach selection.
 </workflow>
 </quick_start>
 

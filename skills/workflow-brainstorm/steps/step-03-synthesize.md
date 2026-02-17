@@ -265,8 +265,45 @@ Weighing all perspectives, the clearest thread is...
 Store in `{phase_3_synthesis}`
 </pattern_recognition>
 
+<validate_synthesis>
+**8. Validate Synthesis with User** (skip if `{fast_mode}` = true)
+
+Present the convergence and tension points, then check if the user's intuition aligns:
+
+**Before the question, present a concise summary:**
+
+```
+**Synthesis Results:**
+- **Convergence:** {the main point where perspectives agree}
+- **Key tension:** {the main tradeoff or disagreement between perspectives}
+- **Strongest signal:** {the most reliable insight across all lenses}
+- **Surprise:** {the most unexpected finding from any perspective}
+```
+
+```yaml
+questions:
+  - header: "Synthesis"
+    question: "The perspectives converge on {convergence_point} but disagree on {tension_point}. How does this match your thinking?"
+    options:
+      - label: "Aligned, continue to recommendations"
+        description: "This matches my understanding, let's see the final output"
+      - label: "The convergence surprises me"
+        description: "I didn't expect perspectives to agree on that"
+      - label: "The tension is wrong"
+        description: "The real tradeoff is different from what you identified"
+      - label: "A perspective is missing"
+        description: "There's an angle none of the lenses captured"
+    multiSelect: false
+```
+
+**If user raises concerns:**
+→ Ask a follow-up to understand their perspective
+→ Integrate their insight into `{phase_3_synthesis}` as a "User Perspective" addition
+→ Re-evaluate the convergence/tension summary before proceeding
+</validate_synthesis>
+
 <save_progress>
-**8. Save Progress** (if `{save_file}` is true)
+**9. Save Progress** (if `{save_file}` is true)
 
 Append to `{session_path}`:
 ```markdown

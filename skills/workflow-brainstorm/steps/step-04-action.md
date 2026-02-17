@@ -217,42 +217,105 @@ Based on the research above, here are the concrete approaches:
 - **When to prefer:** [Niche conditions]
 ```
 
-**3b. Present Design Overview**
+**3b. Validate Approach with User**
 
-For the recommended approach, present a design overview scaled to complexity:
+Use `AskUserQuestion` to let the user choose before diving into design details:
 
-```markdown
-### Design Overview
-
-**Architecture:**
-[2-5 sentences - how the system is structured]
-
-**Components & Data Flow:**
-[What pieces exist, how data moves between them]
-
-**Error Handling & Edge Cases:**
-[Key failure modes identified by the Skeptic lens]
-
-**Testing Strategy:**
-[What to test, informed by research findings]
-```
-
-**3c. Validate with User**
-
-Use `AskUserQuestion` to validate the approach:
-
-```
-Question: "Which approach should we implement?"
-Options:
-- "Approach A: [name] (Recommended)" - [1-line rationale]
-- "Approach B: [name]" - [1-line rationale]
-- "Approach C: [name]" - [1-line rationale] (if applicable)
-- "Just the research, no implementation" - Keep research output only
+```yaml
+questions:
+  - header: "Approach"
+    question: "Which approach should we design in detail?"
+    options:
+      - label: "Approach A: {name} (Recommended)"
+        description: "{1-line rationale grounded in research}"
+      - label: "Approach B: {name}"
+        description: "{1-line rationale}"
+      - label: "Approach C: {name}"
+        description: "{1-line rationale} (only if genuinely different)"
+      - label: "Just the research, no implementation"
+        description: "Keep research output only, skip design"
+    multiSelect: false
 ```
 
 Store chosen approach in `{chosen_approach}`.
 
 If user chose "Just the research" → skip to Save step.
+
+**3c. Present Design Section by Section**
+
+For the chosen approach, present the design **incrementally** — one section at a time, validating as you go. This prevents wasting effort on sections the user disagrees with.
+
+**Section 1: Architecture**
+
+```markdown
+### Architecture
+
+[2-5 sentences - how the system is structured, key decisions]
+```
+
+```yaml
+questions:
+  - header: "Architecture"
+    question: "Does this architecture direction look right?"
+    options:
+      - label: "Yes, continue"
+        description: "Architecture makes sense, show me the details"
+      - label: "Adjust this"
+        description: "The direction is mostly right but I want to change something"
+      - label: "Wrong approach"
+        description: "This architecture doesn't fit, let's rethink"
+    multiSelect: false
+```
+
+If user wants adjustment → ask what to change, revise, re-present.
+
+**Section 2: Components & Data Flow**
+
+```markdown
+### Components & Data Flow
+
+[What pieces exist, how data moves between them]
+```
+
+```yaml
+questions:
+  - header: "Components"
+    question: "Components and data flow look correct?"
+    options:
+      - label: "Yes, continue"
+        description: "Makes sense, continue to error handling"
+      - label: "Missing a component"
+        description: "There's a piece you haven't accounted for"
+      - label: "Data flow is wrong"
+        description: "The data should flow differently"
+    multiSelect: false
+```
+
+**Section 3: Error Handling, Edge Cases & Testing**
+
+```markdown
+### Error Handling & Edge Cases
+
+[Key failure modes identified by the Skeptic lens]
+
+### Testing Strategy
+
+[What to test, informed by research findings]
+```
+
+```yaml
+questions:
+  - header: "Design"
+    question: "Design overview complete. Ready to finalize?"
+    options:
+      - label: "Looks good, finalize"
+        description: "Save the design and prepare for implementation"
+      - label: "Revise something"
+        description: "I want to go back and change a section"
+    multiSelect: false
+```
+
+If user wants to revise → ask which section, loop back to that section.
 </design_bridge>
 
 <save_final>
@@ -404,8 +467,8 @@ This research covered:
 - Sources cited for key claims
 - Complete output format followed
 - [If implementable topic:] 2-3 approaches proposed with tradeoffs
-- [If implementable topic:] Design overview with architecture, components, error handling
-- [If implementable topic:] User validated chosen approach
+- [If implementable topic:] Design presented section-by-section with user validation at each step
+- [If implementable topic:] User validated chosen approach AND each design section
 - [If implementable topic:] Design context file saved for APEX handoff
 </success_metrics>
 
@@ -420,6 +483,8 @@ This research covered:
 - [Design Bridge:] Proposing approaches not grounded in research findings
 - [Design Bridge:] Skipping design for "simple" implementable topics
 - [Design Bridge:] Auto-invoking APEX without user consent
+- [Design Bridge:] Presenting entire design at once instead of section-by-section
+- [Design Bridge:] Not letting user validate architecture before diving into components
 - [Design Bridge:] Design overview too vague (must include architecture + components + error handling)
 </failure_modes>
 

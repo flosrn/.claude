@@ -387,6 +387,10 @@ Append to `{output_dir}/03-execute.md`:
 
 ```
 IF auto_mode = true:
+  → If {branch_mode} = true, commit step changes:
+    ```bash
+    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 03 - execute"
+    ```
   → If save_mode = true, update progress and state:
     ```bash
     bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
@@ -397,8 +401,9 @@ IF auto_mode = true:
 IF auto_mode = false:
   → Run (if save_mode):
     ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" "{count} files modified across {count} domains" "04-validate" "Validate (Self-Check)" "**03-execute:** {count} files modified across {count} domains"
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" "{count} files modified across {count} domains" "04-validate" "Validate (Self-Check)" "**03-execute:** {count} files modified across {count} domains" "" "{branch_mode}" "commit"
     ```
+    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
   → Display the output to the user
   → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.

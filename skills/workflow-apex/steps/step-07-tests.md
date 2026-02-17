@@ -258,6 +258,10 @@ Append to `{output_dir}/07-tests.md`:
 
 ```
 IF auto_mode = true:
+  → If {branch_mode} = true, commit step changes:
+    ```bash
+    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 07 - tests"
+    ```
   → If save_mode = true, update progress and state:
     ```bash
     bash {skill_dir}/scripts/update-progress.sh "{task_id}" "07" "tests" "complete"
@@ -268,8 +272,9 @@ IF auto_mode = true:
 IF auto_mode = false:
   → Run (if save_mode):
     ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "07" "tests" "{count} test files, {count} test cases" "08-run-tests" "Run Tests (Fix Loop)" "**07-tests:** {count} test files created" ["{gotcha if any}"]
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "07" "tests" "{count} test files, {count} test cases" "08-run-tests" "Run Tests (Fix Loop)" "**07-tests:** {count} test files created" "{gotcha_or_empty}" "{branch_mode}" "commit"
     ```
+    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
   → Display the output to the user
   → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.

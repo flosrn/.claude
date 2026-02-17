@@ -40,7 +40,8 @@ If this step was loaded via `/apex -r {task_id}` resume:
 
 1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
 2. Read `{output_dir}/02-plan.md` → restore the implementation plan
-3. **Partial work detection:** Run `git diff --name-only` to check what files have already been modified
+3. If `00-context.md` Reference Documents section lists a file path → read it for full specification
+4. **Partial work detection:** Run `git diff --name-only` to check what files have already been modified
 4. Cross-reference modified files with the plan → skip already-completed items when creating todos
 5. Proceed with normal execution below (only remaining plan items)
 </critical>
@@ -278,6 +279,10 @@ User confirmation does NOT mean "skip to step-04". It means the step is validate
 
 ```
 IF auto_mode = true:
+  → If {branch_mode} = true, commit step changes:
+    ```bash
+    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 03 - execute"
+    ```
   → If save_mode = true, update progress and state:
     ```bash
     bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
@@ -288,8 +293,9 @@ IF auto_mode = true:
 IF auto_mode = false:
   → Run (if save_mode):
     ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" "{count} files modified, {count} todos completed" "04-validate" "Validate (Self-Check)" "**03-execute:** {count} files modified, all todos complete" ["{gotcha if any}"]
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" "{count} files modified, {count} todos completed" "04-validate" "Validate (Self-Check)" "**03-execute:** {count} files modified, all todos complete" "{gotcha_or_empty}" "{branch_mode}" "commit"
     ```
+    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
   → Display the output to the user
   → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.

@@ -45,7 +45,6 @@ Show current flag values:
 | Economy (`-e`) | {economy_mode ? "✓ ON" : "✗ OFF"} | No subagents |
 | Team (`-w`) | {team_mode ? "✓ ON" : "✗ OFF"} | Parallel Agent Teams |
 | Branch (`-b`) | {branch_mode ? "✓ ON" : "✗ OFF"} | Verify/create branch |
-| Worktree (`-wt`) | {worktree_mode ? "✓ ON" : "✗ OFF"} | Isolated git worktree |
 | PR (`-pr`) | {pr_mode ? "✓ ON" : "✗ OFF"} | Create pull request |
 ```
 
@@ -87,26 +86,6 @@ questions:
     multiSelect: true
 ```
 
-### 3b. Ask for Worktree (if branch mode enabled)
-
-**Only if `{branch_mode}` is now true (was toggled on or was already on):**
-
-```yaml
-questions:
-  - header: "Worktree"
-    question: "Use a git worktree for isolated workspace?"
-    options:
-      - label: "Standard branch (Recommended)"
-        description: "Work on a feature branch in the current workspace"
-      - label: "Git worktree"
-        description: "Create an isolated worktree directory (enables branch)"
-    multiSelect: false
-```
-
-**If "Git worktree" selected:** `{worktree_mode} = true`
-**If "Standard branch" selected:** `{worktree_mode} = false`
-**If branch_mode is false:** Skip this question entirely
-
 ### 4. Apply Changes
 
 For each selected flag, toggle its value:
@@ -126,11 +105,6 @@ IF "PR mode" selected → {pr_mode} = !{pr_mode}
 If PR mode enabled, auto-enable branch mode:
 ```
 IF {pr_mode} = true → {branch_mode} = true
-```
-
-If worktree mode enabled, auto-enable branch mode:
-```
-IF {worktree_mode} = true → {branch_mode} = true
 ```
 
 Enforce team+economy mutual exclusion (fires regardless of which was toggled):
@@ -154,7 +128,6 @@ Display updated configuration:
 | Economy | {economy_mode ? "✓ ON" : "✗ OFF"} |
 | Team | {team_mode ? "✓ ON" : "✗ OFF"} |
 | Branch | {branch_mode ? "✓ ON" : "✗ OFF"} |
-| Worktree | {worktree_mode ? "✓ ON" : "✗ OFF"} |
 | PR | {pr_mode ? "✓ ON" : "✗ OFF"} |
 ```
 

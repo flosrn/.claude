@@ -24,8 +24,7 @@ INTERACTIVE_MODE="${10:-false}"
 BRANCH_NAME="${11:-}"
 ORIGINAL_INPUT="${12:-}"
 TEAM_MODE="${13:-false}"
-WORKTREE_MODE="${14:-false}"
-WORKTREE_PATH="${15:-}"
+REFERENCE_FILE="${14:-}"
 
 # Validate required arguments
 if [[ -z "$INPUT_NAME" ]]; then
@@ -99,8 +98,16 @@ render_template() {
     safe_original_input=$(escape_sed_replacement "$ORIGINAL_INPUT")
     local safe_branch_name
     safe_branch_name=$(escape_sed_replacement "$BRANCH_NAME")
-    local safe_worktree_path
-    safe_worktree_path=$(escape_sed_replacement "$WORKTREE_PATH")
+
+    # Build reference docs content
+    local reference_docs_content
+    if [[ -n "$REFERENCE_FILE" ]]; then
+        reference_docs_content="**MUST READ before planning/execution:** \`${REFERENCE_FILE}\`"
+    else
+        reference_docs_content="_No reference documents provided._"
+    fi
+    local safe_reference_docs
+    safe_reference_docs=$(escape_sed_replacement "$reference_docs_content")
 
     # Read template and replace variables
     sed -e "s|{{task_id}}|${TASK_ID}|g" \
@@ -115,14 +122,13 @@ render_template() {
         -e "s|{{pr_mode}}|${PR_MODE}|g" \
         -e "s|{{interactive_mode}}|${INTERACTIVE_MODE}|g" \
         -e "s|{{team_mode}}|${TEAM_MODE}|g" \
-        -e "s|{{worktree_mode}}|${WORKTREE_MODE}|g" \
-        -e "s|{{worktree_path}}|${safe_worktree_path}|g" \
         -e "s|{{branch_name}}|${safe_branch_name}|g" \
         -e "s|{{feature_name}}|${FEATURE_NAME}|g" \
         -e "s|{{original_input}}|${safe_original_input}|g" \
         -e "s|{{examine_status}}|${examine_status}|g" \
         -e "s|{{test_status}}|${test_status}|g" \
         -e "s|{{pr_status}}|${pr_status}|g" \
+        -e "s|{{reference_docs}}|${safe_reference_docs}|g" \
         "$template_file" > "$output_file"
 }
 

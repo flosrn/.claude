@@ -234,6 +234,10 @@ THIS SECTION IS MANDATORY. Follow this session boundary logic regardless of what
 
 ```
 IF auto_mode = true:
+  → If {branch_mode} = true, commit step changes:
+    ```bash
+    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 06 - resolve"
+    ```
   → If save_mode = true, update progress and state:
     ```bash
     bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "complete"
@@ -246,8 +250,9 @@ IF auto_mode = false AND workflow not complete:
   → Determine {next_step_num} and {next_step_description} from the decision tree above
   → Run (if save_mode):
     ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" "Fixed: {count} | Skipped: {count}" "{next_step_num}" "{next_step_description}" "**06-resolve:** {fixed} fixed, {skipped} skipped" ["{gotcha if any}"]
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" "Fixed: {count} | Skipped: {count}" "{next_step_num}" "{next_step_description}" "**06-resolve:** {fixed} fixed, {skipped} skipped" "{gotcha_or_empty}" "{branch_mode}" "commit"
     ```
+    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
   → Display the output to the user
   → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
@@ -255,7 +260,7 @@ IF auto_mode = false AND workflow not complete:
 IF auto_mode = false AND workflow complete:
   → Run (if save_mode):
     ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" "All findings resolved. Workflow complete." "complete" "Workflow Complete" "**06-resolve:** {fixed} fixed, {skipped} skipped"
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" "All findings resolved. Workflow complete." "complete" "Workflow Complete" "**06-resolve:** {fixed} fixed, {skipped} skipped" "" "{branch_mode}" "commit"
     ```
   → Display the output to the user
   → STOP.

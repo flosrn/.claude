@@ -56,7 +56,6 @@ economy_mode: false # -e: No subagents, save tokens (for limited plans)
 team_mode: false # -w: Use Agent Teams for parallel execution (incompatible with -e)
 branch_mode: false # -b: Verify not on main, create branch if needed
 pr_mode: false # -pr: Create pull request at end (enables -b)
-worktree_mode: false # -wt: Create git worktree for isolated workspace (enables -b)
 interactive_mode: false # -i: Configure flags interactively
 
 # Presets:
@@ -86,7 +85,6 @@ interactive_mode: false # -i: Configure flags interactively
 {team_mode}    = <default>
 {branch_mode}  = <default>
 {pr_mode}      = <default>
-{worktree_mode} = <default>
 {interactive_mode} = <default>
 ```
 
@@ -112,13 +110,9 @@ Disable flags (UPPERCASE - turn OFF):
   -PR or --no-pull-request → {pr_mode} = false
   -I or --no-interactive  → {interactive_mode} = false
 
-Branch/PR/Worktree flags:
+Branch/PR flags:
   -b or --branch        → {branch_mode} = true
   -pr or --pull-request → {pr_mode} = true, {branch_mode} = true
-  -wt or --worktree     → {worktree_mode} = true, {branch_mode} = true
-
-Disable:
-  -WT or --no-worktree  → {worktree_mode} = false
 
 Interactive:
   -i or --interactive   → {interactive_mode} = true
@@ -144,11 +138,40 @@ IF {team_mode} = true AND {economy_mode} = true:
     → {economy_mode} = false
 ```
 
-**Step 1e: Worktree mode validation:**
+**Step 1e: Detect reference files in input:**
 
 ```
-IF {worktree_mode} = true:
-    → {branch_mode} = true  (worktree implies branch)
+Scan {task_description} for file path tokens:
+
+1. A token is a file path if:
+   - It contains at least one '/' character
+   - AND ends with a known extension (.md, .txt, .json, .yaml, .yml)
+
+2. For each detected file path token:
+   - Verify the file exists (relative to project root)
+   - If exists: set {reference_files} = that path, remove token from {task_description}
+   - If doesn't exist: leave in {task_description} (might be intentional text)
+
+3. If {task_description} is now empty (user only passed a file path):
+   → Read the file's first heading (# Title) to derive a description
+   → OR extract from filename: "ai-wheel-personalization-2026-02-17-analysis.md"
+     → strip date and extension → "ai wheel personalization"
+   → Set {task_description} = derived description
+
+4. If no file paths detected: {reference_files} = "" (empty, normal mode)
+
+Examples:
+  Input: ".claude/output/brainstorm/auth-analysis.md"
+  → {reference_files} = ".claude/output/brainstorm/auth-analysis.md"
+  → {task_description} = (derived from file)
+
+  Input: "add auth middleware .claude/output/brainstorm/auth.md"
+  → {reference_files} = ".claude/output/brainstorm/auth.md"
+  → {task_description} = "add auth middleware"
+
+  Input: "add auth middleware"
+  → {reference_files} = ""
+  → {task_description} = "add auth middleware"
 ```
 
 **Step 1f: Generate feature_name and task_id:**
@@ -194,9 +217,10 @@ ls .claude/output/apex/ | grep "{resume_task}"
 **Step 2b: Restore state from `00-context.md`:**
 
 1. Read `{output_dir}/00-context.md`
-2. Restore ALL flags from Configuration table: `{auto_mode}`, `{examine_mode}`, `{save_mode}`, `{test_mode}`, `{economy_mode}`, `{team_mode}`, `{branch_mode}`, `{worktree_mode}`, `{pr_mode}`, `{interactive_mode}`
-3. Restore task info: `{task_id}`, `{task_description}`, `{feature_name}`, `{branch_name}`, `{worktree_path}`
-4. Restore acceptance criteria from State Snapshot section
+2. Restore ALL flags from Configuration table: `{auto_mode}`, `{examine_mode}`, `{save_mode}`, `{test_mode}`, `{economy_mode}`, `{team_mode}`, `{branch_mode}`, `{pr_mode}`, `{interactive_mode}`
+3. Restore task info: `{task_id}`, `{task_description}`, `{feature_name}`, `{branch_name}`
+4. Restore `{reference_files}` from Reference Documents section (if any file paths listed)
+5. Restore acceptance criteria from State Snapshot section
 
 **Step 2c: Apply flag overrides from current command:**
 
@@ -247,21 +271,15 @@ IF {save_mode} = true AND any flag was changed from false → true on resume:
     ```
 ```
 
-**Step 2e: Run branch/worktree sub-steps if newly enabled on resume:**
+**Step 2e: Run branch sub-step if newly enabled on resume:**
 
 ```
 IF {branch_mode} = true AND {branch_name} is empty (not restored from 00-context.md):
-    → Branch/worktree mode was newly enabled on this resume
-    → Must run the relevant sub-step to set {branch_name}
-
-    IF {worktree_mode} = true:
-        → Load steps/step-00b-worktree.md
-        → Creates worktree, sets {branch_name} and {worktree_path}
-    ELSE:
-        → Load steps/step-00b-branch.md (inline, not as separate step)
-        → Verifies/creates branch, sets {branch_name}
-
-    → Update 00-context.md Configuration table with new {branch_name} and {worktree_path}
+    → Branch mode was newly enabled on this resume
+    → Must run the sub-step to set {branch_name}
+    → Load steps/step-00b-branch.md (inline, not as separate step)
+    → Verifies/creates branch, sets {branch_name}
+    → Update 00-context.md Configuration table with new {branch_name}
 ```
 
 **Step 2f: Determine resume target step:**
@@ -326,11 +344,7 @@ IF {interactive_mode} = true:
   → User configures flags interactively
   → Return here with updated flags
 
-IF {worktree_mode} = true:
-  → Load steps/step-00b-worktree.md (INSTEAD of step-00b-branch.md)
-  → Create worktree, set {branch_name} and {worktree_path}
-  → Return here with variables set
-ELSE IF {branch_mode} = true:
+IF {branch_mode} = true:
   → Load steps/step-00b-branch.md
   → Verify/create branch
   → Return here with {branch_name} set
@@ -361,8 +375,7 @@ bash {skill_dir}/scripts/setup-templates.sh \
   "{branch_name}" \
   "{original_input}" \
   "{team_mode}" \
-  "{worktree_mode}" \
-  "{worktree_path}"
+  "{reference_files}"
 ```
 
 **Note:** Pass the full `{task_id}` (with number prefix, e.g., `01-add-auth`).
@@ -402,8 +415,8 @@ Show COMPACT initialization summary (one table, then proceed immediately):
 | `{economy_mode}` | true/false |
 | `{team_mode}` | true/false |
 | `{branch_mode}` | true/false |
-| `{worktree_mode}` | true/false |
 | `{pr_mode}` | true/false |
+| `{reference_files}` | path or empty |
 
 → Analyzing...
 ```

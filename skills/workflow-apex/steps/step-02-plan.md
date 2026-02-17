@@ -38,9 +38,10 @@ next_step: ./step-03-execute.md
 If this step was loaded via `/apex -r {task_id}` resume:
 
 1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
-2. Read `{output_dir}/01-analyze.md` → restore analysis findings (files, patterns, utilities)
-3. All state variables are now available from the restored context
-4. Proceed with normal execution below
+2. Read `{output_dir}/01-analyze.md` → restore analysis findings (Task Requirements, files, patterns, utilities)
+3. If `00-context.md` Reference Documents section lists a file path → read it for full specification
+4. All state variables are now available from the restored context
+5. Proceed with normal execution below
 </critical>
 
 ## YOUR TASK:

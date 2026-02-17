@@ -25,7 +25,7 @@ prev_step: ./step-08-run-tests.md (or ./step-04-validate.md if no tests)
 
 ## CONTEXT BOUNDARIES:
 
-- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{worktree_path}`, `{worktree_mode}`, `{pr_mode}`, `{auto_mode}`, `{save_mode}`, `{output_dir}`
+- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{pr_mode}`, `{auto_mode}`, `{save_mode}`, `{output_dir}`
 - Previous steps completed: analyze, plan, execute, validate (+ optional: tests, examine)
 - All implementation should be done at this point
 
@@ -62,7 +62,8 @@ git status
 ```
 
 **If uncommitted changes exist:**
-→ Commit them with message: `feat({task_id}): {task_description}`
+→ Commit them as a safety net: `apex({task_id}): final changes`
+  (Per-step commits should have already captured most changes when branch_mode is enabled)
 
 **If working tree is clean:**
 → Continue to step 2
@@ -177,7 +178,6 @@ Display workflow completion summary:
   {if test_mode: "✓ Tests passing"}
   {if examine_mode: "✓ Review findings resolved"}
   ✓ Changes pushed to {branch_name}
-  {if worktree_mode: "✓ Worktree: {worktree_path}"}
   {if pr_mode: "✓ PR created: {pr_url}"}
 
 ═══════════════════════════════════════════════════════

@@ -16,11 +16,9 @@
 | Economy mode (`-e`) | {{economy_mode}} |
 | Team mode (`-w`) | {{team_mode}} |
 | Branch mode (`-b`) | {{branch_mode}} |
-| Worktree mode (`-wt`) | {{worktree_mode}} |
 | PR mode (`-pr`) | {{pr_mode}} |
 | Interactive mode (`-i`) | {{interactive_mode}} |
 | Branch name | {{branch_name}} |
-| Worktree path | {{worktree_path}} |
 
 ---
 
@@ -29,6 +27,10 @@
 ```
 {{original_input}}
 ```
+
+## Reference Documents
+
+{{reference_docs}}
 
 ---
 
@@ -52,7 +54,6 @@
 ## State Snapshot
 
 **feature_name:** {{feature_name}}
-**worktree_path:** {{worktree_path}}
 **next_step:** 01
 
 ### Acceptance Criteria

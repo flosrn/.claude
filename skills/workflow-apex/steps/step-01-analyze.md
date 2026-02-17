@@ -73,6 +73,7 @@ From step-00-init:
 |----------|-------------|
 | `{task_description}` | What to implement |
 | `{task_id}` | Kebab-case identifier |
+| `{reference_files}` | Path to reference document (e.g., brainstorm output), or empty |
 | `{auto_mode}` | Skip confirmations |
 | `{examine_mode}` | Auto-proceed to review |
 | `{save_mode}` | Save outputs to files |
@@ -96,9 +97,29 @@ bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "in_progr
 
 Append findings to `{output_dir}/01-analyze.md` as you work.
 
+### 1b. Read Reference Documents (if any)
+
+<critical>
+**If `{reference_files}` is not empty:**
+
+This is a CRITICAL step. Read the reference file FIRST — it is the primary source of truth for what needs to be built.
+
+1. Read the reference file using the Read tool
+2. Extract and note:
+   - **Objective:** What specifically needs to be built/changed
+   - **Design decisions:** Schemas, approaches, tech choices already decided
+   - **Implementation details:** APIs, patterns, architectures described
+   - **Constraints:** Performance targets, compatibility requirements
+   - **File references:** Any files mentioned in the reference doc
+3. Use these as the PRIMARY input for your analysis — they take precedence over inferred requirements
+
+**If `{reference_files}` is empty:**
+→ Skip this step, proceed normally with keyword extraction from `{task_description}`.
+</critical>
+
 ### 2. Extract Search Keywords
 
-From the task description, identify:
+From the task description (and reference document if available), identify:
 - **Domain terms**: auth, user, payment, etc.
 - **Technical terms**: API, route, component, etc.
 - **Action hints**: create, update, fix, add, etc.
@@ -237,6 +258,34 @@ Find common patterns and pitfalls.
 ### 4. Synthesize Findings
 
 Combine results into structured context:
+
+```markdown
+## Task Requirements
+
+### Objective
+{Clear 2-3 sentence description of what needs to be built/changed.
+ If reference doc exists: extract the objective from it.
+ If no reference doc: infer from task description + codebase analysis.}
+
+### Key Specifications
+{If reference doc exists: key decisions, schemas, approaches, performance targets extracted from it.
+ If no reference doc: inferred from task description and what was discovered in the codebase.}
+- {Specific technical requirement}
+- {Schema/interface to implement or modify}
+- {Integration points}
+- {Performance/quality constraints}
+
+### Reference
+{If reference doc: "**Source:** `{reference_files}` — {one-line summary of what it contains}"}
+{If no reference doc: "Inferred from task description and codebase analysis"}
+```
+
+<critical>
+The Task Requirements section is MANDATORY — it must appear FIRST in the 01-analyze.md output, before Codebase Context.
+- WITH reference doc: extract concrete specs, schemas, decisions, constraints from the reference
+- WITHOUT reference doc: infer what needs to change from the task description + what you discovered
+- Either way, be SPECIFIC — "add auth middleware" is too vague, "add JWT-based auth middleware in src/middleware/ using the existing jose library pattern from src/auth/login.ts" is good
+</critical>
 
 ```markdown
 ## Codebase Context

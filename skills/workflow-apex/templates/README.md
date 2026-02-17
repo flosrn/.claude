@@ -35,16 +35,15 @@ Templates use `{{variable}}` syntax for placeholders:
 | `{{economy_mode}}` | Economy mode flag | `true` or `false` |
 | `{{team_mode}}` | Team mode flag | `true` or `false` |
 | `{{branch_mode}}` | Branch mode flag | `true` or `false` |
-| `{{worktree_mode}}` | Worktree mode flag | `true` or `false` |
 | `{{pr_mode}}` | PR mode flag | `true` or `false` |
 | `{{interactive_mode}}` | Interactive mode flag | `true` or `false` |
 | `{{branch_name}}` | Git branch name | `feature/add-auth` |
-| `{{worktree_path}}` | Git worktree path | `../project-wt-01-add-auth/` |
 | `{{original_input}}` | Raw user input | `/apex -a -s add auth` |
 | `{{examine_status}}` | Progress status for examine steps | `⏸ Pending` or `⏭ Skip` |
 | `{{test_status}}` | Progress status for test steps | `⏸ Pending` or `⏭ Skip` |
 | `{{pr_status}}` | Progress status for PR step | `⏸ Pending` or `⏭ Skip` |
 | `{{feature_name}}` | Kebab-case feature name (without number prefix) | `add-auth-middleware` |
+| `{{reference_docs}}` | Reference documents section content | `**MUST READ:** \`path/to/file.md\`` or `_No reference documents._` |
 
 ## State Snapshot
 
@@ -54,7 +53,6 @@ The `00-context.md` template includes a **State Snapshot** section after the Pro
 ## State Snapshot
 
 **feature_name:** {feature_name}
-**worktree_path:** {worktree_path}
 **next_step:** {step_id}
 
 ### Acceptance Criteria
@@ -94,8 +92,7 @@ bash scripts/setup-templates.sh \
   "branch_name" \
   "original_input" \
   "team_mode" \
-  "worktree_mode" \
-  "worktree_path"
+  "reference_file" \
 ```
 
 **Output:**
@@ -160,8 +157,10 @@ Consolidates session boundary logic: marks the current step complete, updates th
 
 **Usage:**
 ```bash
-bash scripts/session-boundary.sh <task_id> <step_num> <step_name> <summary> <next_step_num> <next_step_desc> <step_context_line> [gotcha]
+bash scripts/session-boundary.sh <task_id> <step_num> <step_name> <summary> <next_step_num> <next_step_desc> <step_context_line> [gotcha] [branch_mode] [commit_flag]
 ```
+
+**Optional arguments 9-10:** When `branch_mode` is `"true"` and `commit_flag` is `"commit"`, the script auto-commits tracked changes with message `apex({task_id}): step {NN} - {name}` before updating progress.
 
 ## Token Savings
 

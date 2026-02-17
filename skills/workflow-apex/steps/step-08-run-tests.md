@@ -384,6 +384,10 @@ The user's choice determines what is saved as next_step, NOT whether to load it 
 
 ```
 IF auto_mode = true:
+  → If {branch_mode} = true, commit step changes:
+    ```bash
+    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 08 - run-tests"
+    ```
   → If save_mode = true, update progress and state:
     ```bash
     bash {skill_dir}/scripts/update-progress.sh "{task_id}" "08" "run-tests" "complete"
@@ -396,8 +400,9 @@ IF auto_mode = false AND workflow not complete:
   → Determine {next_step_num} and {next_step_description} from the decision tree above
   → Run (if save_mode):
     ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "08" "run-tests" "{count} tests passing in {attempts} attempts" "{next_step_num}" "{next_step_description}" "**08-run-tests:** All tests passing ({count} tests)" ["{gotcha if any}"]
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "08" "run-tests" "{count} tests passing in {attempts} attempts" "{next_step_num}" "{next_step_description}" "**08-run-tests:** All tests passing ({count} tests)" "{gotcha_or_empty}" "{branch_mode}" "commit"
     ```
+    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
   → Display the output to the user
   → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
@@ -405,7 +410,7 @@ IF auto_mode = false AND workflow not complete:
 IF auto_mode = false AND workflow complete:
   → Run (if save_mode):
     ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "08" "run-tests" "All {count} tests passing. Workflow complete." "complete" "Workflow Complete" "**08-run-tests:** All tests passing ({count} tests)"
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "08" "run-tests" "All {count} tests passing. Workflow complete." "complete" "Workflow Complete" "**08-run-tests:** All tests passing ({count} tests)" "" "{branch_mode}" "commit"
     ```
   → Display the output to the user
   → STOP.

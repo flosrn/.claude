@@ -64,6 +64,7 @@ From step-00-init:
 |----------|-------------|
 | `{task_description}` | What to implement |
 | `{task_id}` | Kebab-case identifier |
+| `{reference_files}` | Path to reference document (e.g., brainstorm output), or empty |
 | `{auto_mode}` | true or false (team_mode no longer requires auto_mode) |
 | `{save_mode}` | Save outputs to files |
 | `{output_dir}` | Path to output (if save_mode) |
@@ -74,6 +75,29 @@ From step-00-init:
 ---
 
 ## EXECUTION SEQUENCE:
+
+### Phase 0: READ REFERENCE DOCUMENTS (if any)
+
+<critical>
+**If `{reference_files}` is not empty:**
+
+Read the reference file FIRST — it is the primary source of truth for what needs to be built.
+
+1. Read the reference file using the Read tool
+2. Extract and note:
+   - **Objective:** What specifically needs to be built/changed
+   - **Design decisions:** Schemas, approaches, tech choices already decided
+   - **Implementation details:** APIs, patterns, architectures described
+   - **Constraints:** Performance targets, compatibility requirements
+   - **File references:** Any files mentioned in the reference doc
+3. Use these findings to:
+   - Inform how you split research domains (Phase 1)
+   - Include key context in researcher prompts (Phase 3)
+   - Guide the Task Requirements section during synthesis (Phase 5)
+
+**If `{reference_files}` is empty:**
+→ Skip to Phase 1.
+</critical>
 
 ### Phase 1: ANALYZE COMPLEXITY
 
@@ -352,7 +376,39 @@ TaskList → Verify all research tasks show status: "completed"
 
 #### 5.2 Combine Findings
 
-Combine ALL researcher findings into the step-01 structured format:
+Combine ALL researcher findings into the step-01 structured format.
+
+**Start with Task Requirements (MANDATORY):**
+
+```markdown
+## Task Requirements
+
+### Objective
+{Clear 2-3 sentence description of what needs to be built/changed.
+ If reference doc exists: extract the objective from it.
+ If no reference doc: infer from task description + researcher findings.}
+
+### Key Specifications
+{If reference doc exists: key decisions, schemas, approaches, performance targets extracted from it.
+ If no reference doc: inferred from task description and what researchers discovered.}
+- {Specific technical requirement}
+- {Schema/interface to implement or modify}
+- {Integration points}
+- {Performance/quality constraints}
+
+### Reference
+{If reference doc: "**Source:** `{reference_files}` — {one-line summary of what it contains}"}
+{If no reference doc: "Inferred from task description and codebase analysis"}
+```
+
+<critical>
+The Task Requirements section is MANDATORY — it must appear FIRST in the 01-analyze.md output, before Codebase Context.
+- WITH reference doc: extract concrete specs, schemas, decisions, constraints from the reference
+- WITHOUT reference doc: infer what needs to change from the task description + what researchers discovered
+- Either way, be SPECIFIC about what needs to be built
+</critical>
+
+**Then continue with Codebase Context:**
 
 ```markdown
 ## Codebase Context

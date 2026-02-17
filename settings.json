@@ -3,7 +3,7 @@
   "env": {
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
     "MAX_THINKING_TOKENS": "31999",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "90",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_EFFORT_LEVEL": "high",
     "MAX_MCP_OUTPUT_TOKENS": "50000",
@@ -13,7 +13,8 @@
     "GIT_COMMITTER_NAME": "Claude Code",
     "GIT_AUTHOR_EMAIL": "flosrn@users.noreply.github.com",
     "GIT_COMMITTER_EMAIL": "flosrn@users.noreply.github.com",
-    "ALLOW_GIT_COMMIT": "1"
+    "ALLOW_GIT_COMMIT": "1",
+    "RIPGREP_CONFIG_PATH": "/Users/flo/.config/ripgrep/.emptyripgreprc"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -122,7 +123,7 @@
     "claude-code-setup@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
-    "marketing-skills@marketingskills": false,
+    "marketing-skills@marketingskills": true,
     "superpowers@claude-plugins-official": false
   },
   "spinnerTipsEnabled": false,

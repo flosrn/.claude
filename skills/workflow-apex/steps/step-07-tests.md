@@ -1,8 +1,8 @@
 ---
 name: step-07-tests
 description: Smart test analysis and creation - analyze patterns, create appropriate tests
-prev_step: steps/step-04-validate.md
-next_step: steps/step-08-run-tests.md
+prev_step: ./step-04-validate.md OR ./step-06-resolve.md
+next_step: ./step-08-run-tests.md
 ---
 
 # Step 7: Tests (Analysis & Creation)
@@ -258,25 +258,21 @@ Append to `{output_dir}/07-tests.md`:
 
 ```
 IF auto_mode = true:
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "07" "tests" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "08-run-tests" "**07-tests:** {count} test files created" ["{gotcha if any}"]
+    ```
   → Load ./step-08-run-tests.md directly (chain all steps)
 
 IF auto_mode = false:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "07" "tests" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to 08-run-tests
-    2. Append to Step Context: "- **07-tests:** {count} test files created"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 07 COMPLETE: Tests
-    ═══════════════════════════════════════
-      {count} test files, {count} test cases
-      Resume: /apex -r {task_id}
-      Next: Step 08 - Run Tests (Fix Loop)
-    ═══════════════════════════════════════
-
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "07" "tests" "{count} test files, {count} test cases" "08-run-tests" "Run Tests (Fix Loop)" "**07-tests:** {count} test files created" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
   → STOP. Do NOT load the next step.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 
 <critical>

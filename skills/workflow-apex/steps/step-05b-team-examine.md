@@ -1,8 +1,8 @@
 ---
 name: step-05b-team-examine
 description: Agent Team parallel adversarial review - multiple reviewers examine code simultaneously and challenge each other
-prev_step: steps/step-04-validate.md
-next_step: steps/step-06-resolve.md
+prev_step: ./step-04-validate.md
+next_step: conditional (06-resolve | 07-tests | 09-finish | complete)
 load_condition: team_mode = true AND examine_mode = true
 ---
 
@@ -46,13 +46,13 @@ If this step was loaded via `/apex -r {task_id}` resume:
 
 1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
 2. Read `{output_dir}/03-execute.md` → restore execution log (files modified)
-3. **Note:** Team mode cannot resume mid-review (teammates don't survive sessions)
-4. Check if `{output_dir}/05-examine.md` already has findings
-5. If findings exist, skip to step-06-resolve.md:
-   → Load step-06-resolve.md directly
-6. If no findings yet, fall back to solo review:
-   → Set {team_mode} = false (disable for this session only)
-   → Load step-05-examine.md (which will now execute solo since team_mode is false)
+3. Check if `{output_dir}/05-examine.md` already has findings (not just the template header)
+4. If findings exist (review was completed before) → skip to step-06-resolve.md
+5. If 05-examine progress is "⏳ In Progress" (review crashed mid-execution):
+   → Team mode cannot resume mid-review (teammates don't survive sessions)
+   → Fall back to solo: set {team_mode} = false, load step-05-examine.md
+6. If 05-examine progress is "⏸ Pending" (arriving here for the first time):
+   → Proceed normally with team review (teammates are fresh, no crash to recover from)
 </critical>
 
 ## YOUR TASK:
@@ -70,6 +70,8 @@ From previous steps:
 | `{task_id}` | Kebab-case identifier |
 | `{auto_mode}` | true or false (team_mode no longer requires auto_mode) |
 | `{save_mode}` | Save outputs to files |
+| `{test_mode}` | Include test steps |
+| `{pr_mode}` | Create pull request |
 | `{output_dir}` | Path to output (if save_mode) |
 | Files modified | From step-03 |
 </available_state>
@@ -371,7 +373,7 @@ Launch ALL reviewers in a SINGLE message block (parallel spawn):
 ```
 Task:
   description: "Security adversarial review"
-  subagent_type: "code-reviewer"
+  subagent_type: "Explore"
   team_name: "apex-review-{task_id}"
   name: "security-reviewer"
   prompt: |
@@ -402,7 +404,7 @@ Task:
 ```
 Task:
   description: "Logic adversarial review"
-  subagent_type: "code-reviewer"
+  subagent_type: "Explore"
   team_name: "apex-review-{task_id}"
   name: "logic-reviewer"
   prompt: |
@@ -433,7 +435,7 @@ Task:
 ```
 Task:
   description: "Quality adversarial review"
-  subagent_type: "code-reviewer"
+  subagent_type: "Explore"
   team_name: "apex-review-{task_id}"
   name: "quality-reviewer"
   prompt: |
@@ -464,7 +466,7 @@ Task:
 ```
 Task:
   description: "Vercel/Next.js adversarial review"
-  subagent_type: "code-reviewer"
+  subagent_type: "general-purpose"
   team_name: "apex-review-{task_id}"
   name: "vercel-reviewer"
   prompt: |
@@ -472,8 +474,9 @@ Task:
     Your job is to find framework anti-patterns - NOT fix them.
 
     ## Your Task
-    Check TaskList for the Vercel/Next.js review task, claim it with TaskUpdate
-    (set owner to "vercel-reviewer"), then review all listed files.
+    1. First, invoke the `vercel-react-best-practices` skill via the Skill tool
+    2. Check TaskList for the Vercel/Next.js review task, claim it with TaskUpdate
+       (set owner to "vercel-reviewer"), then review all listed files against its guidelines.
 
     ## Critical Rules
     1. Read the task description CAREFULLY for your checklists and focus areas
@@ -647,6 +650,7 @@ TeamDelete
 
 **If `{auto_mode}` = false:**
 
+**If `{test_mode}` = true AND tests not yet completed:**
 ```yaml
 questions:
   - header: "Review"
@@ -656,6 +660,21 @@ questions:
         description: "Address the identified issues"
       - label: "Skip to tests"
         description: "Skip resolution, proceed to test creation"
+      - label: "Skip resolution"
+        description: "Accept findings, don't make changes"
+      - label: "Discuss findings"
+        description: "I want to discuss specific findings"
+    multiSelect: false
+```
+
+**If `{test_mode}` = false OR tests already completed:**
+```yaml
+questions:
+  - header: "Review"
+    question: "Team review complete. How would you like to proceed?"
+    options:
+      - label: "Resolve findings (Recommended)"
+        description: "Address the identified issues"
       - label: "Skip resolution"
         description: "Accept findings, don't make changes"
       - label: "Discuss findings"
@@ -675,6 +694,16 @@ This is one of the THREE transition points that requires user confirmation:
 Append to `{output_dir}/00-context.md` under `### User Choices`:
 ```markdown
 - **step-05 → next:** {chosen option} (e.g., "resolve", "skip-to-tests", "skip-resolution")
+```
+
+**Update progress for skipped resolution (if save_mode):**
+
+```
+IF user chose "Skip to tests" OR "Skip resolution":
+  → 06-resolve will be skipped. Update its progress:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "skip"
+    ```
 ```
 
 ### 7. Complete Save Output (if save_mode)
@@ -736,39 +765,41 @@ Append to `{output_dir}/05-examine.md`:
 
 **Determine next step based on user choice/flags:**
 - **"Resolve findings":** next = `06-resolve`
-- **"Skip to tests" (and test_mode):** next = `07-tests`
-- **"Skip resolution" + test_mode:** next = `07-tests`
-- **"Skip resolution" + pr_mode:** next = `09-finish`
+- **"Skip to tests" (and test_mode AND tests not yet completed):** next = `07-tests`
+  - _Check: If save_mode, check progress table for `08-run-tests` status. If `✓ Complete`, tests already done → treat as "Skip resolution"._
+- **"Skip resolution" + test_mode (AND tests not yet completed):** next = `07-tests`
+  - _Same check as above._
+- **"Skip resolution" + pr_mode (or tests already completed + pr_mode):** next = `09-finish`
 - **"Skip resolution" (no more steps):** Workflow complete
 
 ### Session Boundary
 
 ```
 IF auto_mode = true:
-  → Load the determined next step directly (chain all steps)
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "{next_step}" "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
+    ```
+  → If next_step = "complete": Display workflow complete message → STOP.
+  → Otherwise: Load the determined next step directly (chain all steps)
 
 IF auto_mode = false AND workflow not complete:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to the determined next step
-    2. Append to Step Context: "- **05-examine:** {count} findings ({count} blocking)"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 05 COMPLETE: Team Examine
-    ═══════════════════════════════════════
-      Reviewers: {count} ({domains})
-      Findings: {count} ({blocking} blocking)
-      Cross-challenge: {validated}/{challenged}/{new}
-      Resume: /apex -r {task_id}
-      Next: Step {NN} - {description}
-    ═══════════════════════════════════════
-
+  → Determine {next_step_num} and {next_step_description} from the decision tree above
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" "Reviewers: {count}. Findings: {count} ({blocking} blocking). Cross-challenge: {validated}/{challenged}/{new}" "{next_step_num}" "{next_step_description}" "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
   → STOP. Do NOT load the next step.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 
-IF workflow complete:
-  → Show final APEX WORKFLOW COMPLETE summary
+IF auto_mode = false AND workflow complete:
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" "Team review complete. No findings to resolve." "complete" "Workflow Complete" "**05-examine:** {count} findings, all dismissed"
+    ```
+  → Display the output to the user
   → STOP.
 ```
 

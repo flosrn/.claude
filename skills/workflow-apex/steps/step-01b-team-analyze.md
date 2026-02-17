@@ -1,8 +1,8 @@
 ---
 name: step-01b-team-analyze
 description: Agent Team parallel research - explore codebase across multiple research domains simultaneously
-prev_step: steps/step-00-init.md
-next_step: steps/step-02-plan.md
+prev_step: ./step-00-init.md
+next_step: ./step-02-plan.md
 load_condition: team_mode = true
 ---
 
@@ -42,10 +42,13 @@ load_condition: team_mode = true
 If this step was loaded via `/apex -r {task_id}` resume:
 
 1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
-2. **Note:** Team mode cannot resume mid-research (teammates don't survive sessions)
-3. Check if `{output_dir}/01-analyze.md` already has findings
-4. If findings exist, skip to step-02-plan.md directly
-5. If no findings, restart research from Phase 1
+2. Check if `{output_dir}/01-analyze.md` already has findings (not just the template header)
+3. If findings exist (analysis was completed before) → skip to step-02-plan.md directly
+4. If 01-analyze progress is "⏳ In Progress" (analysis crashed mid-execution):
+   → Team mode cannot resume mid-research (teammates don't survive sessions)
+   → Fall back to solo: set {team_mode} = false, load step-01-analyze.md
+5. If 01-analyze progress is "⏸ Pending" (arriving here for the first time):
+   → Proceed normally with team analysis (teammates are fresh)
 </critical>
 
 ## YOUR TASK:
@@ -408,12 +411,6 @@ _These will be refined in the planning step._
 
 **If `{save_mode}` = true:** Update 00-context.md acceptance criteria section (replace `_Defined during step-01-analyze_` with the inferred AC)
 
-**State Snapshot Update (if save_mode):**
-
-Update `{output_dir}/00-context.md` State Snapshot section:
-1. Set `**next_step:** 02-plan`
-2. Append to `### Step Context`: `- **01-analyze:** {one-line summary of key findings}`
-
 #### 5.4 Shutdown Researchers
 
 For each researcher:
@@ -469,10 +466,7 @@ Append to `{output_dir}/01-analyze.md`:
 **Timestamp:** {ISO timestamp}
 ```
 
-```bash
-bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "complete"
-bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "in_progress"
-```
+Note: Progress updates (marking step-01 complete and setting next_step) are handled by `session-boundary.sh` in the NEXT STEP section.
 
 ---
 
@@ -520,25 +514,21 @@ bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "in_progress
 
 ```
 IF auto_mode = true:
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "02-plan" "**01-analyze:** {one-line summary of key findings}" ["{gotcha if any}"]
+    ```
   → Load ./step-02-plan.md directly (chain all steps)
 
 IF auto_mode = false:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to 02-plan
-    2. Append to Step Context: "- **01-analyze:** Key findings: {count} files, {count} patterns (team research)"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 01 COMPLETE: Team Analyze
-    ═══════════════════════════════════════
-      Key findings: {count} files, {count} patterns (team research)
-      Resume: /apex -r {task_id}
-      Next: Step 02 - Plan (Strategic Design)
-    ═══════════════════════════════════════
-
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "01" "analyze" "Key findings: {count} files, {count} patterns (team research)" "02-plan" "Plan (Strategic Design)" "**01-analyze:** {one-line summary of key findings}"
+    ```
+  → Display the output to the user
   → STOP. Do NOT load the next step.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 
 <critical>

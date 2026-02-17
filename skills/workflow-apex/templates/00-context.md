@@ -16,9 +16,11 @@
 | Economy mode (`-e`) | {{economy_mode}} |
 | Team mode (`-w`) | {{team_mode}} |
 | Branch mode (`-b`) | {{branch_mode}} |
+| Worktree mode (`-wt`) | {{worktree_mode}} |
 | PR mode (`-pr`) | {{pr_mode}} |
 | Interactive mode (`-i`) | {{interactive_mode}} |
 | Branch name | {{branch_name}} |
+| Worktree path | {{worktree_path}} |
 
 ---
 
@@ -27,12 +29,6 @@
 ```
 {{original_input}}
 ```
-
----
-
-## Acceptance Criteria
-
-_To be defined in step-01-analyze.md_
 
 ---
 
@@ -56,7 +52,8 @@ _To be defined in step-01-analyze.md_
 ## State Snapshot
 
 **feature_name:** {{feature_name}}
-**next_step:** 01-analyze
+**worktree_path:** {{worktree_path}}
+**next_step:** 01
 
 ### Acceptance Criteria
 
@@ -65,6 +62,10 @@ _Defined during step-01-analyze_
 ### Step Context
 
 _Brief summaries added as steps complete_
+
+### Gotchas
+
+_Surprises, workarounds, and deviations discovered during execution_
 
 ### User Choices
 

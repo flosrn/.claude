@@ -11,7 +11,7 @@ load_condition: economy_mode = true
 These instructions OVERRIDE the default behavior in all steps to save tokens by avoiding subagent launches.
 
 <critical>
-**Incompatibility:** Economy mode is incompatible with team mode (`-w`). Team mode requires subagents (Agent Teams) which economy mode prohibits. If both are enabled, step-00-init will produce an error and stop the workflow.
+**Incompatibility:** Economy mode is incompatible with team mode (`-w`). Team mode requires subagents (Agent Teams) which economy mode prohibits. If both are enabled, step-00-init will disable economy mode with a warning and team mode takes priority.
 </critical>
 
 ---
@@ -48,9 +48,9 @@ These instructions OVERRIDE the default behavior in all steps to save tokens by 
 **DEFAULT behavior (when economy_mode = false):**
 ```
 Launch parallel agents:
-- Agent 1: explore-codebase
-- Agent 2: explore-docs
-- Agent 3: websearch
+- Agent 1: Explore (built-in)
+- Agent 2: explore-docs (custom)
+- Agent 3: websearch (built-in)
 ```
 
 **ECONOMY behavior (when economy_mode = true):**
@@ -125,7 +125,7 @@ Economy exploration strategy:
 
 ### Override 5: Leaner Validation
 
-**DEFAULT:** Launch code-reviewer agent for adversarial review
+**DEFAULT:** Launch Explore agents for adversarial review
 **ECONOMY:** Self-review without subagent
 
 ```
@@ -148,7 +148,7 @@ Economy validation:
 
 ```
 Economy test strategy:
-1. Analyze tests with Glob + Grep (not explore-codebase agent)
+1. Analyze tests with Glob + Grep (not Explore agent)
 2. Read 1-2 similar test files for patterns
 3. Create essential tests only:
    - 1 happy path test
@@ -197,7 +197,7 @@ DO:
 
 ### Step 05: Examine (Economy)
 ```
-INSTEAD OF: code-reviewer agent
+INSTEAD OF: Explore review agents
 DO:
 1. Self-review with checklist:
    - Security: no injection, no secrets

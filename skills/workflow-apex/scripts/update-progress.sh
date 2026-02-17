@@ -8,7 +8,7 @@ set -e
 TASK_ID="$1"
 STEP_NUMBER="$2"
 STEP_NAME="$3"
-STATUS="$4"  # "in_progress" or "complete"
+STATUS="$4"  # "in_progress", "complete", or "skip"
 
 # Validate required arguments
 if [[ -z "$TASK_ID" ]] || [[ -z "$STEP_NUMBER" ]] || [[ -z "$STEP_NAME" ]] || [[ -z "$STATUS" ]]; then
@@ -17,8 +17,8 @@ if [[ -z "$TASK_ID" ]] || [[ -z "$STEP_NUMBER" ]] || [[ -z "$STEP_NAME" ]] || [[
     exit 1
 fi
 
-# Find project root
-PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+# Find project root (use pwd for consistency with setup-templates.sh)
+PROJECT_ROOT=$(pwd)
 CONTEXT_FILE="${PROJECT_ROOT}/.claude/output/apex/${TASK_ID}/00-context.md"
 
 # Validate context file exists
@@ -35,8 +35,10 @@ if [[ "$STATUS" == "in_progress" ]]; then
     STATUS_SYMBOL="⏳ In Progress"
 elif [[ "$STATUS" == "complete" ]]; then
     STATUS_SYMBOL="✓ Complete"
+elif [[ "$STATUS" == "skip" ]]; then
+    STATUS_SYMBOL="⏭ Skip"
 else
-    echo "Error: Invalid status. Use 'in_progress' or 'complete'"
+    echo "Error: Invalid status. Use 'in_progress', 'complete', or 'skip'"
     exit 1
 fi
 
@@ -54,6 +56,11 @@ BEGIN { in_table = 0; found = 0 }
         in_table = 1
         print $0
         next
+    }
+
+    # Detect table end (next section heading)
+    if (in_table && $0 ~ /^## /) {
+        in_table = 0
     }
 
     # If in table and found the matching step

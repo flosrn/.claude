@@ -1,8 +1,8 @@
 ---
 name: step-03-execute
 description: Todo-driven implementation - execute the plan file by file
-prev_step: steps/step-02-plan.md
-next_step: steps/step-04-validate.md
+prev_step: ./step-02-plan.md
+next_step: ./step-04-validate.md
 ---
 
 # Step 3: Execute (Implementation)
@@ -69,6 +69,7 @@ From previous steps:
 | `{task_id}` | Kebab-case identifier |
 | `{auto_mode}` | Skip confirmations |
 | `{save_mode}` | Save outputs to files |
+| `{team_mode}` | Use Agent Teams for parallel execution |
 | `{output_dir}` | Path to output (if save_mode) |
 | Implementation plan | File-by-file changes from step-02 |
 | Patterns | How to implement from step-01 |
@@ -93,10 +94,10 @@ Append logs to `{output_dir}/03-execute.md` as you work.
 Create a lightweight checkpoint before making changes:
 
 ```bash
-git add -A && git commit --allow-empty -m "apex: checkpoint before execute ({task_id})"
+git add -u && git commit --allow-empty -m "apex: checkpoint before execute ({task_id})"
 ```
 
-This enables `git reset HEAD~1` to rollback if execution breaks the codebase.
+Uses `git add -u` (tracked files only) to avoid staging sensitive files like `.env`. This enables `git reset HEAD~1` to rollback if execution breaks the codebase.
 
 ### 3. Create Todos from Plan
 
@@ -113,16 +114,16 @@ Becomes:
 - [ ] src/auth/handler.ts: Handle expired token error
 ```
 
-Use TodoWrite to create the full list.
+Track progress with markdown checkboxes (in conversation and in `{output_dir}/03-execute.md` if save_mode).
 
 ### 4. Execute File by File
 
 For each todo:
 
-**3.1 Mark In Progress**
+**4.1 Mark In Progress**
 - Only ONE todo in_progress at a time
 
-**3.2 Read Before Edit**
+**4.2 Read Before Edit**
 ```
 ALWAYS read the file before modifying:
 - Understand current structure
@@ -130,7 +131,7 @@ ALWAYS read the file before modifying:
 - Verify patterns match expectations
 ```
 
-**3.3 Implement Changes**
+**4.3 Implement Changes**
 ```
 Make changes specified in the plan:
 - Follow patterns from step-01 analysis
@@ -139,11 +140,11 @@ Make changes specified in the plan:
 - NO comments unless truly necessary
 ```
 
-**3.4 Mark Complete Immediately**
+**4.4 Mark Complete Immediately**
 - Mark todo complete RIGHT AFTER finishing
 - Don't batch completions
 
-**3.5 Log Progress (if save_mode)**
+**4.5 Log Progress (if save_mode)**
 ```markdown
 ### ✓ src/auth/handler.ts
 - Added `validateToken` function (lines 45-78)
@@ -277,25 +278,20 @@ User confirmation does NOT mean "skip to step-04". It means the step is validate
 
 ```
 IF auto_mode = true:
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "04-validate" "**03-execute:** {count} files modified, all todos complete" ["{gotcha if any}"]
+    ```
   → Load ./step-04-validate.md directly (chain all steps)
 
 IF auto_mode = false:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to 04-validate
-    2. Append to Step Context: "- **03-execute:** {count} files modified, all todos complete"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 03 COMPLETE: Execute
-    ═══════════════════════════════════════
-      {count} files modified, {count} todos completed
-      Resume: /apex -r {task_id}
-      Next: Step 04 - Validate (Self-Check)
-    ═══════════════════════════════════════
-
-  → STOP. Do NOT load the next step. Do NOT proceed to step-04-validate.
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" "{count} files modified, {count} todos completed" "04-validate" "Validate (Self-Check)" "**03-execute:** {count} files modified, all todos complete" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
+  → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 

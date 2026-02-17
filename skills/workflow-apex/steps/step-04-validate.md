@@ -1,8 +1,8 @@
 ---
 name: step-04-validate
 description: Self-check - run tests, verify AC, audit implementation quality
-prev_step: steps/step-03-execute.md
-next_step: steps/step-05-examine.md
+prev_step: ./step-03-execute.md
+next_step: conditional (07-tests | 05-examine | 09-finish | complete)
 ---
 
 # Step 4: Validate (Self-Check)
@@ -61,6 +61,7 @@ From previous steps:
 | `{save_mode}` | Save outputs to files |
 | `{test_mode}` | Include test steps |
 | `{examine_mode}` | Auto-proceed to review |
+| `{pr_mode}` | Create pull request |
 | `{output_dir}` | Path to output (if save_mode) |
 | Implementation | Completed in step-03 |
 </available_state>
@@ -193,6 +194,9 @@ IF {test_mode} = true:
 ELSE IF {examine_mode} = true:
     → next_step = 05-examine
 
+ELSE IF {pr_mode} = true:
+    → next_step = 09-finish
+
 ELSE IF {auto_mode} = false:
     → Ask user what the next step should be:
 ```
@@ -208,7 +212,50 @@ questions:
         description: "No more steps needed"
       - label: "Add tests"
         description: "Queue test creation for next session"
+      - label: "Create PR"
+        description: "Queue pull request creation for next session"
     multiSelect: false
+```
+
+**Map user choice to next_step:**
+```
+"Adversarial review" → next_step = 05-examine
+"Add tests"          → next_step = 07-tests
+"Create PR"          → next_step = 09-finish
+"Complete workflow"   → next_step = complete
+```
+
+**Flag Sync (if save_mode):** After mapping the user's choice, ensure the corresponding flag, output files, and progress table are consistent:
+
+```
+IF user chose "Adversarial review" AND {examine_mode} = false:
+  → Set {examine_mode} = true
+  → Update 00-context.md: change examine_mode row to "true"
+  → Create output files from templates:
+    ```bash
+    TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    for TPL in 05-examine.md 06-resolve.md; do
+      sed -e "s|{{task_id}}|{task_id}|g" \
+          -e "s|{{task_description}}|{task_description}|g" \
+          -e "s|{{timestamp}}|$TIMESTAMP|g" \
+          "{skill_dir}/templates/$TPL" > "{output_dir}/$TPL"
+    done
+    ```
+  → Update progress table in 00-context.md: change 05-examine and 06-resolve from "⏭ Skip" to "⏸ Pending"
+
+IF user chose "Add tests" AND {test_mode} = false:
+  → Set {test_mode} = true
+  → Update 00-context.md: change test_mode row to "true"
+  → Create output files from templates:
+    (copy from {skill_dir}/templates/07-tests.md and 08-run-tests.md to {output_dir}/)
+  → Update progress table in 00-context.md: change 07-tests and 08-run-tests from "⏭ Skip" to "⏸ Pending"
+
+IF user chose "Create PR" AND {pr_mode} = false:
+  → Set {pr_mode} = true
+  → Update 00-context.md: change pr_mode row to "true"
+  → Create output file from template:
+    (copy from {skill_dir}/templates/09-finish.md to {output_dir}/)
+  → Update progress table in 00-context.md: change 09-finish from "⏭ Skip" to "⏸ Pending"
 ```
 
 <critical>
@@ -218,7 +265,7 @@ It does NOT mean "load that step now". The session boundary below controls when 
 
 ```
 ELSE:
-    → Workflow complete (no next_step)
+    → next_step = complete
 ```
 
 ### 9. Complete Save Output (if save_mode)
@@ -273,7 +320,7 @@ Append to `{output_dir}/04-validate.md`:
 - **If test_mode:** next = `07-tests`
 - **If examine_mode OR user requests examine:** next = `05-examine`
 - **If pr_mode:** next = `09-finish`
-- **Otherwise:** Workflow complete
+- **Otherwise:** next_step = complete
 
 ### Session Boundary
 
@@ -284,29 +331,30 @@ The user's choice determines what is saved as next_step, NOT whether to load it 
 
 ```
 IF auto_mode = true:
-  → Load the determined next step directly (chain all steps)
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "04" "validate" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "{next_step}" "**04-validate:** All checks passing, AC verified" ["{gotcha if any}"]
+    ```
+  → If next_step = "complete": Display workflow complete message → STOP.
+  → Otherwise: Load the determined next step directly (chain all steps)
 
 IF auto_mode = false AND workflow not complete:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "04" "validate" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to the determined next step
-    2. Append to Step Context: "- **04-validate:** All checks passing, AC verified"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 04 COMPLETE: Validate
-    ═══════════════════════════════════════
-      Typecheck: ✓ | Lint: ✓ | Tests: ✓
-      Resume: /apex -r {task_id}
-      Next: Step {NN} - {description}
-    ═══════════════════════════════════════
-
-  → STOP. Do NOT load the next step. Do NOT proceed to the chosen step.
+  → Determine {next_step_num} and {next_step_description} from the decision tree above
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "04" "validate" "Typecheck: pass | Lint: pass | Tests: pass" "{next_step_num}" "{next_step_description}" "**04-validate:** All checks passing, AC verified" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
+  → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
 
-IF workflow complete (no more steps):
-  → Show final APEX WORKFLOW COMPLETE summary
+IF auto_mode = false AND workflow complete:
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "04" "validate" "All checks passing, AC verified. Workflow complete." "complete" "Workflow Complete" "**04-validate:** All checks passing, AC verified"
+    ```
+  → Display the output to the user
   → STOP.
 ```
 

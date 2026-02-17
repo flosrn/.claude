@@ -45,6 +45,7 @@ Show current flag values:
 | Economy (`-e`) | {economy_mode ? "✓ ON" : "✗ OFF"} | No subagents |
 | Team (`-w`) | {team_mode ? "✓ ON" : "✗ OFF"} | Parallel Agent Teams |
 | Branch (`-b`) | {branch_mode ? "✓ ON" : "✗ OFF"} | Verify/create branch |
+| Worktree (`-wt`) | {worktree_mode ? "✓ ON" : "✗ OFF"} | Isolated git worktree |
 | PR (`-pr`) | {pr_mode ? "✓ ON" : "✗ OFF"} | Create pull request |
 ```
 
@@ -67,13 +68,13 @@ questions:
     multiSelect: true
 ```
 
-### 3. Ask for Additional Flags
+### 3. Ask for Execution Flags
 
 Use AskUserQuestion with multiSelect:
 ```yaml
 questions:
-  - header: "More"
-    question: "Select additional flags to TOGGLE:"
+  - header: "Execution"
+    question: "Select execution flags to TOGGLE:"
     options:
       - label: "Team mode"
         description: "{team_mode ? 'Disable' : 'Enable'} - parallel execution with Agent Teams (incompatible with economy)"
@@ -82,11 +83,29 @@ questions:
       - label: "Branch mode"
         description: "{branch_mode ? 'Disable' : 'Enable'} - verify/create git branch"
       - label: "PR mode"
-        description: "{pr_mode ? 'Disable' : 'Enable'} - create pull request at end"
-      - label: "Done - keep current"
-        description: "No more changes, proceed with workflow"
+        description: "{pr_mode ? 'Disable' : 'Enable'} - create pull request at end (enables branch)"
     multiSelect: true
 ```
+
+### 3b. Ask for Worktree (if branch mode enabled)
+
+**Only if `{branch_mode}` is now true (was toggled on or was already on):**
+
+```yaml
+questions:
+  - header: "Worktree"
+    question: "Use a git worktree for isolated workspace?"
+    options:
+      - label: "Standard branch (Recommended)"
+        description: "Work on a feature branch in the current workspace"
+      - label: "Git worktree"
+        description: "Create an isolated worktree directory (enables branch)"
+    multiSelect: false
+```
+
+**If "Git worktree" selected:** `{worktree_mode} = true`
+**If "Standard branch" selected:** `{worktree_mode} = false`
+**If branch_mode is false:** Skip this question entirely
 
 ### 4. Apply Changes
 
@@ -107,6 +126,11 @@ IF "PR mode" selected → {pr_mode} = !{pr_mode}
 If PR mode enabled, auto-enable branch mode:
 ```
 IF {pr_mode} = true → {branch_mode} = true
+```
+
+If worktree mode enabled, auto-enable branch mode:
+```
+IF {worktree_mode} = true → {branch_mode} = true
 ```
 
 Enforce team+economy mutual exclusion (fires regardless of which was toggled):
@@ -130,6 +154,7 @@ Display updated configuration:
 | Economy | {economy_mode ? "✓ ON" : "✗ OFF"} |
 | Team | {team_mode ? "✓ ON" : "✗ OFF"} |
 | Branch | {branch_mode ? "✓ ON" : "✗ OFF"} |
+| Worktree | {worktree_mode ? "✓ ON" : "✗ OFF"} |
 | PR | {pr_mode ? "✓ ON" : "✗ OFF"} |
 ```
 

@@ -1,8 +1,8 @@
 ---
 name: step-03b-team-execute
 description: Agent Team parallel implementation - execute the plan across multiple teammates by domain
-prev_step: steps/step-02-plan.md
-next_step: steps/step-04-validate.md
+prev_step: ./step-02-plan.md
+next_step: ./step-04-validate.md
 load_condition: team_mode = true
 ---
 
@@ -41,11 +41,12 @@ If this step was loaded via `/apex -r {task_id}` resume:
 
 1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
 2. Read `{output_dir}/02-plan.md` → restore the implementation plan with domain partitioning
-3. **Note:** Team mode cannot resume mid-execution (teammates don't survive sessions)
-4. Check `git diff --name-only` for partial work from a previous attempt
-5. If partial work exists, fall back to solo execution:
-   → Set {team_mode} = false (disable for this session only)
-   → Load step-03-execute.md (which will now execute solo since team_mode is false)
+3. If 03-execute progress is "⏳ In Progress" (execution crashed mid-run):
+   → Team mode cannot resume mid-execution (teammates don't survive sessions)
+   → Check `git diff --name-only` for partial work
+   → Fall back to solo: set {team_mode} = false, load step-03-execute.md
+4. If 03-execute progress is "⏸ Pending" (arriving here for the first time):
+   → Proceed normally with team execution (teammates are fresh)
 </critical>
 
 ## YOUR TASK:
@@ -116,7 +117,7 @@ IF validation fails:
 Create a lightweight checkpoint before making changes:
 
 ```bash
-git add -A && git commit --allow-empty -m "apex: checkpoint before team-execute ({task_id})"
+git add -u && git commit --allow-empty -m "apex: checkpoint before team-execute ({task_id})"
 ```
 
 #### 2.2 Create Team
@@ -386,25 +387,21 @@ Append to `{output_dir}/03-execute.md`:
 
 ```
 IF auto_mode = true:
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "04-validate" "**03-execute:** {count} files modified across {count} domains" ["{gotcha if any}"]
+    ```
   → Load ./step-04-validate.md directly (chain all steps)
 
 IF auto_mode = false:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to 04-validate
-    2. Append to Step Context: "- **03-execute:** {count} files modified across {count} domains"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 03 COMPLETE: Team Execute
-    ═══════════════════════════════════════
-      {count} files modified across {count} domains
-      Resume: /apex -r {task_id}
-      Next: Step 04 - Validate (Self-Check)
-    ═══════════════════════════════════════
-
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" "{count} files modified across {count} domains" "04-validate" "Validate (Self-Check)" "**03-execute:** {count} files modified across {count} domains"
+    ```
+  → Display the output to the user
   → STOP. Do NOT load the next step.
+  → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 
 <critical>

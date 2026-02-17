@@ -1,7 +1,7 @@
 ---
 name: apex
 description: Systematic implementation using APEX methodology (Analyze-Plan-Execute-eXamine) with parallel agents, self-validation, and optional adversarial review. Use when implementing features, fixing bugs, or making code changes that benefit from structured workflow.
-argument-hint: "[-a] [-x] [-s] [-t] [-w] [-b] [-pr] [-i] [-r <task-id>] <task description>"
+argument-hint: "[-a] [-x] [-s] [-t] [-w] [-b] [-wt] [-pr] [-i] [-r <task-id>] <task description>"
 ---
 
 <objective>
@@ -55,6 +55,7 @@ See `<parameters>` for complete flag list.
 | `-w` | `--team` | Team mode: use Agent Teams for parallel research, execution, and review (incompatible with `-e`) |
 | `-r` | `--resume` | Resume mode: continue from a previous task |
 | `-b` | `--branch` | Branch mode: verify not on main, create branch if needed |
+| `-wt` | `--worktree` | Worktree mode: create git worktree for isolated workspace (enables -b) |
 | `-pr` | `--pull-request` | PR mode: create pull request at end (enables -b) |
 | `-i` | `--interactive` | Interactive mode: configure flags via AskUserQuestion |
 
@@ -68,7 +69,9 @@ See `<parameters>` for complete flag list.
 | `-E` | `--no-economy` | Disable economy mode |
 | `-W` | `--no-team` | Disable team mode |
 | `-B` | `--no-branch` | Disable branch mode |
+| `-WT` | `--no-worktree` | Disable worktree mode |
 | `-PR` | `--no-pull-request` | Disable PR mode |
+| `-I` | `--no-interactive` | Disable interactive mode |
 </flags>
 
 <examples>
@@ -84,6 +87,9 @@ See `<parameters>` for complete flag list.
 
 # Full workflow with tests
 /apex -a -x -s -t add auth middleware
+
+# With worktree (isolated workspace)
+/apex -wt -a implement user registration
 
 # With PR creation
 /apex -a -pr add auth middleware
@@ -144,7 +150,7 @@ All outputs saved to PROJECT directory (where Claude Code is running):
 ├── 08-run-tests.md # Test runner log (if --test)
 └── 09-finish.md # Workflow finish and PR creation (if --pull-request)
 
-````
+```
 
 **00-context.md structure:**
 ```markdown
@@ -153,19 +159,37 @@ All outputs saved to PROJECT directory (where Claude Code is running):
 **Created:** {timestamp}
 **Task:** {task_description}
 
-## Flags
-- Auto mode: {auto_mode}
-- Examine mode: {examine_mode}
-- Save mode: {save_mode}
-- Test mode: {test_mode}
+## Configuration
+
+| Flag | Value |
+|------|-------|
+| Auto mode (`-a`) | {auto_mode} |
+| Examine mode (`-x`) | {examine_mode} |
+| Save mode (`-s`) | {save_mode} |
+| Test mode (`-t`) | {test_mode} |
+| Economy mode (`-e`) | {economy_mode} |
+| Team mode (`-w`) | {team_mode} |
+| Branch mode (`-b`) | {branch_mode} |
+| Worktree mode (`-wt`) | {worktree_mode} |
+| PR mode (`-pr`) | {pr_mode} |
+| Interactive mode (`-i`) | {interactive_mode} |
 
 ## User Request
 {original user input}
 
-## Acceptance Criteria
-- [ ] AC1: {inferred criterion}
-- [ ] AC2: {inferred criterion}
-````
+## Progress
+| Step | Status | Timestamp |
+|------|--------|-----------|
+| 00-init | ... | ... |
+...
+
+## State Snapshot
+**feature_name:** ...
+**next_step:** ...
+### Acceptance Criteria
+### Step Context
+### Gotchas
+```
 
 </output_structure>
 
@@ -241,13 +265,13 @@ When `auto_mode` is false (default), APEX runs one step per session:
 | 02-plan | 00-context.md + 01-analyze.md |
 | 03-execute | 00-context.md + 02-plan.md (+ git diff for partial work) |
 | 04-validate | 00-context.md + 03-execute.md |
-| 05-examine | 00-context.md + 03-execute.md |
+| 05-examine | 00-context.md + 03-execute.md + 05-examine.md |
 | 06-resolve | 00-context.md + 05-examine.md |
 | 07-tests | 00-context.md + 03-execute.md |
 | 08-run-tests | 00-context.md + 07-tests.md |
 | 09-finish | 00-context.md only |
 
-**State Snapshot** (in 00-context.md): tracks `next_step`, acceptance criteria, and per-step context summaries for reliable cross-session state transfer.
+**State Snapshot** (in 00-context.md): tracks `next_step`, acceptance criteria, per-step context summaries, and **gotchas** (surprises, workarounds, deviations from plan) for reliable cross-session state transfer.
 </stop_resume>
 
 <state_variables>
@@ -264,14 +288,16 @@ When `auto_mode` is false (default), APEX runs one step per session:
 | `{save_mode}`           | boolean | Save outputs to .claude/output/apex/                   |
 | `{test_mode}`           | boolean | Include test steps (07-08)                             |
 | `{economy_mode}`        | boolean | No subagents, direct tool usage only                   |
-| `{team_mode}`           | boolean | Use Agent Teams for parallel execution in step-03      |
+| `{team_mode}`           | boolean | Use Agent Teams for parallel research (01), execution (03), and review (05) |
 | `{branch_mode}`         | boolean | Verify not on main, create branch if needed            |
+| `{worktree_mode}`       | boolean | Create git worktree for isolated workspace              |
 | `{pr_mode}`             | boolean | Create pull request at end                             |
 | `{interactive_mode}`    | boolean | Configure flags interactively                          |
 | `{next_step}`           | string  | Next step to execute (persisted in State Snapshot)     |
 | `{resume_task}`         | string  | Task ID to resume (if -r provided)                     |
 | `{output_dir}`          | string  | Full path to output directory                          |
 | `{branch_name}`         | string  | Created branch name (if branch_mode)                   |
+| `{worktree_path}`       | string  | Path to created worktree (if worktree_mode)            |
 
 </state_variables>
 
@@ -281,7 +307,7 @@ When `auto_mode` is false (default), APEX runs one step per session:
 
 Step 00 handles:
 
-- Flag parsing (-a, -x, -s, -r, --test)
+- Flag parsing (-a, -x, -s, -t, -e, -w, -b, -wt, -pr, -i, -r)
 - Resume mode detection and task lookup
 - Output folder creation (if save_mode)
 - 00-context.md creation (if save_mode)
@@ -297,6 +323,10 @@ After initialization, step-00 loads step-01-analyze.md.
 | Step | File                         | Purpose                                              |
 | ---- | ---------------------------- | ---------------------------------------------------- |
 | 00   | `steps/step-00-init.md`      | Parse flags, create output folder, initialize state  |
+| 00b  | `steps/step-00b-branch.md`   | Branch verification and creation (if branch_mode)    |
+| 00b  | `steps/step-00b-worktree.md` | Git worktree creation for isolated workspace (if worktree_mode) |
+| 00b  | `steps/step-00b-interactive.md` | Interactive flag configuration via AskUserQuestion (if interactive_mode) |
+| 00b  | `steps/step-00b-economy.md`  | Economy mode adjustments (if economy_mode)           |
 | 01   | `steps/step-01-analyze.md`   | Smart context gathering with 1-10 parallel agents (built-in + custom) |
 | 01b  | `steps/step-01b-team-analyze.md` | Agent Team parallel research (if team_mode)         |
 | 02   | `steps/step-02-plan.md`      | File-by-file implementation strategy                 |
@@ -329,11 +359,11 @@ The analyze phase (step-01) uses **adaptive agent launching** (unless economy_mo
 
 **Available agents:**
 - `Explore` (built-in) - Find existing patterns, files, utilities
-- `explore-docs` (custom) - Research library docs via Context7 (use when unfamiliar with API)
+- `explore-docs` (custom, requires `.claude/agents/explore-docs.md`) - Research library docs via Context7 (use when unfamiliar with API)
 - `websearch` (built-in) - Find approaches, best practices, gotchas
 
 **Review agents (step-05):**
-- `code-reviewer` (custom) - Adversarial review with focus areas (security, logic, clean-code)
+- `Explore` (built-in) - Adversarial review with focus areas (security, logic, clean-code) — read-only, fast
 
 **Launch 1-10 agents based on task complexity:**
 

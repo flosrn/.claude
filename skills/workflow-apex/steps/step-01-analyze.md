@@ -1,7 +1,7 @@
 ---
 name: step-01-analyze
 description: Pure context gathering - explore codebase to understand WHAT EXISTS
-next_step: steps/step-02-plan.md
+next_step: ./step-02-plan.md
 ---
 
 # Step 1: Analyze (Context Gathering)
@@ -78,6 +78,7 @@ From step-00-init:
 | `{save_mode}` | Save outputs to files |
 | `{test_mode}` | Include test steps |
 | `{economy_mode}` | No subagents, direct tools |
+| `{team_mode}` | Use Agent Teams for parallel research |
 | `{output_dir}` | Path to output (if save_mode) |
 </available_state>
 
@@ -163,11 +164,11 @@ Task: {task_description}
 
 | Task Type | Agents Needed | Example |
 |-----------|---------------|---------|
-| **Simple fix** | 1-2 | Bug fix in known file → 1x explore-codebase |
-| **Add feature (familiar stack)** | 2-3 | Add button → 1x explore-codebase + 1x websearch |
-| **Add feature (unfamiliar library)** | 3-5 | Add Stripe → 1x codebase + 1x explore-docs (Stripe) + 1x websearch |
-| **Complex integration** | 5-8 | Auth + payments → 1x codebase + 2-3x explore-docs + 1-2x websearch |
-| **Major feature (multiple systems)** | 6-10 | Full e-commerce → Multiple codebase areas + multiple docs + research |
+| **Simple fix** | 1-2 | Bug fix in known file → 1x Explore |
+| **Add feature (familiar stack)** | 2-3 | Add button → 1x Explore + 1x websearch |
+| **Add feature (unfamiliar library)** | 3-5 | Add Stripe → 1x Explore + 1x explore-docs (Stripe) + 1x websearch |
+| **Complex integration** | 5-8 | Auth + payments → 1x Explore + 2-3x explore-docs + 1-2x websearch |
+| **Major feature (multiple systems)** | 6-10 | Full e-commerce → Multiple Explore areas + multiple docs + research |
 
 ---
 
@@ -295,12 +296,6 @@ _These will be refined in the planning step._
 
 **If `{save_mode}` = true:** Update 00-context.md acceptance criteria section (replace `_Defined during step-01-analyze_` with the inferred AC)
 
-**State Snapshot Update (if save_mode):**
-
-Update `{output_dir}/00-context.md` State Snapshot section:
-1. Set `**next_step:** 02-plan`
-2. Append to `### Step Context`: `- **01-analyze:** {one-line summary of key findings}`
-
 ### 6. Present Context Summary
 
 **Always (regardless of auto_mode):**
@@ -330,12 +325,9 @@ The session boundary controls whether to stop or continue — NOT this section.
 
 **If `{save_mode}` = true:**
 
-Append summary to `{output_dir}/01-analyze.md` then:
+Append summary to `{output_dir}/01-analyze.md`.
 
-```bash
-bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "complete"
-bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "in_progress"
-```
+Note: Progress updates (marking step-01 complete and setting next_step) are handled by `session-boundary.sh` in the NEXT STEP section.
 
 ---
 
@@ -387,23 +379,20 @@ THIS SECTION IS MANDATORY. Follow this session boundary logic regardless of what
 
 ```
 IF auto_mode = true:
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "02-plan" "**01-analyze:** {one-line summary of key findings}" ["{gotcha if any}"]
+    ```
   → Load ./step-02-plan.md directly (chain all steps)
 
 IF auto_mode = false:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "complete"
-  → Update State Snapshot (next_step + step context) in 00-context.md
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 01 COMPLETE: Analyze
-    ═══════════════════════════════════════
-      Key findings: {count} files, {count} patterns
-      Resume: /apex -r {task_id}
-      Next: Step 02 - Plan (Strategic Design)
-    ═══════════════════════════════════════
-
-  → STOP. Do NOT load the next step. Do NOT proceed to step-02-plan.
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "01" "analyze" "Key findings: {count} files, {count} patterns" "02-plan" "Plan (Strategic Design)" "**01-analyze:** {one-line summary of key findings}" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
+  → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 

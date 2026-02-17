@@ -1,8 +1,8 @@
 ---
 name: step-06-resolve
 description: Resolve findings - interactively address review issues
-prev_step: steps/step-05-examine.md
-next_step: COMPLETE
+prev_step: ./step-05-examine.md OR ./step-05b-team-examine.md
+next_step: conditional (07-tests | 09-finish | complete)
 ---
 
 # Step 6: Resolve Findings
@@ -58,6 +58,8 @@ From previous steps:
 | `{task_id}` | Kebab-case identifier |
 | `{auto_mode}` | Auto-fix Real findings |
 | `{save_mode}` | Save outputs to files |
+| `{test_mode}` | Include test steps |
+| `{pr_mode}` | Create pull request |
 | `{output_dir}` | Path to output (if save_mode) |
 | Findings table | IDs, severity, validity |
 | Finding todos | For tracking |
@@ -188,28 +190,6 @@ Append to `{output_dir}/06-resolve.md`:
 **Timestamp:** {ISO timestamp}
 ```
 
-### 7. Completion Summary
-
-```
-**APEX Workflow Complete**
-
-**Task:** {task_description}
-
-**Implementation:**
-- Files modified: {count}
-- All checks passing: ✓
-
-**Review:**
-- Findings identified: {total}
-- Findings resolved: {fixed}
-- Findings skipped: {skipped}
-
-**Next Steps:**
-- [ ] Commit changes
-- [ ] Run full test suite
-- [ ] Deploy when ready
-```
-
 ---
 
 ## SUCCESS METRICS:
@@ -239,10 +219,12 @@ Append to `{output_dir}/06-resolve.md`:
 
 ## NEXT STEP:
 
-**Determine next step based on flags:**
-- **If test_mode (and tests not yet done):** next = `07-tests`
+**Determine next step based on flags (check in order):**
+- **If test_mode AND tests not yet completed:** next = `07-tests`
+  - _Check: If save_mode, read progress table in 00-context.md. If `08-run-tests` shows `✓ Complete`, tests are already done → skip to next rule._
+  - _If auto_mode chain (no save), tests are done if step-08 already ran in this session → skip to next rule._
 - **If pr_mode:** next = `09-finish`
-- **Otherwise:** Workflow complete
+- **Otherwise:** next_step = complete
 
 ### Session Boundary
 
@@ -252,29 +234,30 @@ THIS SECTION IS MANDATORY. Follow this session boundary logic regardless of what
 
 ```
 IF auto_mode = true:
-  → Load the determined next step directly (chain all steps)
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "{next_step}" "**06-resolve:** {fixed} fixed, {skipped} skipped" ["{gotcha if any}"]
+    ```
+  → If next_step = "complete": Display workflow complete message → STOP.
+  → Otherwise: Load the determined next step directly (chain all steps)
 
 IF auto_mode = false AND workflow not complete:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to the determined next step
-    2. Append to Step Context: "- **06-resolve:** {fixed} fixed, {skipped} skipped"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 06 COMPLETE: Resolve
-    ═══════════════════════════════════════
-      Fixed: {count} | Skipped: {count}
-      Resume: /apex -r {task_id}
-      Next: Step {NN} - {description}
-    ═══════════════════════════════════════
-
-  → STOP. Do NOT load the next step. Do NOT proceed to the next step.
+  → Determine {next_step_num} and {next_step_description} from the decision tree above
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" "Fixed: {count} | Skipped: {count}" "{next_step_num}" "{next_step_description}" "**06-resolve:** {fixed} fixed, {skipped} skipped" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
+  → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
 
-IF workflow complete:
-  → Show final APEX WORKFLOW COMPLETE summary
+IF auto_mode = false AND workflow complete:
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" "All findings resolved. Workflow complete." "complete" "Workflow Complete" "**06-resolve:** {fixed} fixed, {skipped} skipped"
+    ```
+  → Display the output to the user
   → STOP.
 ```
 

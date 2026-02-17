@@ -1,7 +1,7 @@
 ---
 name: step-09-finish
 description: Finish APEX workflow and create pull request
-previous_step: step-08-run-tests.md (or step-04-validate.md if no tests)
+prev_step: ./step-08-run-tests.md (or ./step-04-validate.md if no tests)
 ---
 
 # Step 9: Finish & Create PR
@@ -25,7 +25,7 @@ previous_step: step-08-run-tests.md (or step-04-validate.md if no tests)
 
 ## CONTEXT BOUNDARIES:
 
-- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{pr_mode}`, `{auto_mode}`, `{save_mode}`, `{output_dir}`
+- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{worktree_path}`, `{worktree_mode}`, `{pr_mode}`, `{auto_mode}`, `{save_mode}`, `{output_dir}`
 - Previous steps completed: analyze, plan, execute, validate (+ optional: tests, examine)
 - All implementation should be done at this point
 
@@ -46,6 +46,14 @@ Finalize the APEX workflow by committing remaining changes, pushing to remote, a
 ---
 
 ## EXECUTION SEQUENCE:
+
+### 0. Mark Step In Progress (if save_mode)
+
+**If `{save_mode}` = true:**
+
+```bash
+bash {skill_dir}/scripts/update-progress.sh "{task_id}" "09" "finish" "in_progress"
+```
 
 ### 1. Verify Git Status
 
@@ -139,14 +147,15 @@ gh pr view --json url -q '.url'
 
 **If `{save_mode}` = true:**
 
-```bash
-bash {skill_dir}/scripts/update-progress.sh "{task_id}" "09" "finish" "in_progress"
-```
-
 Append to `{output_dir}/09-finish.md`: branch, PR URL, commits, timestamp.
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "09" "finish" "complete"
+```
+
+Update state snapshot to mark workflow complete:
+```bash
+bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "complete" "**09-finish:** PR created, workflow complete"
 ```
 
 ### 7. Final Summary
@@ -168,6 +177,7 @@ Display workflow completion summary:
   {if test_mode: "✓ Tests passing"}
   {if examine_mode: "✓ Review findings resolved"}
   ✓ Changes pushed to {branch_name}
+  {if worktree_mode: "✓ Worktree: {worktree_path}"}
   {if pr_mode: "✓ PR created: {pr_url}"}
 
 ═══════════════════════════════════════════════════════

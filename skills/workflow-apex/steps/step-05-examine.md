@@ -1,8 +1,8 @@
 ---
 name: step-05-examine
 description: Adversarial code review - security, logic, and quality analysis
-prev_step: steps/step-04-validate.md
-next_step: steps/step-06-resolve.md
+prev_step: ./step-04-validate.md OR ./step-08-run-tests.md
+next_step: conditional (06-resolve | 07-tests | 09-finish | complete)
 ---
 
 # Step 5: Examine (Adversarial Review)
@@ -40,8 +40,12 @@ If this step was loaded via `/apex -r {task_id}` resume:
 
 1. Read `{output_dir}/00-context.md` → restore flags, task info, acceptance criteria
 2. Read `{output_dir}/03-execute.md` → restore execution log (files modified)
-3. All state variables are now available from the restored context
-4. Proceed with normal execution below
+3. Check if `{output_dir}/05-examine.md` already has findings (not just the template header)
+4. If findings exist (review was completed before) → skip to step-06-resolve.md
+5. If 05-examine progress is "⏳ In Progress" (review crashed mid-execution):
+   → Re-run the review from scratch (previous partial findings may be incomplete)
+6. If 05-examine progress is "⏸ Pending" (arriving here for the first time):
+   → Proceed normally with review below
 </critical>
 
 ## TEAM MODE BRANCHING:
@@ -69,6 +73,8 @@ From previous steps:
 | `{auto_mode}` | Auto-fix Real findings |
 | `{save_mode}` | Save outputs to files |
 | `{economy_mode}` | No subagents, direct review |
+| `{test_mode}` | Include test steps |
+| `{pr_mode}` | Create pull request |
 | `{output_dir}` | Path to output (if save_mode) |
 | Files modified | From step-03 |
 </available_state>
@@ -124,9 +130,9 @@ Group files: source, tests, config, other.
 **If `{economy_mode}` = false:**
 → Launch parallel review agents
 
-**CRITICAL: Launch ALL in a SINGLE message using Task tool with `code-reviewer` agent:**
+**CRITICAL: Launch ALL in a SINGLE message using Task tool with `Explore` agent (read-only, fast):**
 
-**Agent 1** (`code-reviewer` — focus: security)
+**Agent 1** (`Explore` — focus: security)
 ```
 Focus: security
 Files: {list of modified source files}
@@ -183,7 +189,7 @@ Example: "[BLOCKING] SQL injection at auth.ts:34. Query uses string concatenatio
 Do NOT speculate — only report findings you can point to in the code.
 ```
 
-**Agent 2** (`code-reviewer` — focus: logic)
+**Agent 2** (`Explore` — focus: logic)
 ```
 Focus: logic
 Files: {list of modified source files}
@@ -233,7 +239,7 @@ Severity: CRITICAL (data loss/crash) > HIGH (will cause bugs) > MEDIUM (should f
 Do NOT speculate — only report findings you can point to in the code.
 ```
 
-**Agent 3** (`code-reviewer` — focus: clean-code)
+**Agent 3** (`Explore` — focus: clean-code)
 ```
 Focus: clean-code
 Files: {list of modified source files}
@@ -302,9 +308,17 @@ Do NOT speculate — only report findings you can point to in the code.
 
 → **If Next.js/Vercel code detected:**
 
-Launch additional agent using Skill tool:
+Launch additional review agent using Task tool (runs in parallel with other agents):
 ```yaml
-skill: "vercel-react-best-practices"
+Task:
+  subagent_type: "general-purpose"
+  description: "Vercel/Next.js best practices review"
+  prompt: |
+    Invoke the `vercel-react-best-practices` skill via the Skill tool,
+    then review the following modified files against its guidelines:
+    {list of modified files matching Next.js patterns}
+
+    Report findings in format: [SEVERITY] What + Why + How
 ```
 
 This agent reviews for:
@@ -360,6 +374,7 @@ For each finding:
 
 **If `{auto_mode}` = false:**
 
+**If `{test_mode}` = true AND tests not yet completed:**
 ```yaml
 questions:
   - header: "Review"
@@ -369,6 +384,21 @@ questions:
         description: "Queue finding resolution for next session"
       - label: "Skip to tests"
         description: "Queue test creation instead"
+      - label: "Skip resolution"
+        description: "Accept findings as-is, no changes needed"
+      - label: "Discuss findings"
+        description: "I want to discuss specific findings"
+    multiSelect: false
+```
+
+**If `{test_mode}` = false OR tests already completed:**
+```yaml
+questions:
+  - header: "Review"
+    question: "Review complete. What should the next step be?"
+    options:
+      - label: "Resolve findings (Recommended)"
+        description: "Queue finding resolution for next session"
       - label: "Skip resolution"
         description: "Accept findings as-is, no changes needed"
       - label: "Discuss findings"
@@ -389,6 +419,16 @@ Append to `{output_dir}/00-context.md` under `### User Choices`:
 ```
 
 This ensures the next step knows which path was chosen after resume.
+
+**Update progress for skipped resolution (if save_mode):**
+
+```
+IF user chose "Skip to tests" OR "Skip resolution":
+  → 06-resolve will be skipped. Update its progress:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "skip"
+    ```
+```
 
 ### 8. Complete Save Output (if save_mode)
 
@@ -441,10 +481,12 @@ Append to `{output_dir}/05-examine.md`:
 
 **Determine next step based on user choice/flags:**
 - **"Resolve findings":** next = `06-resolve`
-- **"Skip to tests" (and test_mode):** next = `07-tests`
-- **"Skip resolution" + test_mode:** next = `07-tests`
-- **"Skip resolution" + pr_mode:** next = `09-finish`
-- **"Skip resolution" (no more steps):** Workflow complete
+- **"Skip to tests" (and test_mode AND tests not yet completed):** next = `07-tests`
+  - _Check: If save_mode, check progress table for `08-run-tests` status. If `✓ Complete`, tests already done → treat as "Skip resolution"._
+- **"Skip resolution" + test_mode (AND tests not yet completed):** next = `07-tests`
+  - _Same check as above._
+- **"Skip resolution" + pr_mode (or tests already completed + pr_mode):** next = `09-finish`
+- **"Skip resolution" (no more steps):** next_step = complete
 
 ### Session Boundary
 
@@ -455,29 +497,30 @@ The user's choice determines what is saved as next_step, NOT whether to load it 
 
 ```
 IF auto_mode = true:
-  → Load the determined next step directly (chain all steps)
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "{next_step}" "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
+    ```
+  → If next_step = "complete": Display workflow complete message → STOP.
+  → Otherwise: Load the determined next step directly (chain all steps)
 
 IF auto_mode = false AND workflow not complete:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to the determined next step
-    2. Append to Step Context: "- **05-examine:** {count} findings ({count} blocking)"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 05 COMPLETE: Examine
-    ═══════════════════════════════════════
-      Findings: {count} ({blocking} blocking)
-      Resume: /apex -r {task_id}
-      Next: Step {NN} - {description}
-    ═══════════════════════════════════════
-
-  → STOP. Do NOT load the next step. Do NOT proceed to the chosen step.
+  → Determine {next_step_num} and {next_step_description} from the decision tree above
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" "Findings: {count} ({blocking} blocking)" "{next_step_num}" "{next_step_description}" "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
+  → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
 
-IF workflow complete:
-  → Show final APEX WORKFLOW COMPLETE summary
+IF auto_mode = false AND workflow complete:
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" "Review complete. No findings to resolve." "complete" "Workflow Complete" "**05-examine:** {count} findings, all dismissed"
+    ```
+  → Display the output to the user
   → STOP.
 ```
 

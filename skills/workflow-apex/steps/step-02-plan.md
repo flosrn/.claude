@@ -1,8 +1,8 @@
 ---
 name: step-02-plan
 description: Strategic planning - create detailed file-by-file implementation strategy
-prev_step: steps/step-01-analyze.md
-next_step: steps/step-03-execute.md
+prev_step: ./step-01-analyze.md
+next_step: ./step-03-execute.md
 ---
 
 # Step 2: Plan (Strategic Design)
@@ -59,6 +59,7 @@ From previous steps:
 | `{acceptance_criteria}` | Success criteria from step-01 |
 | `{auto_mode}` | Skip confirmations |
 | `{save_mode}` | Save outputs to files |
+| `{team_mode}` | Use Agent Teams (domain partitioning in section 4b) |
 | `{output_dir}` | Path to output (if save_mode) |
 | Files found | From step-01 codebase exploration |
 | Patterns | From step-01 pattern analysis |
@@ -318,25 +319,20 @@ User approval of the plan does NOT mean "skip to step-03". It means the plan is 
 
 ```
 IF auto_mode = true:
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "03-execute" "**02-plan:** {one-line summary of plan}" ["{gotcha if any}"]
+    ```
   → Load ./step-03-execute.md directly (chain all steps)
 
 IF auto_mode = false:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to 03-execute
-    2. Append to Step Context: "- **02-plan:** {one-line summary of plan}"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 02 COMPLETE: Plan
-    ═══════════════════════════════════════
-      {count} files planned, {count} new files
-      Resume: /apex -r {task_id}
-      Next: Step 03 - Execute (Implementation)
-    ═══════════════════════════════════════
-
-  → STOP. Do NOT load the next step. Do NOT proceed to step-03-execute.
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "02" "plan" "{count} files planned, {count} new files" "03-execute" "Execute (Implementation)" "**02-plan:** {one-line summary of plan}" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
+  → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
 ```
 

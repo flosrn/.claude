@@ -1,8 +1,8 @@
 ---
 name: step-08-run-tests
 description: Run tests in a loop - fix issues until all pass
-prev_step: steps/step-07-tests.md
-next_step: steps/step-05-examine.md
+prev_step: ./step-07-tests.md
+next_step: conditional (05-examine | 09-finish | complete)
 ---
 
 # Step 8: Run Tests (Fix Loop)
@@ -60,6 +60,7 @@ From previous steps:
 | `{auto_mode}` | Auto-start servers, auto-retry |
 | `{examine_mode}` | Auto-proceed to review after |
 | `{save_mode}` | Save outputs to files |
+| `{pr_mode}` | Create pull request |
 | `{output_dir}` | Path to output (if save_mode) |
 | Tests created | From step-07 |
 | Test command | Discovered in step-07 |
@@ -276,10 +277,17 @@ Append to `{output_dir}/08-run-tests.md`:
 
 ### 11. Determine Next Step
 
-**If `{examine_mode}` = true:**
+**If `{examine_mode}` = true AND examine not yet completed:**
 → next_step = 05-examine
+  - _Check: If save_mode, read progress table in 00-context.md:_
+    - _If `06-resolve` shows `✓ Complete` OR `⏭ Skip`, examine is already done → skip to next rule._
+    - _If `05-examine` shows `✓ Complete` but `06-resolve` is NOT `✓ Complete` and NOT `⏭ Skip`, route to `06-resolve` instead (don't re-run examine)._
+  - _If auto_mode chain (no save), examine is done if step-06 already ran in this session → skip to next rule._
 
-**If `{auto_mode}` = false:**
+**Else if `{pr_mode}` = true:**
+→ next_step = 09-finish
+
+**Else if `{auto_mode}` = false:**
 
 ```yaml
 questions:
@@ -290,7 +298,34 @@ questions:
         description: "Queue deep review for next session"
       - label: "Complete workflow"
         description: "No more steps needed"
+      - label: "Create PR"
+        description: "Queue pull request creation for next session"
     multiSelect: false
+```
+
+**Map user choice to next_step:**
+```
+"Adversarial review" → next_step = 05-examine
+"Create PR"          → next_step = 09-finish
+"Complete workflow"   → next_step = complete
+```
+
+**Flag Sync (if save_mode):** After mapping the user's choice, ensure the corresponding flag, output files, and progress table are consistent:
+
+```
+IF user chose "Adversarial review" AND {examine_mode} = false:
+  → Set {examine_mode} = true
+  → Update 00-context.md: change examine_mode row to "true"
+  → Create output files from templates:
+    (copy from {skill_dir}/templates/05-examine.md and 06-resolve.md to {output_dir}/)
+  → Update progress table in 00-context.md: change 05-examine and 06-resolve from "⏭ Skip" to "⏸ Pending"
+
+IF user chose "Create PR" AND {pr_mode} = false:
+  → Set {pr_mode} = true
+  → Update 00-context.md: change pr_mode row to "true"
+  → Create output file from template:
+    (copy from {skill_dir}/templates/09-finish.md to {output_dir}/)
+  → Update progress table in 00-context.md: change 09-finish from "⏭ Skip" to "⏸ Pending"
 ```
 
 <critical>
@@ -298,8 +333,8 @@ The user's choice determines which step is saved as next_step in the State Snaps
 It does NOT mean "load that step now". The session boundary below controls when to stop.
 </critical>
 
-**Else:**
-→ Workflow complete
+**Else (no examine, no pr):**
+→ next_step = complete
 
 ---
 
@@ -333,9 +368,12 @@ It does NOT mean "load that step now". The session boundary below controls when 
 ## NEXT STEP:
 
 **Determine next step based on flags (check in order):**
-- **If examine_mode:** next = `05-examine`
+- **If examine_mode AND examine not yet completed:** next = `05-examine`
+  - _Check: If save_mode, read progress table:_
+    - _If `06-resolve` shows `✓ Complete` OR `⏭ Skip`, examine already done → skip._
+    - _If `05-examine` shows `✓ Complete` but `06-resolve` NOT `✓ Complete` and NOT `⏭ Skip` → route to `06-resolve` instead._
 - **If pr_mode:** next = `09-finish`
-- **Otherwise:** Workflow complete
+- **Otherwise:** next_step = complete
 
 ### Session Boundary
 
@@ -346,29 +384,30 @@ The user's choice determines what is saved as next_step, NOT whether to load it 
 
 ```
 IF auto_mode = true:
-  → Load the determined next step directly (chain all steps)
+  → If save_mode = true, update progress and state:
+    ```bash
+    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "08" "run-tests" "complete"
+    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "{next_step}" "**08-run-tests:** All tests passing ({count} tests)" ["{gotcha if any}"]
+    ```
+  → If next_step = "complete": Display workflow complete message → STOP.
+  → Otherwise: Load the determined next step directly (chain all steps)
 
 IF auto_mode = false AND workflow not complete:
-  → Mark step complete in progress table (if save_mode):
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "08" "run-tests" "complete"
-  → Update State Snapshot in 00-context.md:
-    1. Set next_step to the determined next step
-    2. Append to Step Context: "- **08-run-tests:** All tests passing ({count} tests)"
-  → Display:
-
-    ═══════════════════════════════════════
-      STEP 08 COMPLETE: Run Tests
-    ═══════════════════════════════════════
-      {count} tests passing in {attempts} attempts
-      Resume: /apex -r {task_id}
-      Next: Step {NN} - {description}
-    ═══════════════════════════════════════
-
-  → STOP. Do NOT load the next step. Do NOT proceed to the chosen step.
+  → Determine {next_step_num} and {next_step_description} from the decision tree above
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "08" "run-tests" "{count} tests passing in {attempts} attempts" "{next_step_num}" "{next_step_description}" "**08-run-tests:** All tests passing ({count} tests)" ["{gotcha if any}"]
+    ```
+  → Display the output to the user
+  → STOP. Do NOT load the next step.
   → The session ENDS here. User must run /apex -r {task_id} to continue.
 
-IF workflow complete:
-  → Show final APEX WORKFLOW COMPLETE summary
+IF auto_mode = false AND workflow complete:
+  → Run (if save_mode):
+    ```bash
+    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "08" "run-tests" "All {count} tests passing. Workflow complete." "complete" "Workflow Complete" "**08-run-tests:** All tests passing ({count} tests)"
+    ```
+  → Display the output to the user
   → STOP.
 ```
 

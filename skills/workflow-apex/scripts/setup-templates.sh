@@ -2,13 +2,16 @@
 # APEX Template Setup Script
 # Creates output directory structure and initializes template files
 #
-# Usage: setup-templates.sh "feature-name" [other args...]
-# The script auto-generates the task ID with the next available number.
+# Usage: setup-templates.sh "task-id-or-feature-name" [other args...]
+# Accepts either a full task_id (e.g., "01-add-auth") or a feature name (e.g., "add-auth").
+# If only a feature name is given, auto-generates the next available number.
 
 set -e
 
-# Arguments - first arg is now just the feature name (kebab-case)
-FEATURE_NAME="$1"
+# Arguments - first arg is either:
+#   - Full task_id with number prefix (e.g., "01-add-auth") → use as-is
+#   - Feature name only (e.g., "add-auth") → auto-number
+INPUT_NAME="$1"
 TASK_DESCRIPTION="$2"
 AUTO_MODE="${3:-false}"
 EXAMINE_MODE="${4:-false}"
@@ -21,10 +24,12 @@ INTERACTIVE_MODE="${10:-false}"
 BRANCH_NAME="${11:-}"
 ORIGINAL_INPUT="${12:-}"
 TEAM_MODE="${13:-false}"
+WORKTREE_MODE="${14:-false}"
+WORKTREE_PATH="${15:-}"
 
 # Validate required arguments
-if [[ -z "$FEATURE_NAME" ]]; then
-    echo "Error: FEATURE_NAME is required"
+if [[ -z "$INPUT_NAME" ]]; then
+    echo "Error: Feature name or task ID is required"
     exit 1
 fi
 
@@ -43,22 +48,19 @@ APEX_OUTPUT_DIR="${PROJECT_ROOT}/.claude/output/apex"
 # Create apex output directory if it doesn't exist
 mkdir -p "$APEX_OUTPUT_DIR"
 
-# Find the next available number
-NEXT_NUM=1
-if [[ -d "$APEX_OUTPUT_DIR" ]]; then
-    # Find highest existing number prefix
-    HIGHEST=$(ls -1 "$APEX_OUTPUT_DIR" 2>/dev/null | grep -oE '^[0-9]+' | sort -n | tail -1)
-    if [[ -n "$HIGHEST" ]]; then
-        # Force base-10 interpretation (leading zeros would be treated as octal)
-        NEXT_NUM=$((10#$HIGHEST + 1))
-    fi
+# Get script directory for calling sibling scripts
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Parse input: full task_id (e.g., "01-add-auth") or feature name only (e.g., "add-auth")
+if [[ "$INPUT_NAME" =~ ^([0-9]+)-(.+)$ ]]; then
+    # Full task_id provided — use as-is
+    TASK_ID="$INPUT_NAME"
+    FEATURE_NAME="${BASH_REMATCH[2]}"
+else
+    # Feature name only — delegate to generate-task-id.sh
+    FEATURE_NAME="$INPUT_NAME"
+    TASK_ID=$("$SCRIPT_DIR/generate-task-id.sh" "$FEATURE_NAME")
 fi
-
-# Format with leading zeros (2 digits)
-TASK_NUM=$(printf "%02d" "$NEXT_NUM")
-
-# Build full task ID
-TASK_ID="${TASK_NUM}-${FEATURE_NAME}"
 
 OUTPUT_DIR="${APEX_OUTPUT_DIR}/${TASK_ID}"
 
@@ -70,7 +72,7 @@ TEMPLATE_DIR="${SKILL_DIR}/templates"
 mkdir -p "$OUTPUT_DIR"
 
 # Escape special characters for sed replacement strings
-# Handles: \ & | (our delimiter) and newlines
+# Handles: \ & | (our delimiter)
 escape_sed_replacement() {
     printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
 }
@@ -97,6 +99,8 @@ render_template() {
     safe_original_input=$(escape_sed_replacement "$ORIGINAL_INPUT")
     local safe_branch_name
     safe_branch_name=$(escape_sed_replacement "$BRANCH_NAME")
+    local safe_worktree_path
+    safe_worktree_path=$(escape_sed_replacement "$WORKTREE_PATH")
 
     # Read template and replace variables
     sed -e "s|{{task_id}}|${TASK_ID}|g" \
@@ -111,6 +115,8 @@ render_template() {
         -e "s|{{pr_mode}}|${PR_MODE}|g" \
         -e "s|{{interactive_mode}}|${INTERACTIVE_MODE}|g" \
         -e "s|{{team_mode}}|${TEAM_MODE}|g" \
+        -e "s|{{worktree_mode}}|${WORKTREE_MODE}|g" \
+        -e "s|{{worktree_path}}|${safe_worktree_path}|g" \
         -e "s|{{branch_name}}|${safe_branch_name}|g" \
         -e "s|{{feature_name}}|${FEATURE_NAME}|g" \
         -e "s|{{original_input}}|${safe_original_input}|g" \

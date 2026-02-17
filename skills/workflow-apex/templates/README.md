@@ -18,7 +18,6 @@ This directory contains template files used to initialize APEX workflow outputs 
 | `07-tests.md` | Test analysis and creation | Only if test_mode enabled |
 | `08-run-tests.md` | Test runner log | Only if test_mode enabled |
 | `09-finish.md` | PR creation log | Only if pr_mode enabled |
-| `step-complete.md` | Completion marker template | Referenced in steps |
 
 ## Template Variables
 
@@ -34,10 +33,13 @@ Templates use `{{variable}}` syntax for placeholders:
 | `{{save_mode}}` | Save mode flag | `true` or `false` |
 | `{{test_mode}}` | Test mode flag | `true` or `false` |
 | `{{economy_mode}}` | Economy mode flag | `true` or `false` |
+| `{{team_mode}}` | Team mode flag | `true` or `false` |
 | `{{branch_mode}}` | Branch mode flag | `true` or `false` |
+| `{{worktree_mode}}` | Worktree mode flag | `true` or `false` |
 | `{{pr_mode}}` | PR mode flag | `true` or `false` |
 | `{{interactive_mode}}` | Interactive mode flag | `true` or `false` |
 | `{{branch_name}}` | Git branch name | `feature/add-auth` |
+| `{{worktree_path}}` | Git worktree path | `../project-wt-01-add-auth/` |
 | `{{original_input}}` | Raw user input | `/apex -a -s add auth` |
 | `{{examine_status}}` | Progress status for examine steps | `⏸ Pending` or `⏭ Skip` |
 | `{{test_status}}` | Progress status for test steps | `⏸ Pending` or `⏭ Skip` |
@@ -52,6 +54,7 @@ The `00-context.md` template includes a **State Snapshot** section after the Pro
 ## State Snapshot
 
 **feature_name:** {feature_name}
+**worktree_path:** {worktree_path}
 **next_step:** {step_id}
 
 ### Acceptance Criteria
@@ -89,7 +92,10 @@ bash scripts/setup-templates.sh \
   "pr_mode" \
   "interactive_mode" \
   "branch_name" \
-  "original_input"
+  "original_input" \
+  "team_mode" \
+  "worktree_mode" \
+  "worktree_path"
 ```
 
 **Output:**
@@ -133,6 +139,29 @@ bash scripts/update-progress.sh "01-add-auth" "02" "plan" "in_progress"
 **Status Values:**
 - `in_progress` → `⏳ In Progress`
 - `complete` → `✓ Complete`
+- `skip` → `⏭ Skip`
+
+## State Snapshot Update Script
+
+### `update-state-snapshot.sh`
+
+Updates the State Snapshot section in `00-context.md`: sets `next_step`, appends Step Context summaries, and records Gotchas.
+
+**Usage:**
+```bash
+bash scripts/update-state-snapshot.sh <task_id> <next_step> <step_context_line> [gotcha]
+```
+
+## Session Boundary Script
+
+### `session-boundary.sh`
+
+Consolidates session boundary logic: marks the current step complete, updates the state snapshot, and displays the session boundary box with resume command.
+
+**Usage:**
+```bash
+bash scripts/session-boundary.sh <task_id> <step_num> <step_name> <summary> <next_step_num> <next_step_desc> <step_context_line> [gotcha]
+```
 
 ## Token Savings
 
@@ -198,7 +227,7 @@ Append your findings to `01-analyze.md` as you work.
 2. **Each Step:**
    - Runs `update-progress.sh` to mark step as "in_progress"
    - Appends findings/logs to the pre-created step file
-   - Runs `update-progress.sh` again to mark step as "complete"
+   - Session boundary script marks step as "complete" and updates state snapshot
 
 3. **Benefits:**
    - AI doesn't need to hold template content in context

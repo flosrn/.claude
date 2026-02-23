@@ -35,7 +35,7 @@ Execute systematic implementation workflows using the APEX methodology. This ski
 - `-s` (save): Save outputs to `.claude/output/apex/` (auto-enabled when not `-a`)
 - `-x` (examine): Include adversarial code review
 - `-t` (test): Create and run tests
-- `-w` (team): Use Agent Teams for parallel research, execution, and review
+- `-w` (team): Use Agent Teams for parallel research, execution, review, and resolution
 - `-pr` (pull-request): Create PR at end
 
 See `<parameters>` for complete flag list.
@@ -52,7 +52,7 @@ See `<parameters>` for complete flag list.
 | `-s` | `--save` | Save mode: output each step to `.claude/output/apex/` |
 | `-t` | `--test` | Test mode: include test creation and runner steps |
 | `-e` | `--economy` | Economy mode: no subagents, save tokens (for limited plans) |
-| `-w` | `--team` | Team mode: use Agent Teams for parallel research, execution, and review (incompatible with `-e`) |
+| `-w` | `--team` | Team mode: use Agent Teams for parallel research, execution, review, and resolution (incompatible with `-e`) |
 | `-r` | `--resume` | Resume mode: continue from a previous task |
 | `-b` | `--branch` | Branch mode: verify not on main, create branch if needed |
 | `-pr` | `--pull-request` | PR mode: create pull request at end (enables -b) |
@@ -282,7 +282,7 @@ When `auto_mode` is false (default), APEX runs one step per session:
 | `{save_mode}`           | boolean | Save outputs to .claude/output/apex/                   |
 | `{test_mode}`           | boolean | Include test steps (07-08)                             |
 | `{economy_mode}`        | boolean | No subagents, direct tool usage only                   |
-| `{team_mode}`           | boolean | Use Agent Teams for parallel research (01), execution (03), and review (05) |
+| `{team_mode}`           | boolean | Use Agent Teams for parallel research (01), execution (03), review (05), and resolution (06) |
 | `{branch_mode}`         | boolean | Verify not on main, create branch if needed            |
 | `{pr_mode}`             | boolean | Create pull request at end                             |
 | `{interactive_mode}`    | boolean | Configure flags interactively                          |
@@ -328,6 +328,7 @@ After initialization, step-00 loads step-01-analyze.md.
 | 05   | `steps/step-05-examine.md`   | Adversarial code review (optional)                   |
 | 05b  | `steps/step-05b-team-examine.md` | Agent Team parallel adversarial review (if team_mode) |
 | 06   | `steps/step-06-resolve.md`   | Finding resolution (optional)                        |
+| 06b  | `steps/step-06b-team-resolve.md` | Agent Team parallel finding resolution (if team_mode) |
 | 07   | `steps/step-07-tests.md`     | Test analysis and creation (if --test)               |
 | 08   | `steps/step-08-run-tests.md` | Test runner loop until green (if --test)             |
 | 09   | `steps/step-09-finish.md`    | Create pull request (if --pull-request)              |
@@ -345,7 +346,7 @@ After initialization, step-00 loads step-01-analyze.md.
 - **Session boundary:** When `auto_mode=false`, each step STOPS after completion and displays a resume command. When `auto_mode=true`, steps chain directly. See `<stop_resume>` for details.
 - **Per-step commits:** When `branch_mode=true`, each code-modifying step (03, 04, 06, 07, 08) automatically commits changes with message `apex({task_id}): step NN - name`. This gives PRs granular commit history.
 - **Worktree isolation:** For git worktree-based workspace isolation, use the `using-git-worktrees` skill before running `/apex`.
-- **Team mode:** When `{team_mode}=true`, Agent Teams parallelize three phases: research (`step-01b-team-analyze.md`), implementation (`step-03b-team-execute.md`), and adversarial review (`step-05b-team-examine.md`). Researchers share findings cross-domain; reviewers challenge each other's findings. Incompatible with `-e` (economy mode).
+- **Team mode:** When `{team_mode}=true`, Agent Teams parallelize four phases: research (`step-01b-team-analyze.md`), implementation (`step-03b-team-execute.md`), adversarial review (`step-05b-team-examine.md`), and finding resolution (`step-06b-team-resolve.md`). Researchers share findings cross-domain; reviewers challenge each other's findings; resolvers fix findings by file group. Incompatible with `-e` (economy mode).
 
 ## 🧠 Smart Agent Strategy in Analyze Phase
 

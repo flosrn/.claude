@@ -43,6 +43,15 @@ If this step was loaded via `/apex -r {task_id}` resume:
 4. Proceed with normal execution below
 </critical>
 
+## TEAM MODE BRANCHING:
+
+<critical>
+IF {team_mode} = true:
+  → Do NOT execute this file.
+  → Load `./step-06b-team-resolve.md` instead.
+  → That file handles parallel finding resolution via Agent Teams.
+</critical>
+
 ## YOUR TASK:
 
 Address adversarial review findings interactively - fix real issues, dismiss noise, discuss uncertain items.

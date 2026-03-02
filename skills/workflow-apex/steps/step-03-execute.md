@@ -68,10 +68,8 @@ From previous steps:
 |----------|-------------|
 | `{task_description}` | What to implement |
 | `{task_id}` | Kebab-case identifier |
-| `{auto_mode}` | Skip confirmations |
-| `{save_mode}` | Save outputs to files |
 | `{team_mode}` | Use Agent Teams for parallel execution |
-| `{output_dir}` | Path to output (if save_mode) |
+| `{output_dir}` | Path to output |
 | Implementation plan | File-by-file changes from step-02 |
 | Patterns | How to implement from step-01 |
 </available_state>
@@ -155,23 +153,10 @@ Make changes specified in the plan:
 
 ### 5. Handle Blockers
 
-**If `{auto_mode}` = true:**
-→ Make reasonable decision and continue
-
-**If `{auto_mode}` = false:**
-
-```yaml
-questions:
-  - header: "Blocker"
-    question: "Encountered an issue. How should we proceed?"
-    options:
-      - label: "Use alternative approach (Recommended)"
-        description: "Description of alternative"
-      - label: "Skip this part"
-        description: "Continue without this change"
-      - label: "Stop for discussion"
-        description: "I want to discuss before continuing"
-    multiSelect: false
+If a blocker is encountered, use the recommended alternative approach automatically.
+Log decision:
+```
+ℹ️ Auto-unblocked: {description of alternative used}
 ```
 
 ### 6. Verify Implementation
@@ -199,29 +184,7 @@ Fix any errors immediately.
 **Todos:** {X}/{Y} complete
 ```
 
-**If `{auto_mode}` = true:**
-→ Continue to section 8 (save output)
-
-**If `{auto_mode}` = false:**
-
-```yaml
-questions:
-  - header: "Execute"
-    question: "Implementation complete. Review the summary above."
-    options:
-      - label: "Looks good (Recommended)"
-        description: "Mark step complete and finish this session"
-      - label: "Review changes"
-        description: "I want to review what was changed"
-      - label: "Make adjustments"
-        description: "I want to modify something"
-    multiSelect: false
-```
-
-<critical>
-After user confirms, continue to section 8 (save output) then follow the NEXT STEP session boundary logic.
-User confirmation does NOT mean "load step-04 now". The session boundary controls whether to stop or continue.
-</critical>
+Implementation is automatically confirmed. Continue to section 8 (save output) then follow the session boundary.
 
 ### 8. Complete Save Output (if save_mode)
 
@@ -256,7 +219,6 @@ Append to `{output_dir}/03-execute.md`:
 ❌ Not updating todos as you work
 ❌ Multiple todos in_progress simultaneously
 ❌ Ignoring type or lint errors
-❌ **CRITICAL**: Not using AskUserQuestion for blockers
 
 ## EXECUTION PROTOCOLS:
 
@@ -272,37 +234,16 @@ Append to `{output_dir}/03-execute.md`:
 
 ### Session Boundary
 
-<critical>
-THIS SECTION IS MANDATORY. Even if the user confirmed above, you MUST follow this session boundary logic.
-User confirmation does NOT mean "skip to step-04". It means the step is validated and can be marked complete.
-</critical>
-
+Run session boundary:
+```bash
+bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" \
+  "{count} files modified, {count} todos completed" "04-validate" "Validate (Self-Check)" \
+  "**03-execute:** {count} files modified, all todos complete" "{gotcha_or_empty}" \
+  "{branch_mode}" "commit"
 ```
-IF auto_mode = true:
-  → If {branch_mode} = true, commit step changes:
-    ```bash
-    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 03 - execute"
-    ```
-  → If save_mode = true, update progress and state:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
-    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "04-validate" "**03-execute:** {count} files modified, all todos complete" ["{gotcha if any}"]
-    ```
-  → Load ./step-04-validate.md directly (chain all steps)
-
-IF auto_mode = false:
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" "{count} files modified, {count} todos completed" "04-validate" "Validate (Self-Check)" "**03-execute:** {count} files modified, all todos complete" "{gotcha_or_empty}" "{branch_mode}" "commit"
-    ```
-    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
-  → Display the output to the user
-  → STOP. Do NOT load the next step.
-  → The session ENDS here. User must run /apex -r {task_id} to continue.
-```
+→ STOP — session ends here. User must run `/apex -r {task_id}` to continue.
 
 <critical>
 Remember: Execution is about following the plan - don't redesign or add features!
-In auto_mode=true, proceed directly without stopping.
-In auto_mode=false, ALWAYS STOP after displaying the resume command — even if the user said "looks good".
+ALWAYS STOP after displaying the resume command.
 </critical>

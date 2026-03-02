@@ -34,7 +34,6 @@ load_condition: team_mode = true
 
 - Findings from step-05 are classified (Real, Noise, Uncertain)
 - team_mode = true (validated in step-00)
-- auto_mode may be true or false (team_mode no longer requires auto_mode)
 - This step replaces step-06-resolve.md entirely
 - Resolvers fix code — they are NOT read-only
 
@@ -66,11 +65,9 @@ From previous steps:
 |----------|-------------|
 | `{task_description}` | What was implemented |
 | `{task_id}` | Kebab-case identifier |
-| `{auto_mode}` | Auto-fix Real findings |
-| `{save_mode}` | Save outputs to files |
 | `{test_mode}` | Include test steps |
 | `{pr_mode}` | Create pull request |
-| `{output_dir}` | Path to output (if save_mode) |
+| `{output_dir}` | Path to output |
 | Findings table | IDs, severity, validity |
 | Finding todos | For tracking |
 </available_state>
@@ -81,9 +78,7 @@ From previous steps:
 
 ### Phase 1: PARTITION FINDINGS
 
-#### 1.1 Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+#### 1.1 Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "in_progress"
@@ -126,29 +121,15 @@ IF only 1 group remains:
 
 ### Phase 2: RESOLUTION STRATEGY
 
-**If `{auto_mode}` = true:**
-→ Auto-fix all Real findings, skip Noise/Uncertain
+**Auto-fix Real findings, skip Noise/Uncertain.**
 
-**If `{auto_mode}` = false:**
-
-```yaml
-questions:
-  - header: "Resolution"
-    question: "How would you like to handle these findings? (Team mode: parallel resolution)"
-    options:
-      - label: "Auto-fix Real issues (Recommended)"
-        description: "Fix 'Real' findings in parallel, skip noise/uncertain"
-      - label: "Fix only critical"
-        description: "Only fix CRITICAL/BLOCKING issues in parallel"
-      - label: "Skip all"
-        description: "Acknowledge but don't change anything"
-    multiSelect: false
+Log decision:
+```
+ℹ️ Auto-resolution: fixing {N} Real findings, skipping {M} Noise/Uncertain
 ```
 
-**Note:** No "Walk through each" option — it is incompatible with parallel resolution.
-
-**After user choice:**
-- Re-filter findings based on strategy (e.g., "Fix only critical" → keep only CRITICAL/BLOCKING)
+After filtering:
+- Re-filter findings to keep only Real (and optionally CRITICAL/HIGH Uncertain)
 - Remove groups that have no remaining findings
 - If 0 groups remain → skip resolution, go to NEXT STEP
 - If 1 group remains → fall back to solo (load step-06-resolve.md)
@@ -355,9 +336,7 @@ TeamDelete
 **Validation:** ✓ Passed
 ```
 
-### 7. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 7. Complete Save Output
 
 Append to `{output_dir}/06-resolve.md`:
 ```markdown
@@ -377,7 +356,7 @@ Append to `{output_dir}/06-resolve.md`:
 ## SUCCESS METRICS:
 
 ✅ Findings partitioned by file with no overlap
-✅ User chose resolution strategy (unless auto_mode)
+✅ Resolution strategy applied (auto-fix Real)
 ✅ All resolver tasks completed
 ✅ No file conflicts between resolvers
 ✅ All chosen fixes applied correctly
@@ -385,7 +364,7 @@ Append to `{output_dir}/06-resolve.md`:
 ✅ All resolvers shutdown cleanly
 ✅ Team deleted
 ✅ Clear summary of resolved/skipped
-✅ Progress logged (if save_mode)
+✅ Progress logged
 
 ## FAILURE MODES:
 
@@ -417,54 +396,35 @@ Append to `{output_dir}/06-resolve.md`:
 **Determine next step based on flags (check in order):**
 - **If test_mode AND tests not yet completed:** next = `07-tests`
   - _Check: If save_mode, read progress table in 00-context.md. If `08-run-tests` shows `✓ Complete`, tests are already done → skip to next rule._
-  - _If auto_mode chain (no save), tests are done if step-08 already ran in this session → skip to next rule._
 - **If pr_mode:** next = `09-finish`
 - **Otherwise:** next_step = complete
 
 ### Session Boundary
 
-<critical>
-THIS SECTION IS MANDATORY. Follow this session boundary logic regardless of what happened above.
-</critical>
+Determine {next_step_num} and {next_step_description} from the decision tree above.
 
-```
-IF auto_mode = true:
-  → If {branch_mode} = true, commit step changes:
-    ```bash
-    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 06 - resolve (team)"
-    ```
-  → If save_mode = true, update progress and state:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "complete"
-    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "{next_step}" "**06-resolve (team):** {fixed} fixed, {skipped} skipped across {resolver_count} resolvers" ["{gotcha if any}"]
-    ```
-  → If next_step = "complete": Display workflow complete message → STOP.
-  → Otherwise: Load the determined next step directly (chain all steps)
+IF workflow complete (next_step = "complete"):
+  Run session boundary:
+  ```bash
+  bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" \
+    "All findings resolved (team). Workflow complete." "complete" "Workflow Complete" \
+    "**06-resolve (team):** {fixed} fixed, {skipped} skipped across {resolver_count} resolvers" "" "{branch_mode}" "commit"
+  ```
 
-IF auto_mode = false AND workflow not complete:
-  → Determine {next_step_num} and {next_step_description} from the decision tree above
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" "Fixed: {count} | Skipped: {count} (team: {resolver_count} resolvers)" "{next_step_num}" "{next_step_description}" "**06-resolve (team):** {fixed} fixed, {skipped} skipped across {resolver_count} resolvers" "{gotcha_or_empty}" "{branch_mode}" "commit"
-    ```
-    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
-  → Display the output to the user
-  → STOP. Do NOT load the next step.
-  → The session ENDS here. User must run /apex -r {task_id} to continue.
+IF workflow not complete:
+  Run session boundary:
+  ```bash
+  bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" \
+    "Fixed: {count} | Skipped: {count} (team: {resolver_count} resolvers)" "{next_step_num}" "{next_step_description}" \
+    "**06-resolve (team):** {fixed} fixed, {skipped} skipped across {resolver_count} resolvers" "{gotcha_or_empty}" "{branch_mode}" "commit"
+  ```
 
-IF auto_mode = false AND workflow complete:
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "06" "resolve" "All findings resolved (team). Workflow complete." "complete" "Workflow Complete" "**06-resolve (team):** {fixed} fixed, {skipped} skipped across {resolver_count} resolvers" "" "{branch_mode}" "commit"
-    ```
-  → Display the output to the user
-  → STOP.
-```
+→ STOP — session ends here. User must run `/apex -r {task_id}` to continue.
 
 <critical>
 Remember: You are a COORDINATOR in this step. Your job is to:
 1. Partition findings into non-overlapping file groups
-2. Get user's resolution strategy (unless auto_mode)
+2. Apply auto-resolution strategy (fix Real, skip Noise/Uncertain)
 3. Set up the team and tasks
 4. Spawn resolvers with clear instructions
 5. Approve their fix plans

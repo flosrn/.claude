@@ -56,10 +56,8 @@ From previous steps:
 |----------|-------------|
 | `{task_description}` | What was implemented |
 | `{task_id}` | Kebab-case identifier |
-| `{auto_mode}` | Skip confirmations |
-| `{save_mode}` | Save outputs to files |
 | `{economy_mode}` | Lighter test analysis |
-| `{output_dir}` | Path to output (if save_mode) |
+| `{output_dir}` | Path to output |
 | Files modified | From implementation |
 | Acceptance criteria | From step-01 |
 </available_state>
@@ -140,23 +138,7 @@ cat package.json | grep -A 5 '"scripts"' | grep -E "(test|spec)"
 - rejects malformed email
 ```
 
-**If `{auto_mode}` = false:**
-
-```yaml
-questions:
-  - header: "Tests"
-    question: "Review the test plan. Ready to create tests?"
-    options:
-      - label: "Create tests (Recommended)"
-        description: "Proceed with planned tests"
-      - label: "Add more tests"
-        description: "I want additional test cases"
-      - label: "Modify approach"
-        description: "Change the strategy"
-      - label: "Skip tests"
-        description: "Don't create tests"
-    multiSelect: false
-```
+Test plan is automatically approved. Proceed to create tests.
 
 ### 6. Create Tests
 
@@ -240,7 +222,6 @@ Append to `{output_dir}/07-tests.md`:
 ❌ Ignoring project conventions
 ❌ Tests don't match acceptance criteria
 ❌ Over-testing (testing implementation, not behavior)
-❌ **CRITICAL**: Not using AskUserQuestion for approval
 
 ## TEST PROTOCOLS:
 
@@ -256,31 +237,16 @@ Append to `{output_dir}/07-tests.md`:
 
 ### Session Boundary
 
+Run session boundary:
+```bash
+bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "07" "tests" \
+  "{count} test files, {count} test cases" "08-run-tests" "Run Tests (Fix Loop)" \
+  "**07-tests:** {count} test files created" "{gotcha_or_empty}" "{branch_mode}" "commit"
 ```
-IF auto_mode = true:
-  → If {branch_mode} = true, commit step changes:
-    ```bash
-    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 07 - tests"
-    ```
-  → If save_mode = true, update progress and state:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "07" "tests" "complete"
-    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "08-run-tests" "**07-tests:** {count} test files created" ["{gotcha if any}"]
-    ```
-  → Load ./step-08-run-tests.md directly (chain all steps)
 
-IF auto_mode = false:
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "07" "tests" "{count} test files, {count} test cases" "08-run-tests" "Run Tests (Fix Loop)" "**07-tests:** {count} test files created" "{gotcha_or_empty}" "{branch_mode}" "commit"
-    ```
-    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
-  → Display the output to the user
-  → STOP. Do NOT load the next step.
-  → The session ENDS here. User must run /apex -r {task_id} to continue.
-```
+→ STOP — session ends here. User must run `/apex -r {task_id}` to continue.
 
 <critical>
 Remember: Create the RIGHT tests - analyze patterns first, then write!
-In auto_mode, proceed directly without stopping.
+ALWAYS STOP after displaying the resume command.
 </critical>

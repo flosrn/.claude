@@ -23,7 +23,6 @@ next_step: ./step-03-execute.md
 - 🎯 ULTRA THINK before creating the plan
 - 💾 Save plan to output file (if save_mode)
 - 📖 Reference patterns from step-01 analysis
-- 🚫 FORBIDDEN to proceed until user approves plan (unless auto_mode)
 
 ## CONTEXT BOUNDARIES:
 
@@ -58,10 +57,8 @@ From previous steps:
 | `{task_description}` | What to implement |
 | `{task_id}` | Kebab-case identifier |
 | `{acceptance_criteria}` | Success criteria from step-01 |
-| `{auto_mode}` | Skip confirmations |
-| `{save_mode}` | Save outputs to files |
 | `{team_mode}` | Use Agent Teams (domain partitioning in section 4b) |
-| `{output_dir}` | Path to output (if save_mode) |
+| `{output_dir}` | Path to output |
 | Files found | From step-01 codebase exploration |
 | Patterns | From step-01 pattern analysis |
 | Utilities | From step-01 utility discovery |
@@ -94,23 +91,12 @@ Mental simulation:
 
 ### 3. Clarify Ambiguities
 
-**If `{auto_mode}` = true:**
-→ Use recommended option for any ambiguity, proceed automatically
-
-**If `{auto_mode}` = false AND multiple valid approaches exist:**
-
-```yaml
-questions:
-  - header: "Approach"
-    question: "Multiple approaches are possible. Which should we use?"
-    options:
-      - label: "Approach A (Recommended)"
-        description: "Description and tradeoffs of A"
-      - label: "Approach B"
-        description: "Description and tradeoffs of B"
-      - label: "Approach C"
-        description: "Description and tradeoffs of C"
-    multiSelect: false
+**If multiple valid approaches exist:**
+→ Choose the recommended approach automatically.
+→ Log decision:
+```
+ℹ️ Auto-selected approach: {approach_name}
+Reason: {why this approach was recommended}
 ```
 
 ### 4. Create Detailed Plan
@@ -220,7 +206,7 @@ Checklist:
 - [ ] AC mapped - every criterion has implementation
 - [ ] Domain partitioning valid (if team_mode) - no file overlap, dependencies ordered
 
-### 6. Present Plan for Approval
+### 6. Present Plan Summary
 
 ```
 **Implementation Plan Ready**
@@ -237,31 +223,7 @@ Checklist:
 - `file1.test.ts` - New test file
 ```
 
-**If `{auto_mode}` = true:**
-→ Skip confirmation, proceed directly to section 7
-
-**If `{auto_mode}` = false:**
-
-```yaml
-questions:
-  - header: "Plan"
-    question: "Review the implementation plan. Ready to proceed?"
-    options:
-      - label: "Approve plan (Recommended)"
-        description: "Plan looks good, save and finish this step"
-      - label: "Adjust plan"
-        description: "I want to modify specific parts"
-      - label: "Ask questions"
-        description: "I have questions about the plan"
-      - label: "Start over"
-        description: "Revise the entire plan"
-    multiSelect: false
-```
-
-<critical>
-After user approves the plan, continue to section 7 (save output) then follow the NEXT STEP session boundary logic.
-Approval does NOT mean "start executing" — it means the plan is validated. The session boundary in NEXT STEP controls whether to stop or continue.
-</critical>
+Plan is automatically approved. Continue to section 7 (save output) then follow the session boundary.
 
 ### 7. Complete Save Output (if save_mode)
 
@@ -297,7 +259,6 @@ Append to `{output_dir}/02-plan.md`:
 ❌ Missing test strategy
 ❌ Not mapping to acceptance criteria
 ❌ Starting to write code (that's step 3!)
-❌ **CRITICAL**: Not using AskUserQuestion for approval
 
 ## PLANNING PROTOCOLS:
 
@@ -313,32 +274,15 @@ Append to `{output_dir}/02-plan.md`:
 
 ### Session Boundary
 
-<critical>
-THIS SECTION IS MANDATORY. Even if the user approved the plan above, you MUST follow this session boundary logic.
-User approval of the plan does NOT mean "skip to step-03". It means the plan is validated and this step can be marked complete.
-</critical>
-
+Run session boundary:
+```bash
+bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "02" "plan" \
+  "{count} files planned, {count} new files" "03-execute" "Execute (Implementation)" \
+  "**02-plan:** {one-line summary of plan}" ["{gotcha if any}"]
 ```
-IF auto_mode = true:
-  → If save_mode = true, update progress and state:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "complete"
-    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "03-execute" "**02-plan:** {one-line summary of plan}" ["{gotcha if any}"]
-    ```
-  → Load ./step-03-execute.md directly (chain all steps)
-
-IF auto_mode = false:
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "02" "plan" "{count} files planned, {count} new files" "03-execute" "Execute (Implementation)" "**02-plan:** {one-line summary of plan}" ["{gotcha if any}"]
-    ```
-  → Display the output to the user
-  → STOP. Do NOT load the next step.
-  → The session ENDS here. User must run /apex -r {task_id} to continue.
-```
+→ STOP — session ends here. User must run `/apex -r {task_id}` to continue.
 
 <critical>
 Remember: Planning is ONLY about designing the approach - save all implementation for step-03!
-In auto_mode=true, proceed directly without stopping.
-In auto_mode=false, ALWAYS STOP after displaying the resume command — even if the user said "approve".
+ALWAYS STOP after displaying the resume command.
 </critical>

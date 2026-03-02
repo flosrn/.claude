@@ -8,7 +8,7 @@ prev_step: ./step-08-run-tests.md (or ./step-04-validate.md if no tests)
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
-- 🛑 NEVER push without user confirmation (unless auto_mode)
+- 🛑 NEVER push without the user having chosen `-pr` mode
 - 🛑 NEVER create PR if there are uncommitted changes
 - ✅ ALWAYS verify all changes are committed
 - ✅ ALWAYS push to remote before creating PR
@@ -25,7 +25,7 @@ prev_step: ./step-08-run-tests.md (or ./step-04-validate.md if no tests)
 
 ## CONTEXT BOUNDARIES:
 
-- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{pr_mode}`, `{auto_mode}`, `{save_mode}`, `{output_dir}`
+- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{pr_mode}`, `{output_dir}`
 - Previous steps completed: analyze, plan, execute, validate (+ optional: tests, examine)
 - All implementation should be done at this point
 
@@ -76,28 +76,9 @@ git log origin/{branch_name}..HEAD --oneline 2>/dev/null || git log --oneline -5
 
 Display commits that will be included in PR.
 
-### 3. Confirm Push (if not auto_mode)
+### 3. Push Changes
 
-**If `{auto_mode}` = true:**
-→ Auto-push to remote
-
-**If `{auto_mode}` = false:**
-Use AskUserQuestion:
-```yaml
-questions:
-  - header: "Push"
-    question: "Ready to push {branch_name} and create PR?"
-    options:
-      - label: "Push and create PR (Recommended)"
-        description: "Push commits to remote and open pull request"
-      - label: "Push only"
-        description: "Push to remote without creating PR"
-      - label: "Review commits first"
-        description: "Show me the full diff before pushing"
-      - label: "Cancel"
-        description: "Don't push or create PR"
-    multiSelect: false
-```
+Push directly — the user chose `-pr` which implies push consent:
 
 ### 4. Push to Remote
 
@@ -197,10 +178,8 @@ Display workflow completion summary:
 ## FAILURE MODES:
 
 ❌ Creating PR with uncommitted changes
-❌ Pushing without user confirmation (when not auto_mode)
 ❌ Force pushing without explicit user request
 ❌ Not displaying PR URL after creation
-❌ **CRITICAL**: Using plain text prompts instead of AskUserQuestion
 
 ---
 

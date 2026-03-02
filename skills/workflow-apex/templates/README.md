@@ -28,9 +28,7 @@ Templates use `{{variable}}` syntax for placeholders:
 | `{{task_id}}` | Kebab-case task identifier | `01-add-auth-middleware` |
 | `{{task_description}}` | Plain text task description | `add authentication middleware` |
 | `{{timestamp}}` | ISO 8601 timestamp | `2026-01-12T10:30:00Z` |
-| `{{auto_mode}}` | Auto mode flag | `true` or `false` |
 | `{{examine_mode}}` | Examine mode flag | `true` or `false` |
-| `{{save_mode}}` | Save mode flag | `true` or `false` |
 | `{{test_mode}}` | Test mode flag | `true` or `false` |
 | `{{economy_mode}}` | Economy mode flag | `true` or `false` |
 | `{{team_mode}}` | Team mode flag | `true` or `false` |
@@ -38,7 +36,7 @@ Templates use `{{variable}}` syntax for placeholders:
 | `{{pr_mode}}` | PR mode flag | `true` or `false` |
 | `{{interactive_mode}}` | Interactive mode flag | `true` or `false` |
 | `{{branch_name}}` | Git branch name | `feature/add-auth` |
-| `{{original_input}}` | Raw user input | `/apex -a -s add auth` |
+| `{{original_input}}` | Raw user input | `/apex -x -t add auth` |
 | `{{examine_status}}` | Progress status for examine steps | `⏸ Pending` or `⏭ Skip` |
 | `{{test_status}}` | Progress status for test steps | `⏸ Pending` or `⏭ Skip` |
 | `{{pr_status}}` | Progress status for PR step | `⏸ Pending` or `⏭ Skip` |
@@ -81,9 +79,7 @@ Initializes all template files in the output directory with variables replaced.
 bash scripts/setup-templates.sh \
   "task_id" \
   "task_description" \
-  "auto_mode" \
   "examine_mode" \
-  "save_mode" \
   "test_mode" \
   "economy_mode" \
   "branch_mode" \

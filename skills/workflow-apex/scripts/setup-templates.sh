@@ -13,18 +13,16 @@ set -e
 #   - Feature name only (e.g., "add-auth") → auto-number
 INPUT_NAME="$1"
 TASK_DESCRIPTION="$2"
-AUTO_MODE="${3:-false}"
-EXAMINE_MODE="${4:-false}"
-SAVE_MODE="${5:-false}"
-TEST_MODE="${6:-false}"
-ECONOMY_MODE="${7:-false}"
-BRANCH_MODE="${8:-false}"
-PR_MODE="${9:-false}"
-INTERACTIVE_MODE="${10:-false}"
-BRANCH_NAME="${11:-}"
-ORIGINAL_INPUT="${12:-}"
-TEAM_MODE="${13:-false}"
-REFERENCE_FILE="${14:-}"
+EXAMINE_MODE="${3:-false}"
+TEST_MODE="${4:-false}"
+ECONOMY_MODE="${5:-false}"
+BRANCH_MODE="${6:-false}"
+PR_MODE="${7:-false}"
+INTERACTIVE_MODE="${8:-false}"
+BRANCH_NAME="${9:-}"
+ORIGINAL_INPUT="${10:-}"
+TEAM_MODE="${11:-false}"
+REFERENCE_FILE="${12:-}"
 
 # Validate required arguments
 if [[ -z "$INPUT_NAME" ]]; then
@@ -113,9 +111,7 @@ render_template() {
     sed -e "s|{{task_id}}|${TASK_ID}|g" \
         -e "s|{{task_description}}|${safe_task_desc}|g" \
         -e "s|{{timestamp}}|${TIMESTAMP}|g" \
-        -e "s|{{auto_mode}}|${AUTO_MODE}|g" \
         -e "s|{{examine_mode}}|${EXAMINE_MODE}|g" \
-        -e "s|{{save_mode}}|${SAVE_MODE}|g" \
         -e "s|{{test_mode}}|${TEST_MODE}|g" \
         -e "s|{{economy_mode}}|${ECONOMY_MODE}|g" \
         -e "s|{{branch_mode}}|${BRANCH_MODE}|g" \

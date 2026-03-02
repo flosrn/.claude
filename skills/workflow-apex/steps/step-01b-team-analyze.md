@@ -31,7 +31,6 @@ load_condition: team_mode = true
 
 - Variables from step-00-init are available
 - team_mode = true (validated in step-00)
-- auto_mode may be true or false (team_mode no longer requires auto_mode)
 - This step replaces step-01-analyze.md entirely
 - No implementation decisions have been made yet
 - Codebase state is unknown - must be discovered by researchers
@@ -65,9 +64,7 @@ From step-00-init:
 | `{task_description}` | What to implement |
 | `{task_id}` | Kebab-case identifier |
 | `{reference_files}` | Path to reference document (e.g., brainstorm output), or empty |
-| `{auto_mode}` | true or false (team_mode no longer requires auto_mode) |
-| `{save_mode}` | Save outputs to files |
-| `{output_dir}` | Path to output (if save_mode) |
+| `{output_dir}` | Path to output |
 | `{economy_mode}` | Always false when team_mode is true |
 | Research domains | Determined in Phase 1 based on task complexity |
 </available_state>
@@ -568,24 +565,13 @@ Note: Progress updates (marking step-01 complete and setting next_step) are hand
 
 ### Session Boundary
 
+Run session boundary:
+```bash
+bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "01" "analyze" \
+  "Key findings: {count} files, {count} patterns (team research)" "02-plan" \
+  "Plan (Strategic Design)" "**01-analyze:** {one-line summary of key findings}"
 ```
-IF auto_mode = true:
-  → If save_mode = true, update progress and state:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "complete"
-    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "02-plan" "**01-analyze:** {one-line summary of key findings}" ["{gotcha if any}"]
-    ```
-  → Load ./step-02-plan.md directly (chain all steps)
-
-IF auto_mode = false:
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "01" "analyze" "Key findings: {count} files, {count} patterns (team research)" "02-plan" "Plan (Strategic Design)" "**01-analyze:** {one-line summary of key findings}"
-    ```
-  → Display the output to the user
-  → STOP. Do NOT load the next step.
-  → The session ENDS here. User must run /apex -r {task_id} to continue.
-```
+→ STOP — session ends here. User must run `/apex -r {task_id}` to continue.
 
 <critical>
 Remember: You are a RESEARCH COORDINATOR in this step. Your job is to:
@@ -598,4 +584,5 @@ Remember: You are a RESEARCH COORDINATOR in this step. Your job is to:
 
 You do NOT explore the codebase yourself. Researchers do the work.
 Output MUST match step-01 format: Related Files, Patterns, Utilities, Documentation Insights, Research Findings, Acceptance Criteria.
+ALWAYS STOP after displaying the resume command.
 </critical>

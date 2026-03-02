@@ -70,12 +70,10 @@ From previous steps:
 |----------|-------------|
 | `{task_description}` | What was implemented |
 | `{task_id}` | Kebab-case identifier |
-| `{auto_mode}` | Auto-fix Real findings |
-| `{save_mode}` | Save outputs to files |
 | `{economy_mode}` | No subagents, direct review |
 | `{test_mode}` | Include test steps |
 | `{pr_mode}` | Create pull request |
-| `{output_dir}` | Path to output (if save_mode) |
+| `{output_dir}` | Path to output |
 | Files modified | From step-03 |
 </available_state>
 
@@ -83,9 +81,7 @@ From previous steps:
 
 ## EXECUTION SEQUENCE:
 
-### 1. Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 1. Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "in_progress"
@@ -367,72 +363,35 @@ For each finding:
 - [ ] F2 [HIGH] Add null check in handler.ts:78
 ```
 
-### 7. Get User Approval (review → resolve/test)
+### 7. Determine Next Step
 
-**If `{auto_mode}` = true:**
-→ Proceed automatically based on findings
+**Always proceed to resolve findings:**
 
-**If `{auto_mode}` = false:**
+```
+IF Real findings exist:
+    → next_step = 06-resolve
+    ℹ️ Auto-proceeding to resolve {N} Real findings
 
-**If `{test_mode}` = true AND tests not yet completed:**
-```yaml
-questions:
-  - header: "Review"
-    question: "Review complete. What should the next step be?"
-    options:
-      - label: "Resolve findings (Recommended)"
-        description: "Queue finding resolution for next session"
-      - label: "Skip to tests"
-        description: "Queue test creation instead"
-      - label: "Skip resolution"
-        description: "Accept findings as-is, no changes needed"
-      - label: "Discuss findings"
-        description: "I want to discuss specific findings"
-    multiSelect: false
+ELSE IF {test_mode} = true AND tests not yet completed:
+    → next_step = 07-tests
+    → Update 06-resolve progress to "skip":
+      bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "skip"
+
+ELSE IF {pr_mode} = true:
+    → next_step = 09-finish
+    → Update 06-resolve progress to "skip"
+
+ELSE:
+    → next_step = complete
+    → Update 06-resolve progress to "skip"
 ```
 
-**If `{test_mode}` = false OR tests already completed:**
-```yaml
-questions:
-  - header: "Review"
-    question: "Review complete. What should the next step be?"
-    options:
-      - label: "Resolve findings (Recommended)"
-        description: "Queue finding resolution for next session"
-      - label: "Skip resolution"
-        description: "Accept findings as-is, no changes needed"
-      - label: "Discuss findings"
-        description: "I want to discuss specific findings"
-    multiSelect: false
-```
-
-<critical>
-The user's choice determines which step is saved as next_step in the State Snapshot.
-It does NOT mean "load that step now". The session boundary below controls when to stop.
-</critical>
-
-**Persist user choice (if save_mode):**
-
-Append to `{output_dir}/00-context.md` under `### User Choices`:
+Persist choice in `{output_dir}/00-context.md` under `### User Choices`:
 ```markdown
-- **step-05 → next:** {chosen option} (e.g., "resolve", "skip-to-tests", "skip-resolution")
+- **step-05 → next:** auto-resolve (Real findings: {N})
 ```
 
-This ensures the next step knows which path was chosen after resume.
-
-**Update progress for skipped resolution (if save_mode):**
-
-```
-IF user chose "Skip to tests" OR "Skip resolution":
-  → 06-resolve will be skipped. Update its progress:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "skip"
-    ```
-```
-
-### 8. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 8. Complete Save Output
 
 Append to `{output_dir}/05-examine.md`:
 ```markdown
@@ -465,7 +424,6 @@ Append to `{output_dir}/05-examine.md`:
 ❌ Launching agents sequentially
 ❌ Using subagents when economy_mode
 ❌ Skipping Vercel/Next.js review when React/Next.js files are modified
-❌ **CRITICAL**: Not using AskUserQuestion for review → resolve/test transition
 
 ## REVIEW PROTOCOLS:
 
@@ -479,53 +437,35 @@ Append to `{output_dir}/05-examine.md`:
 
 ## NEXT STEP:
 
-**Determine next step based on user choice/flags:**
-- **"Resolve findings":** next = `06-resolve`
-- **"Skip to tests" (and test_mode AND tests not yet completed):** next = `07-tests`
-  - _Check: If save_mode, check progress table for `08-run-tests` status. If `✓ Complete`, tests already done → treat as "Skip resolution"._
-- **"Skip resolution" + test_mode (AND tests not yet completed):** next = `07-tests`
-  - _Same check as above._
-- **"Skip resolution" + pr_mode (or tests already completed + pr_mode):** next = `09-finish`
-- **"Skip resolution" (no more steps):** next_step = complete
+**Determine next step based on findings:**
+- **If Real findings exist:** next = `06-resolve`
+- **If no Real findings + test_mode (AND tests not yet completed):** next = `07-tests`
+- **If no Real findings + pr_mode:** next = `09-finish`
+- **Otherwise:** next_step = complete
 
 ### Session Boundary
 
-<critical>
-THIS SECTION IS MANDATORY. Even if the user chose a next step above, you MUST follow this session boundary logic.
-The user's choice determines what is saved as next_step, NOT whether to load it now.
-</critical>
+Determine {next_step_num} and {next_step_description} from the decision tree above.
 
-```
-IF auto_mode = true:
-  → If save_mode = true, update progress and state:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "complete"
-    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "{next_step}" "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
-    ```
-  → If next_step = "complete": Display workflow complete message → STOP.
-  → Otherwise: Load the determined next step directly (chain all steps)
+IF workflow complete (next_step = "complete"):
+  Run session boundary:
+  ```bash
+  bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" \
+    "Review complete. No findings to resolve." "complete" "Workflow Complete" \
+    "**05-examine:** {count} findings, all dismissed"
+  ```
 
-IF auto_mode = false AND workflow not complete:
-  → Determine {next_step_num} and {next_step_description} from the decision tree above
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" "Findings: {count} ({blocking} blocking)" "{next_step_num}" "{next_step_description}" "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
-    ```
-  → Display the output to the user
-  → STOP. Do NOT load the next step.
-  → The session ENDS here. User must run /apex -r {task_id} to continue.
+IF workflow not complete:
+  Run session boundary:
+  ```bash
+  bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" \
+    "Findings: {count} ({blocking} blocking)" "{next_step_num}" "{next_step_description}" \
+    "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
+  ```
 
-IF auto_mode = false AND workflow complete:
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" "Review complete. No findings to resolve." "complete" "Workflow Complete" "**05-examine:** {count} findings, all dismissed"
-    ```
-  → Display the output to the user
-  → STOP.
-```
+→ STOP — session ends here. User must run `/apex -r {task_id}` to continue.
 
 <critical>
 Remember: Be SKEPTICAL - your job is to find problems, not approve code!
-In auto_mode=true, proceed directly without stopping.
-In auto_mode=false, ALWAYS STOP after displaying the resume command — even if the user chose "resolve findings".
+ALWAYS STOP after displaying the resume command.
 </critical>

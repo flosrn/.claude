@@ -9,9 +9,7 @@
 
 | Flag | Value |
 |------|-------|
-| Auto mode (`-a`) | {{auto_mode}} |
 | Examine mode (`-x`) | {{examine_mode}} |
-| Save mode (`-s`) | {{save_mode}} |
 | Test mode (`-t`) | {{test_mode}} |
 | Economy mode (`-e`) | {{economy_mode}} |
 | Team mode (`-w`) | {{team_mode}} |

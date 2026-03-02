@@ -18,7 +18,7 @@ returns_to: step-00-init.md
 
 ## CONTEXT BOUNDARIES:
 
-- Variables available: `{task_id}`, `{auto_mode}`, `{pr_mode}`
+- Variables available: `{task_id}`, `{pr_mode}`
 - This sub-step sets: `{branch_name}`
 - Return to step-00-init.md after completion
 
@@ -50,51 +50,18 @@ Store result as `{current_branch}`
 
 ### 3. Create Feature Branch
 
-**If `{auto_mode}` = true:**
-→ Auto-create branch: `feat/{task_id}`
-
-**If `{auto_mode}` = false:**
-Use AskUserQuestion:
-```yaml
-questions:
-  - header: "Branch"
-    question: "You're on {current_branch}. Create a new branch for this task?"
-    options:
-      - label: "Create feat/{task_id} (Recommended)"
-        description: "Create new feature branch and switch to it"
-      - label: "Custom branch name"
-        description: "I'll specify a custom branch name"
-      - label: "Stay on {current_branch}"
-        description: "Continue without creating a branch (not recommended for PRs)"
-    multiSelect: false
-```
-
-### 4. Execute Branch Creation
-
-**If user chose "Create feat/{task_id}" or auto_mode:**
+Auto-create the standard feature branch:
 ```bash
 git checkout -b feat/{task_id}
 ```
 → `{branch_name}` = `feat/{task_id}`
 
-**If user chose "Custom branch name":**
-→ Ask for branch name
-```bash
-git checkout -b {custom_name}
-```
-→ `{branch_name}` = `{custom_name}`
-
-**If user chose "Stay on {current_branch}":**
-→ `{branch_name}` = `{current_branch}`
-→ Display warning if `{pr_mode}` = true:
-  "⚠️ Warning: Creating PR from {current_branch} directly"
-
-### 5. Confirm and Return
+### 4. Confirm and Return
 
 Display:
 ```
-✓ Branch: {branch_name}
-{if new branch created: "Created and switched to new branch"}
+✓ Branch: feat/{task_id}
+Created and switched to new branch
 ```
 
 → Return to step-00-init.md with `{branch_name}` set
@@ -112,8 +79,6 @@ Display:
 
 ❌ Starting implementation before returning
 ❌ Not setting `{branch_name}` variable
-❌ Creating branch without user consent (when not auto_mode)
-❌ **CRITICAL**: Using plain text prompts instead of AskUserQuestion
 
 ---
 

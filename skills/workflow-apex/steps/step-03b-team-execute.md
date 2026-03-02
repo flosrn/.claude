@@ -31,7 +31,6 @@ load_condition: team_mode = true
 
 - Plan from step-02 is approved and includes Domain Partitioning section
 - team_mode = true (validated in step-00)
-- auto_mode may be true or false (team_mode no longer requires auto_mode)
 - This step replaces step-03-execute.md entirely
 
 ## CONTEXT RESTORATION (resume mode):
@@ -62,9 +61,7 @@ From previous steps:
 |----------|-------------|
 | `{task_description}` | What to implement |
 | `{task_id}` | Kebab-case identifier |
-| `{auto_mode}` | true or false (team_mode no longer requires auto_mode) |
-| `{save_mode}` | Save outputs to files |
-| `{output_dir}` | Path to output (if save_mode) |
+| `{output_dir}` | Path to output |
 | Implementation plan | File-by-file changes from step-02 |
 | Domain Partitioning | Domain groups with file assignments from step-02 |
 | Patterns | How to implement from step-01 |
@@ -385,29 +382,13 @@ Append to `{output_dir}/03-execute.md`:
 
 ### Session Boundary
 
+Run session boundary:
+```bash
+bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" \
+  "{count} files modified across {count} domains" "04-validate" "Validate (Self-Check)" \
+  "**03-execute:** {count} files modified across {count} domains" "" "{branch_mode}" "commit"
 ```
-IF auto_mode = true:
-  → If {branch_mode} = true, commit step changes:
-    ```bash
-    git add -u && git diff --cached --quiet || git commit -m "apex({task_id}): step 03 - execute"
-    ```
-  → If save_mode = true, update progress and state:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "complete"
-    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "04-validate" "**03-execute:** {count} files modified across {count} domains" ["{gotcha if any}"]
-    ```
-  → Load ./step-04-validate.md directly (chain all steps)
-
-IF auto_mode = false:
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "03" "execute" "{count} files modified across {count} domains" "04-validate" "Validate (Self-Check)" "**03-execute:** {count} files modified across {count} domains" "" "{branch_mode}" "commit"
-    ```
-    (Pass empty string "" for gotcha if none, to preserve positional args for branch_mode and commit flag)
-  → Display the output to the user
-  → STOP. Do NOT load the next step.
-  → The session ENDS here. User must run /apex -r {task_id} to continue.
-```
+→ STOP — session ends here. User must run `/apex -r {task_id}` to continue.
 
 <critical>
 Remember: You are a COORDINATOR in this step. Your job is to:
@@ -419,4 +400,5 @@ Remember: You are a COORDINATOR in this step. Your job is to:
 6. Clean up
 
 You do NOT write implementation code. Teammates do the work.
+ALWAYS STOP after displaying the resume command.
 </critical>

@@ -48,9 +48,7 @@ Initialize the APEX workflow by parsing flags, detecting continuation state, and
 # APEX DEFAULT SETTINGS
 # ===========================================
 
-auto_mode: false # -a: Skip confirmations, use recommended options
 examine_mode: false # -x: Auto-proceed to adversarial review
-save_mode: false # -s: Save outputs to .claude/output/apex/
 test_mode: false # -t: Include test creation and runner steps
 economy_mode: false # -e: No subagents, save tokens (for limited plans)
 team_mode: false # -w: Use Agent Teams for parallel execution (incompatible with -e)
@@ -60,8 +58,7 @@ interactive_mode: false # -i: Configure flags interactively
 
 # Presets:
 # Budget-friendly:  economy_mode: true
-# Full quality:     examine_mode: true, save_mode: true, test_mode: true
-# Autonomous:       auto_mode: true, examine_mode: true, save_mode: true, test_mode: true
+# Full quality:     examine_mode: true, test_mode: true
 ```
 
 **Flag Reference:** See `SKILL.md` for complete flag documentation and examples.
@@ -77,9 +74,7 @@ interactive_mode: false # -i: Configure flags interactively
 **Step 1a: Load defaults from config above**
 
 ```
-{auto_mode}    = <default>
 {examine_mode} = <default>
-{save_mode}    = <default>
 {test_mode}    = <default>
 {economy_mode} = <default>
 {team_mode}    = <default>
@@ -92,17 +87,13 @@ interactive_mode: false # -i: Configure flags interactively
 
 ```
 Enable flags (lowercase - turn ON):
-  -a or --auto     → {auto_mode} = true
   -x or --examine  → {examine_mode} = true
-  -s or --save     → {save_mode} = true
   -t or --test     → {test_mode} = true
   -e or --economy  → {economy_mode} = true
   -w or --team     → {team_mode} = true
 
 Disable flags (UPPERCASE - turn OFF):
-  -A or --no-auto         → {auto_mode} = false
   -X or --no-examine      → {examine_mode} = false
-  -S or --no-save         → {save_mode} = false
   -T or --no-test         → {test_mode} = false
   -E or --no-economy      → {economy_mode} = false
   -W or --no-team         → {team_mode} = false
@@ -120,14 +111,6 @@ Interactive:
 Other:
   -r or --resume   → {resume_task} = <next argument>
   Remainder        → {task_description}
-```
-
-**Step 1c: Auto-enable save_mode for step-by-step mode:**
-
-```
-IF {auto_mode} = false AND {save_mode} = false:
-    {save_mode} = true
-    (Required for resume between sessions)
 ```
 
 **Step 1d: Team mode validation:**
@@ -217,7 +200,7 @@ ls .claude/output/apex/ | grep "{resume_task}"
 **Step 2b: Restore state from `00-context.md`:**
 
 1. Read `{output_dir}/00-context.md`
-2. Restore ALL flags from Configuration table: `{auto_mode}`, `{examine_mode}`, `{save_mode}`, `{test_mode}`, `{economy_mode}`, `{team_mode}`, `{branch_mode}`, `{pr_mode}`, `{interactive_mode}`
+2. Restore ALL flags from Configuration table: `{examine_mode}`, `{test_mode}`, `{economy_mode}`, `{team_mode}`, `{branch_mode}`, `{pr_mode}`, `{interactive_mode}`
 3. Restore task info: `{task_id}`, `{task_description}`, `{feature_name}`, `{branch_name}`
 4. Restore `{reference_files}` from Reference Documents section (if any file paths listed)
 5. Restore acceptance criteria from State Snapshot section
@@ -225,13 +208,13 @@ ls .claude/output/apex/ | grep "{resume_task}"
 **Step 2c: Apply flag overrides from current command:**
 
 Any flags passed with the resume command override the stored values.
-Example: `/apex -a -r 01` resumes task 01 with `{auto_mode} = true` even if it was stored as `false`.
+Example: `/apex -t -r 01` resumes task 01 with `{test_mode} = true` even if it was stored as `false`.
 
 **Step 2c-post: Re-run validations after flag overrides:**
 
 ```
 After restoring flags from 00-context.md and applying any CLI flag overrides:
-→ Re-run Step 1c (save_mode auto-enable) and Step 1d (team mode checks) validations
+→ Re-run Step 1d (team mode checks) validations
   to ensure restored+overridden flags are consistent.
 ```
 
@@ -254,7 +237,7 @@ IF a flag was changed from true → false on resume:
 **Step 2d-post2: Create missing template files for newly-enabled flags:**
 
 ```
-IF {save_mode} = true AND any flag was changed from false → true on resume:
+IF any flag was changed from false → true on resume:
     Check if corresponding output files exist in {output_dir}:
     - IF {examine_mode} newly enabled → check 05-examine.md, 06-resolve.md
     - IF {test_mode} newly enabled → check 07-tests.md, 08-run-tests.md
@@ -286,7 +269,7 @@ IF {branch_mode} = true AND {branch_name} is empty (not restored from 00-context
 
 1. Read `next_step` from State Snapshot section
 2. **If `next_step` is `complete`:** Check the Progress table for any `⏸ Pending` rows (flag overrides in step 2d may have added new steps). If Pending rows exist, override `next_step` to the first Pending step number (e.g., `05-examine`). Otherwise, workflow is already finished — inform user: "✓ Workflow {task_id} is already complete. Nothing to resume." → STOP.
-3. **If `next_step` points to a `✓ Complete` step:** The State Snapshot is stale (auto_mode session crashed after completing the step but before updating the snapshot). Fall back to the Progress table: find the first row that is NOT `✓ Complete` and NOT `⏭ Skip`.
+3. **If `next_step` points to a `✓ Complete` step:** The State Snapshot is stale (session crashed after completing the step but before updating the snapshot). Fall back to the Progress table: find the first row that is NOT `✓ Complete` and NOT `⏭ Skip`.
 4. **Fallback** (if `next_step` missing): parse Progress table for first row that is NOT `✓ Complete` and NOT `⏭ Skip`
 5. **Handle "⏳ In Progress"**: this means a step crashed mid-execution → restart that step
 
@@ -299,8 +282,6 @@ IF {branch_mode} = true AND {branch_name} is empty (not restored from 00-context
 |----------|-------|
 | `{task_id}` | {task_id} |
 | Resuming at | step-{next_step} |
-| `{auto_mode}` | true/false |
-| `{save_mode}` | true/false |
 | Flags overridden | {list any changed flags, or "none"} |
 
 → Loading step-{next_step}...
@@ -354,9 +335,7 @@ IF {economy_mode} = true:
   → Apply economy overrides
 ```
 
-### 5. Create Output Structure (if save_mode)
-
-**If `{save_mode}` = true:**
+### 5. Create Output Structure
 
 Run the template setup script to initialize all output files:
 
@@ -364,9 +343,7 @@ Run the template setup script to initialize all output files:
 bash {skill_dir}/scripts/setup-templates.sh \
   "{task_id}" \
   "{task_description}" \
-  "{auto_mode}" \
   "{examine_mode}" \
-  "{save_mode}" \
   "{test_mode}" \
   "{economy_mode}" \
   "{branch_mode}" \
@@ -392,13 +369,7 @@ This script:
 
 ### 6. Mark Init Complete and Proceed
 
-**If `{save_mode}` = true:**
-
-```bash
-bash {skill_dir}/scripts/update-progress.sh "{task_id}" "00" "init" "complete"
-```
-
-**Always (regardless of auto_mode):**
+**Always:**
 
 Show COMPACT initialization summary (one table, then proceed immediately):
 
@@ -408,9 +379,7 @@ Show COMPACT initialization summary (one table, then proceed immediately):
 | Variable | Value |
 |----------|-------|
 | `{task_id}` | 01-kebab-name |
-| `{auto_mode}` | true/false |
 | `{examine_mode}` | true/false |
-| `{save_mode}` | true/false |
 | `{test_mode}` | true/false |
 | `{economy_mode}` | true/false |
 | `{team_mode}` | true/false |
@@ -463,7 +432,7 @@ KEEP OUTPUT MINIMAL:
 
 After showing initialization summary, always proceed directly to `./step-01-analyze.md`
 
-**Note:** Step-00-init and step-01-analyze always run together in the same session. The first session boundary (stop point when `auto_mode=false`) is at the END of step-01-analyze. See step-01 for session boundary details.
+**Note:** Step-00-init and step-01-analyze always run together in the same session. The first session boundary (stop point) is at the END of step-01-analyze. See step-01 for session boundary details.
 
 <critical>
 Remember:

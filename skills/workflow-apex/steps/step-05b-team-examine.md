@@ -36,7 +36,6 @@ load_condition: team_mode = true AND examine_mode = true
 - Now looking for issues that tests miss
 - Adversarial mindset - assume bugs exist
 - team_mode = true (validated in step-00)
-- auto_mode may be true or false (team_mode no longer requires auto_mode)
 - This step replaces step-05-examine.md entirely
 
 ## CONTEXT RESTORATION (resume mode):
@@ -68,11 +67,9 @@ From previous steps:
 |----------|-------------|
 | `{task_description}` | What was implemented |
 | `{task_id}` | Kebab-case identifier |
-| `{auto_mode}` | true or false (team_mode no longer requires auto_mode) |
-| `{save_mode}` | Save outputs to files |
 | `{test_mode}` | Include test steps |
 | `{pr_mode}` | Create pull request |
-| `{output_dir}` | Path to output (if save_mode) |
+| `{output_dir}` | Path to output |
 | Files modified | From step-03 |
 </available_state>
 
@@ -82,9 +79,7 @@ From previous steps:
 
 ### Phase 1: GATHER CHANGES
 
-#### 1.1 Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+#### 1.1 Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "in_progress"
@@ -643,72 +638,35 @@ TeamDelete
 **Final Findings:** {total count} ({critical} critical, {high} high, {medium} medium, {low} low)
 ```
 
-### 6. Get User Approval (review → resolve/test)
+### 6. Determine Next Step
 
-**If `{auto_mode}` = true:**
-→ Proceed automatically based on findings
+**Always proceed to resolve findings:**
 
-**If `{auto_mode}` = false:**
+```
+IF Real findings exist:
+    → next_step = 06-resolve
+    ℹ️ Auto-proceeding to resolve {N} Real findings
 
-**If `{test_mode}` = true AND tests not yet completed:**
-```yaml
-questions:
-  - header: "Review"
-    question: "Team review complete. How would you like to proceed?"
-    options:
-      - label: "Resolve findings (Recommended)"
-        description: "Address the identified issues"
-      - label: "Skip to tests"
-        description: "Skip resolution, proceed to test creation"
-      - label: "Skip resolution"
-        description: "Accept findings, don't make changes"
-      - label: "Discuss findings"
-        description: "I want to discuss specific findings"
-    multiSelect: false
+ELSE IF {test_mode} = true AND tests not yet completed:
+    → next_step = 07-tests
+    → Update 06-resolve progress to "skip":
+      bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "skip"
+
+ELSE IF {pr_mode} = true:
+    → next_step = 09-finish
+    → Update 06-resolve progress to "skip"
+
+ELSE:
+    → next_step = complete
+    → Update 06-resolve progress to "skip"
 ```
 
-**If `{test_mode}` = false OR tests already completed:**
-```yaml
-questions:
-  - header: "Review"
-    question: "Team review complete. How would you like to proceed?"
-    options:
-      - label: "Resolve findings (Recommended)"
-        description: "Address the identified issues"
-      - label: "Skip resolution"
-        description: "Accept findings, don't make changes"
-      - label: "Discuss findings"
-        description: "I want to discuss specific findings"
-    multiSelect: false
-```
-
-<critical>
-This is one of the THREE transition points that requires user confirmation:
-1. plan → execute
-2. validate → review
-3. review → resolve/test (THIS ONE)
-</critical>
-
-**Persist user choice (if save_mode):**
-
-Append to `{output_dir}/00-context.md` under `### User Choices`:
+Persist choice in `{output_dir}/00-context.md` under `### User Choices`:
 ```markdown
-- **step-05 → next:** {chosen option} (e.g., "resolve", "skip-to-tests", "skip-resolution")
+- **step-05 → next:** auto-resolve (Real findings: {N})
 ```
 
-**Update progress for skipped resolution (if save_mode):**
-
-```
-IF user chose "Skip to tests" OR "Skip resolution":
-  → 06-resolve will be skipped. Update its progress:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "06" "resolve" "skip"
-    ```
-```
-
-### 7. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 7. Complete Save Output
 
 Append to `{output_dir}/05-examine.md`:
 ```markdown
@@ -763,45 +721,34 @@ Append to `{output_dir}/05-examine.md`:
 
 ## NEXT STEP:
 
-**Determine next step based on user choice/flags:**
-- **"Resolve findings":** next = `06-resolve`
-- **"Skip to tests" (and test_mode AND tests not yet completed):** next = `07-tests`
-  - _Check: If save_mode, check progress table for `08-run-tests` status. If `✓ Complete`, tests already done → treat as "Skip resolution"._
-- **"Skip resolution" + test_mode (AND tests not yet completed):** next = `07-tests`
-  - _Same check as above._
-- **"Skip resolution" + pr_mode (or tests already completed + pr_mode):** next = `09-finish`
-- **"Skip resolution" (no more steps):** Workflow complete
+**Determine next step based on findings:**
+- **If Real findings exist:** next = `06-resolve`
+- **If no Real findings + test_mode (AND tests not yet completed):** next = `07-tests`
+- **If no Real findings + pr_mode:** next = `09-finish`
+- **Otherwise:** Workflow complete
 
 ### Session Boundary
 
-```
-IF auto_mode = true:
-  → If save_mode = true, update progress and state:
-    ```bash
-    bash {skill_dir}/scripts/update-progress.sh "{task_id}" "05" "examine" "complete"
-    bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "{next_step}" "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
-    ```
-  → If next_step = "complete": Display workflow complete message → STOP.
-  → Otherwise: Load the determined next step directly (chain all steps)
+Determine {next_step_num} and {next_step_description} from the decision tree above.
 
-IF auto_mode = false AND workflow not complete:
-  → Determine {next_step_num} and {next_step_description} from the decision tree above
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" "Reviewers: {count}. Findings: {count} ({blocking} blocking). Cross-challenge: {validated}/{challenged}/{new}" "{next_step_num}" "{next_step_description}" "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
-    ```
-  → Display the output to the user
-  → STOP. Do NOT load the next step.
-  → The session ENDS here. User must run /apex -r {task_id} to continue.
+IF workflow complete (next_step = "complete"):
+  Run session boundary:
+  ```bash
+  bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" \
+    "Team review complete. No findings to resolve." "complete" "Workflow Complete" \
+    "**05-examine:** {count} findings, all dismissed"
+  ```
 
-IF auto_mode = false AND workflow complete:
-  → Run (if save_mode):
-    ```bash
-    bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" "Team review complete. No findings to resolve." "complete" "Workflow Complete" "**05-examine:** {count} findings, all dismissed"
-    ```
-  → Display the output to the user
-  → STOP.
-```
+IF workflow not complete:
+  Run session boundary:
+  ```bash
+  bash {skill_dir}/scripts/session-boundary.sh "{task_id}" "05" "examine" \
+    "Reviewers: {count}. Findings: {count} ({blocking} blocking). Cross-challenge: {validated}/{challenged}/{new}" \
+    "{next_step_num}" "{next_step_description}" \
+    "**05-examine:** {count} findings ({count} blocking)" ["{gotcha if any}"]
+  ```
+
+→ STOP — session ends here. User must run `/apex -r {task_id}` to continue.
 
 <critical>
 Remember: You are a COORDINATOR in this step. Your job is to:

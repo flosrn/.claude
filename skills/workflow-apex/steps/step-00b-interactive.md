@@ -38,9 +38,7 @@ Show current flag values:
 
 | Flag | Status | Description |
 |------|--------|-------------|
-| Auto (`-a`) | {auto_mode ? "✓ ON" : "✗ OFF"} | Skip confirmations |
 | Examine (`-x`) | {examine_mode ? "✓ ON" : "✗ OFF"} | Adversarial review |
-| Save (`-s`) | {save_mode ? "✓ ON" : "✗ OFF"} | Save outputs to files |
 | Test (`-t`) | {test_mode ? "✓ ON" : "✗ OFF"} | Include test steps |
 | Economy (`-e`) | {economy_mode ? "✓ ON" : "✗ OFF"} | No subagents |
 | Team (`-w`) | {team_mode ? "✓ ON" : "✗ OFF"} | Parallel Agent Teams |
@@ -56,12 +54,8 @@ questions:
   - header: "Configure"
     question: "Select flags to TOGGLE (currently shown flags will flip their state):"
     options:
-      - label: "Auto mode"
-        description: "{auto_mode ? 'Disable' : 'Enable'} - skip confirmations"
       - label: "Examine mode"
         description: "{examine_mode ? 'Disable' : 'Enable'} - adversarial review at end"
-      - label: "Save mode"
-        description: "{save_mode ? 'Disable' : 'Enable'} - save outputs to .claude/output/"
       - label: "Test mode"
         description: "{test_mode ? 'Disable' : 'Enable'} - include test creation/runner"
     multiSelect: true
@@ -90,9 +84,7 @@ questions:
 
 For each selected flag, toggle its value:
 ```
-IF "Auto mode" selected → {auto_mode} = !{auto_mode}
 IF "Examine mode" selected → {examine_mode} = !{examine_mode}
-IF "Save mode" selected → {save_mode} = !{save_mode}
 IF "Test mode" selected → {test_mode} = !{test_mode}
 IF "Team mode" selected → {team_mode} = !{team_mode}
 IF "Economy mode" selected → {economy_mode} = !{economy_mode}
@@ -121,9 +113,7 @@ Display updated configuration:
 
 | Flag | Status |
 |------|--------|
-| Auto | {auto_mode ? "✓ ON" : "✗ OFF"} |
 | Examine | {examine_mode ? "✓ ON" : "✗ OFF"} |
-| Save | {save_mode ? "✓ ON" : "✗ OFF"} |
 | Test | {test_mode ? "✓ ON" : "✗ OFF"} |
 | Economy | {economy_mode ? "✓ ON" : "✗ OFF"} |
 | Team | {team_mode ? "✓ ON" : "✗ OFF"} |

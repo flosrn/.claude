@@ -1,7 +1,7 @@
 ---
 name: apex
 description: Systematic implementation using APEX methodology (Analyze-Plan-Execute-eXamine) with parallel agents, self-validation, and optional adversarial review. Use when implementing features, fixing bugs, or making code changes that benefit from structured workflow.
-argument-hint: "[-a] [-x] [-s] [-t] [-w] [-b] [-pr] [-i] [-r <task-id>] <task description>"
+argument-hint: "[-x] [-t] [-w] [-b] [-pr] [-i] [-r <task-id>] <task description>"
 ---
 
 <objective>
@@ -9,7 +9,7 @@ Execute systematic implementation workflows using the APEX methodology. This ski
 </objective>
 
 <quick_start>
-**Step-by-step mode (default):** Each step runs in its own session. Resume with `/apex -r`.
+**Step-by-step mode:** Each step runs in its own session. Resume with `/apex -r`.
 
 ```bash
 /apex add authentication middleware
@@ -17,26 +17,20 @@ Execute systematic implementation workflows using the APEX methodology. This ski
 # → /apex -r 01-add-authentication-middleware  (next session)
 ```
 
-**Autonomous mode:** All steps chain in one session.
-
-```bash
-/apex -a implement user registration
-```
-
 **With adversarial review:**
 
 ```bash
-/apex -a -x -s fix login bug
+/apex -x fix login bug
 ```
 
 **Flags:**
 
-- `-a` (auto): Chain all steps in one session (skip confirmations)
-- `-s` (save): Save outputs to `.claude/output/apex/` (auto-enabled when not `-a`)
 - `-x` (examine): Include adversarial code review
 - `-t` (test): Create and run tests
 - `-w` (team): Use Agent Teams for parallel research, execution, review, and resolution
 - `-pr` (pull-request): Create PR at end
+
+Outputs always saved to `.claude/output/apex/` (required for resume between sessions).
 
 See `<parameters>` for complete flag list.
 </quick_start>
@@ -47,9 +41,7 @@ See `<parameters>` for complete flag list.
 **Enable flags (turn ON):**
 | Short | Long | Description |
 |-------|------|-------------|
-| `-a` | `--auto` | Autonomous mode: chain all steps in one session, skip confirmations |
-| `-x` | `--examine` | Auto-examine mode: proceed to adversarial review |
-| `-s` | `--save` | Save mode: output each step to `.claude/output/apex/` |
+| `-x` | `--examine` | Examine mode: proceed to adversarial review |
 | `-t` | `--test` | Test mode: include test creation and runner steps |
 | `-e` | `--economy` | Economy mode: no subagents, save tokens (for limited plans) |
 | `-w` | `--team` | Team mode: use Agent Teams for parallel research, execution, review, and resolution (incompatible with `-e`) |
@@ -61,9 +53,7 @@ See `<parameters>` for complete flag list.
 **Disable flags (turn OFF):**
 | Short | Long | Description |
 |-------|------|-------------|
-| `-A` | `--no-auto` | Disable auto mode |
 | `-X` | `--no-examine` | Disable examine mode |
-| `-S` | `--no-save` | Disable save mode |
 | `-T` | `--no-test` | Disable test mode |
 | `-E` | `--no-economy` | Disable economy mode |
 | `-W` | `--no-team` | Disable team mode |
@@ -77,24 +67,18 @@ See `<parameters>` for complete flag list.
 # Basic
 /apex add auth middleware
 
-# Autonomous (skip confirmations)
-/apex -a add auth middleware
+# With adversarial review
+/apex -x add auth middleware
 
-# Save outputs + examine
-/apex -a -x -s add auth middleware
-
-# Full workflow with tests
-/apex -a -x -s -t add auth middleware
+# Full workflow with tests and review
+/apex -x -t add auth middleware
 
 # With PR creation
-/apex -a -pr add auth middleware
+/apex -pr add auth middleware
 
 # Resume previous task
 /apex -r 01-auth-middleware
 /apex -r 01  # Partial match
-
-# Resume with flag override (enable auto mode)
-/apex -a -r 01
 
 # Resume with additional flags (add tests mid-workflow)
 /apex -t -r 01
@@ -104,13 +88,10 @@ See `<parameters>` for complete flag list.
 
 # Team mode (parallel execution with Agent Teams)
 /apex -w implement full-stack feature
-/apex -w -a -x implement dashboard with backend API
+/apex -w -x implement dashboard with backend API
 
 # Interactive flag config
 /apex -i add auth middleware
-
-# Disable flags (uppercase)
-/apex -A add auth middleware  # Disable auto
 ```
 </examples>
 
@@ -128,7 +109,7 @@ For detailed parsing algorithm, see `steps/step-00-init.md`.
 </parameters>
 
 <output_structure>
-**When `{save_mode}` = true:**
+**Output structure (always saved):**
 
 All outputs saved to PROJECT directory (where Claude Code is running):
 ```
@@ -158,9 +139,7 @@ All outputs saved to PROJECT directory (where Claude Code is running):
 
 | Flag | Value |
 |------|-------|
-| Auto mode (`-a`) | {auto_mode} |
 | Examine mode (`-x`) | {examine_mode} |
-| Save mode (`-s`) | {save_mode} |
 | Test mode (`-t`) | {test_mode} |
 | Economy mode (`-e`) | {economy_mode} |
 | Team mode (`-w`) | {team_mode} |
@@ -194,7 +173,7 @@ When provided, step-00 will:
 
 1. **Find task folder:** `ls .claude/output/apex/ | grep {resume_task}` (exact or partial match)
 2. **Restore state:** Read `00-context.md` → all flags, task info, acceptance criteria, step context
-3. **Apply overrides:** Any flags passed with `-r` override stored values (e.g., `/apex -a -r 01` enables auto_mode)
+3. **Apply overrides:** Any flags passed with `-r` override stored values (e.g., `/apex -t -r 01` enables test_mode)
 4. **Re-evaluate steps:** If flags changed (e.g., `-t` added), update Progress table Skip→Pending
 5. **Find resume target:** Read `next_step` from State Snapshot (fallback: first non-Complete/non-Skip row in Progress table)
 6. **Handle crashes:** "⏳ In Progress" status = crashed step → restart it
@@ -223,17 +202,16 @@ Supports partial matching (e.g., `-r 01` finds `01-add-auth-middleware`).
 12. If `-pr`: Load step-09-finish.md → create pull request
 
 **Session behavior:**
-- `auto_mode=false` (default): Each step stops after completion with a resume command. Steps 00+01 run together as the first session.
-- `auto_mode=true` (`-a`): All steps chain in a single session (no stops).
+- Each step stops after completion with a resume command. Steps 00+01 run together as the first session.
+- Outputs always saved to `.claude/output/apex/` for cross-session state transfer.
 </workflow>
 
 <stop_resume>
-**Step-by-step mode (auto_mode=false):**
+**Step-by-step mode:**
 
-When `auto_mode` is false (default), APEX runs one step per session:
+APEX runs one step per session:
 
 1. **First session:** step-00-init + step-01-analyze run together
-   - `save_mode` is auto-enabled (required for resume)
    - After step-01 completes: saves state, shows resume command, **STOPS**
 2. **Each subsequent session:** `/apex -r {task_id}` runs one step
    - Restores all state from `00-context.md` + previous step outputs
@@ -277,9 +255,7 @@ When `auto_mode` is false (default), APEX runs one step per session:
 | `{feature_name}`        | string  | Kebab-case name without number (e.g., `add-auth-middleware`) |
 | `{task_id}`             | string  | Full identifier with number (e.g., `01-add-auth-middleware`) |
 | `{acceptance_criteria}` | list    | Success criteria (inferred or explicit)                |
-| `{auto_mode}`           | boolean | Skip confirmations, use recommended options            |
 | `{examine_mode}`        | boolean | Auto-proceed to adversarial review                     |
-| `{save_mode}`           | boolean | Save outputs to .claude/output/apex/                   |
 | `{test_mode}`           | boolean | Include test steps (07-08)                             |
 | `{economy_mode}`        | boolean | No subagents, direct tool usage only                   |
 | `{team_mode}`           | boolean | Use Agent Teams for parallel research (01), execution (03), review (05), and resolution (06) |
@@ -300,10 +276,10 @@ When `auto_mode` is false (default), APEX runs one step per session:
 
 Step 00 handles:
 
-- Flag parsing (-a, -x, -s, -t, -e, -w, -b, -pr, -i, -r)
+- Flag parsing (-x, -t, -e, -w, -b, -pr, -i, -r)
 - Resume mode detection and task lookup
-- Output folder creation (if save_mode)
-- 00-context.md creation (if save_mode)
+- Output folder creation
+- 00-context.md creation
 - State variable initialization
 
 After initialization, step-00 loads step-01-analyze.md.
@@ -341,9 +317,9 @@ After initialization, step-00 loads step-01-analyze.md.
 - **ULTRA THINK** before major decisions
 - **Persist state variables** across all steps
 - **Follow next_step directive** at end of each step
-- **Save outputs** if `{save_mode}` = true (append to step file)
+- **Save outputs** to step files (always enabled)
 - **Use parallel agents** for independent exploration tasks
-- **Session boundary:** When `auto_mode=false`, each step STOPS after completion and displays a resume command. When `auto_mode=true`, steps chain directly. See `<stop_resume>` for details.
+- **Session boundary:** Each step STOPS after completion and displays a resume command. See `<stop_resume>` for details.
 - **Per-step commits:** When `branch_mode=true`, each code-modifying step (03, 04, 06, 07, 08) automatically commits changes with message `apex({task_id}): step NN - name`. This gives PRs granular commit history.
 - **Worktree isolation:** For git worktree-based workspace isolation, use the `using-git-worktrees` skill before running `/apex`.
 - **Team mode:** When `{team_mode}=true`, Agent Teams parallelize four phases: research (`step-01b-team-analyze.md`), implementation (`step-03b-team-execute.md`), adversarial review (`step-05b-team-examine.md`), and finding resolution (`step-06b-team-resolve.md`). Researchers share findings cross-domain; reviewers challenge each other's findings; resolvers fix findings by file group. Incompatible with `-e` (economy mode).
@@ -374,7 +350,7 @@ The analyze phase (step-01) uses **adaptive agent launching** (unless economy_mo
 </execution_rules>
 
 <save_output_pattern>
-**When `{save_mode}` = true:**
+**Output pattern (always active):**
 
 Step-00 runs `scripts/setup-templates.sh` to initialize all output files from `templates/` directory.
 
@@ -397,7 +373,7 @@ Step-00 runs `scripts/setup-templates.sh` to initialize all output files from `t
 
 - Each step loaded progressively
 - All validation checks passing
-- Outputs saved if `{save_mode}` enabled
+- Outputs saved to `.claude/output/apex/`
 - Tests passing if `{test_mode}` enabled
 - Clear completion summary provided
   </success_criteria>

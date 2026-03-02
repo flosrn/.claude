@@ -21,8 +21,15 @@ scripts
 plugins
 
 # Backups
+backups/
 *.backup/
 *.backup
+
+# Teams (session data)
+teams/
+
+# MCP cache
+mcp-needs-auth-cache.json
 
 # OS files
 .DS_Store

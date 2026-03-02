@@ -55,6 +55,7 @@ team_mode: false # -w: Use Agent Teams for parallel execution (incompatible with
 branch_mode: false # -b: Verify not on main, create branch if needed
 pr_mode: false # -pr: Create pull request at end (enables -b)
 interactive_mode: false # -i: Configure flags interactively
+worktree_mode: false # -wt: Isolate work in a git worktree (enables -b)
 
 # Presets:
 # Budget-friendly:  economy_mode: true
@@ -81,6 +82,7 @@ interactive_mode: false # -i: Configure flags interactively
 {branch_mode}  = <default>
 {pr_mode}      = <default>
 {interactive_mode} = <default>
+{worktree_mode} = <default>
 ```
 
 **Step 1b: Parse user input and override defaults:**
@@ -101,9 +103,13 @@ Disable flags (UPPERCASE - turn OFF):
   -PR or --no-pull-request → {pr_mode} = false
   -I or --no-interactive  → {interactive_mode} = false
 
-Branch/PR flags:
+Branch/PR/Worktree flags:
   -b or --branch        → {branch_mode} = true
   -pr or --pull-request → {pr_mode} = true, {branch_mode} = true
+  -wt or --worktree     → {worktree_mode} = true, {branch_mode} = true
+
+Disable worktree:
+  -WT or --no-worktree  → {worktree_mode} = false
 
 Interactive:
   -i or --interactive   → {interactive_mode} = true
@@ -119,6 +125,13 @@ Other:
 IF {team_mode} = true AND {economy_mode} = true:
     → WARNING: "Team mode (-w) is incompatible with economy mode (-e). Disabling economy mode."
     → {economy_mode} = false
+```
+
+**Step 1c-wt: Worktree mode validation:**
+
+```
+IF {worktree_mode} = true:
+    → {branch_mode} = true  (worktree creates its own branch)
 ```
 
 **Step 1d: Detect reference files in input:**
@@ -200,8 +213,8 @@ ls .claude/output/apex/ | grep "{resume_task}"
 **Step 2b: Restore state from `00-context.md`:**
 
 1. Read `{output_dir}/00-context.md`
-2. Restore ALL flags from Configuration table: `{examine_mode}`, `{test_mode}`, `{economy_mode}`, `{team_mode}`, `{branch_mode}`, `{pr_mode}`, `{interactive_mode}`
-3. Restore task info: `{task_id}`, `{task_description}`, `{feature_name}`, `{branch_name}`
+2. Restore ALL flags from Configuration table: `{examine_mode}`, `{test_mode}`, `{economy_mode}`, `{team_mode}`, `{branch_mode}`, `{pr_mode}`, `{interactive_mode}`, `{worktree_mode}`
+3. Restore task info: `{task_id}`, `{task_description}`, `{feature_name}`, `{branch_name}`, `{worktree_path}`
 4. Restore `{reference_files}` from Reference Documents section (if any file paths listed)
 5. Restore acceptance criteria from State Snapshot section
 
@@ -325,7 +338,12 @@ IF {interactive_mode} = true:
   → User configures flags interactively
   → Return here with updated flags
 
-IF {branch_mode} = true:
+IF {worktree_mode} = true:
+  → Load steps/step-00c-worktree.md
+  → Creates worktree via EnterWorktree, runs setup-worktree.sh
+  → Return here with {worktree_path} and {branch_name} set
+  → SKIP step-00b-branch (worktree creates its own branch)
+ELSE IF {branch_mode} = true:
   → Load steps/step-00b-branch.md
   → Verify/create branch
   → Return here with {branch_name} set
@@ -352,7 +370,9 @@ bash {skill_dir}/scripts/setup-templates.sh \
   "{branch_name}" \
   "{original_input}" \
   "{team_mode}" \
-  "{reference_files}"
+  "{reference_files}" \
+  "{worktree_mode}" \
+  "{worktree_path}"
 ```
 
 **Note:** Pass the full `{task_id}` (with number prefix, e.g., `01-add-auth`).
@@ -385,6 +405,8 @@ Show COMPACT initialization summary (one table, then proceed immediately):
 | `{team_mode}` | true/false |
 | `{branch_mode}` | true/false |
 | `{pr_mode}` | true/false |
+| `{worktree_mode}` | true/false |
+| `{worktree_path}` | path or empty |
 | `{reference_files}` | path or empty |
 
 → Analyzing...

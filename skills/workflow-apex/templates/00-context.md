@@ -16,7 +16,9 @@
 | Branch mode (`-b`) | {{branch_mode}} |
 | PR mode (`-pr`) | {{pr_mode}} |
 | Interactive mode (`-i`) | {{interactive_mode}} |
+| Worktree mode (`-wt`) | {{worktree_mode}} |
 | Branch name | {{branch_name}} |
+| Worktree path | {{worktree_path}} |
 
 ---
 
@@ -52,6 +54,7 @@
 ## State Snapshot
 
 **feature_name:** {{feature_name}}
+**worktree_path:** {{worktree_path}}
 **next_step:** 01
 
 ### Acceptance Criteria

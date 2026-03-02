@@ -25,7 +25,7 @@ prev_step: ./step-08-run-tests.md (or ./step-04-validate.md if no tests)
 
 ## CONTEXT BOUNDARIES:
 
-- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{pr_mode}`, `{output_dir}`
+- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{pr_mode}`, `{output_dir}`, `{worktree_mode}`, `{worktree_path}`
 - Previous steps completed: analyze, plan, execute, validate (+ optional: tests, examine)
 - All implementation should be done at this point
 
@@ -136,6 +136,17 @@ Update state snapshot to mark workflow complete:
 bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "complete" "**09-finish:** PR created, workflow complete"
 ```
 
+### 6b. Worktree Info (if worktree_mode)
+
+**If `{worktree_mode}` = true:**
+
+Display worktree information:
+```
+ℹ Worktree: {worktree_path}
+  This worktree will be cleaned up when the Claude Code session ends.
+  If you need to keep it, answer "keep" when prompted at session exit.
+```
+
 ### 7. Final Summary
 
 Display workflow completion summary:
@@ -154,6 +165,7 @@ Display workflow completion summary:
   ✓ Validation passed
   {if test_mode: "✓ Tests passing"}
   {if examine_mode: "✓ Review findings resolved"}
+  {if worktree_mode: "✓ Working in worktree: {worktree_path}"}
   ✓ Changes pushed to {branch_name}
   {if pr_mode: "✓ PR created: {pr_url}"}
 

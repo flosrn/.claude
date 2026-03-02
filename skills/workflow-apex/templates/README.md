@@ -36,6 +36,8 @@ Templates use `{{variable}}` syntax for placeholders:
 | `{{pr_mode}}` | PR mode flag | `true` or `false` |
 | `{{interactive_mode}}` | Interactive mode flag | `true` or `false` |
 | `{{branch_name}}` | Git branch name | `feature/add-auth` |
+| `{{worktree_mode}}` | Worktree mode flag | `true` or `false` |
+| `{{worktree_path}}` | Path to git worktree (if worktree_mode) | `/path/to/.claude/worktrees/01-add-auth` |
 | `{{original_input}}` | Raw user input | `/apex -x -t add auth` |
 | `{{examine_status}}` | Progress status for examine steps | `⏸ Pending` or `⏭ Skip` |
 | `{{test_status}}` | Progress status for test steps | `⏸ Pending` or `⏭ Skip` |
@@ -89,6 +91,8 @@ bash scripts/setup-templates.sh \
   "original_input" \
   "team_mode" \
   "reference_file" \
+  "worktree_mode" \
+  "worktree_path"
 ```
 
 **Output:**

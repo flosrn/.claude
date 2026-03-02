@@ -44,6 +44,7 @@ Show current flag values:
 | Team (`-w`) | {team_mode ? "✓ ON" : "✗ OFF"} | Parallel Agent Teams |
 | Branch (`-b`) | {branch_mode ? "✓ ON" : "✗ OFF"} | Verify/create branch |
 | PR (`-pr`) | {pr_mode ? "✓ ON" : "✗ OFF"} | Create pull request |
+| Worktree (`-wt`) | {worktree_mode ? "✓ ON" : "✗ OFF"} | Isolate in worktree |
 ```
 
 ### 2. Ask for Flag Changes
@@ -77,6 +78,8 @@ questions:
         description: "{branch_mode ? 'Disable' : 'Enable'} - verify/create git branch"
       - label: "PR mode"
         description: "{pr_mode ? 'Disable' : 'Enable'} - create pull request at end (enables branch)"
+      - label: "Worktree mode"
+        description: "{worktree_mode ? 'Disable' : 'Enable'} - isolate work in a git worktree (enables branch)"
     multiSelect: true
 ```
 
@@ -90,13 +93,15 @@ IF "Team mode" selected → {team_mode} = !{team_mode}
 IF "Economy mode" selected → {economy_mode} = !{economy_mode}
 IF "Branch mode" selected → {branch_mode} = !{branch_mode}
 IF "PR mode" selected → {pr_mode} = !{pr_mode}
+IF "Worktree mode" selected → {worktree_mode} = !{worktree_mode}
 ```
 
 **Special rules (applied after ALL toggles):**
 
-If PR mode enabled, auto-enable branch mode:
+If PR mode or worktree mode enabled, auto-enable branch mode:
 ```
 IF {pr_mode} = true → {branch_mode} = true
+IF {worktree_mode} = true → {branch_mode} = true
 ```
 
 Enforce team+economy mutual exclusion (fires regardless of which was toggled):
@@ -119,6 +124,7 @@ Display updated configuration:
 | Team | {team_mode ? "✓ ON" : "✗ OFF"} |
 | Branch | {branch_mode ? "✓ ON" : "✗ OFF"} |
 | PR | {pr_mode ? "✓ ON" : "✗ OFF"} |
+| Worktree | {worktree_mode ? "✓ ON" : "✗ OFF"} |
 ```
 
 ### 6. Return

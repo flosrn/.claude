@@ -1,7 +1,7 @@
 ---
 name: apex
 description: Systematic implementation using APEX methodology (Analyze-Plan-Execute-eXamine) with parallel agents, self-validation, and optional adversarial review. Use when implementing features, fixing bugs, or making code changes that benefit from structured workflow.
-argument-hint: "[-x] [-t] [-w] [-b] [-pr] [-i] [-r <task-id>] <task description>"
+argument-hint: "[-x] [-t] [-w] [-wt] [-b] [-pr] [-i] [-r <task-id>] <task description>"
 ---
 
 <objective>
@@ -28,6 +28,7 @@ Execute systematic implementation workflows using the APEX methodology. This ski
 - `-x` (examine): Include adversarial code review
 - `-t` (test): Create and run tests
 - `-w` (team): Use Agent Teams for parallel research, execution, review, and resolution
+- `-wt` (worktree): Isolate work in a git worktree (enables `-b`)
 - `-pr` (pull-request): Create PR at end
 
 Outputs always saved to `.claude/output/apex/` (required for resume between sessions).
@@ -47,6 +48,7 @@ See `<parameters>` for complete flag list.
 | `-w` | `--team` | Team mode: use Agent Teams for parallel research, execution, review, and resolution (incompatible with `-e`) |
 | `-r` | `--resume` | Resume mode: continue from a previous task |
 | `-b` | `--branch` | Branch mode: verify not on main, create branch if needed |
+| `-wt` | `--worktree` | Worktree mode: isolate work in a git worktree (enables -b) |
 | `-pr` | `--pull-request` | PR mode: create pull request at end (enables -b) |
 | `-i` | `--interactive` | Interactive mode: configure flags via AskUserQuestion |
 
@@ -58,6 +60,7 @@ See `<parameters>` for complete flag list.
 | `-E` | `--no-economy` | Disable economy mode |
 | `-W` | `--no-team` | Disable team mode |
 | `-B` | `--no-branch` | Disable branch mode |
+| `-WT` | `--no-worktree` | Disable worktree mode |
 | `-PR` | `--no-pull-request` | Disable PR mode |
 | `-I` | `--no-interactive` | Disable interactive mode |
 </flags>
@@ -89,6 +92,12 @@ See `<parameters>` for complete flag list.
 # Team mode (parallel execution with Agent Teams)
 /apex -w implement full-stack feature
 /apex -w -x implement dashboard with backend API
+
+# Worktree isolation
+/apex -wt add auth middleware
+
+# Worktree + PR
+/apex -wt -pr add auth middleware
 
 # Interactive flag config
 /apex -i add auth middleware
@@ -146,6 +155,7 @@ All outputs saved to PROJECT directory (where Claude Code is running):
 | Branch mode (`-b`) | {branch_mode} |
 | PR mode (`-pr`) | {pr_mode} |
 | Interactive mode (`-i`) | {interactive_mode} |
+| Worktree mode (`-wt`) | {worktree_mode} |
 
 ## User Request
 {original user input}
@@ -262,6 +272,8 @@ APEX runs one step per session:
 | `{branch_mode}`         | boolean | Verify not on main, create branch if needed            |
 | `{pr_mode}`             | boolean | Create pull request at end                             |
 | `{interactive_mode}`    | boolean | Configure flags interactively                          |
+| `{worktree_mode}`       | boolean | Isolate work in a git worktree (enables branch_mode)   |
+| `{worktree_path}`       | string  | Path to git worktree (if worktree_mode)                |
 | `{next_step}`           | string  | Next step to execute (persisted in State Snapshot)     |
 | `{reference_files}`     | string  | Path(s) to reference documents (e.g., brainstorm output) |
 | `{resume_task}`         | string  | Task ID to resume (if -r provided)                     |
@@ -276,7 +288,7 @@ APEX runs one step per session:
 
 Step 00 handles:
 
-- Flag parsing (-x, -t, -e, -w, -b, -pr, -i, -r)
+- Flag parsing (-x, -t, -e, -w, -wt, -b, -pr, -i, -r)
 - Resume mode detection and task lookup
 - Output folder creation
 - 00-context.md creation
@@ -292,9 +304,10 @@ After initialization, step-00 loads step-01-analyze.md.
 | Step | File                         | Purpose                                              |
 | ---- | ---------------------------- | ---------------------------------------------------- |
 | 00   | `steps/step-00-init.md`      | Parse flags, create output folder, initialize state  |
-| 00b  | `steps/step-00b-branch.md`   | Branch verification and creation (if branch_mode)    |
+| 00b  | `steps/step-00b-branch.md`   | Branch verification and creation (if branch_mode, skipped if worktree_mode) |
 | 00b  | `steps/step-00b-interactive.md` | Interactive flag configuration via AskUserQuestion (if interactive_mode) |
 | 00b  | `steps/step-00b-economy.md`  | Economy mode adjustments (if economy_mode)           |
+| 00c  | `steps/step-00c-worktree.md` | Worktree creation and environment setup (if worktree_mode, replaces 00b-branch) |
 | 01   | `steps/step-01-analyze.md`   | Smart context gathering with 1-10 parallel agents (built-in + custom) |
 | 01b  | `steps/step-01b-team-analyze.md` | Agent Team parallel research (if team_mode)         |
 | 02   | `steps/step-02-plan.md`      | File-by-file implementation strategy                 |
@@ -321,7 +334,7 @@ After initialization, step-00 loads step-01-analyze.md.
 - **Use parallel agents** for independent exploration tasks
 - **Session boundary:** Each step STOPS after completion and displays a resume command. See `<stop_resume>` for details.
 - **Per-step commits:** When `branch_mode=true`, each code-modifying step (03, 04, 06, 07, 08) automatically commits changes with message `apex({task_id}): step NN - name`. This gives PRs granular commit history.
-- **Worktree isolation:** For git worktree-based workspace isolation, use the `using-git-worktrees` skill before running `/apex`.
+- **Worktree isolation:** Use `-wt` flag to isolate work in a git worktree. This auto-enables branch mode, creates a worktree via `EnterWorktree`, copies `.env` files, symlinks `node_modules` and other heavy directories, and generates a deterministic port offset. The worktree is cleaned up when the Claude Code session ends.
 - **Team mode:** When `{team_mode}=true`, Agent Teams parallelize four phases: research (`step-01b-team-analyze.md`), implementation (`step-03b-team-execute.md`), adversarial review (`step-05b-team-examine.md`), and finding resolution (`step-06b-team-resolve.md`). Researchers share findings cross-domain; reviewers challenge each other's findings; resolvers fix findings by file group. Incompatible with `-e` (economy mode).
 
 ## 🧠 Smart Agent Strategy in Analyze Phase

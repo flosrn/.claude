@@ -23,6 +23,8 @@ BRANCH_NAME="${9:-}"
 ORIGINAL_INPUT="${10:-}"
 TEAM_MODE="${11:-false}"
 REFERENCE_FILE="${12:-}"
+WORKTREE_MODE="${13:-false}"
+WORKTREE_PATH_ARG="${14:-}"
 
 # Validate required arguments
 if [[ -z "$INPUT_NAME" ]]; then
@@ -96,6 +98,8 @@ render_template() {
     safe_original_input=$(escape_sed_replacement "$ORIGINAL_INPUT")
     local safe_branch_name
     safe_branch_name=$(escape_sed_replacement "$BRANCH_NAME")
+    local safe_worktree_path
+    safe_worktree_path=$(escape_sed_replacement "$WORKTREE_PATH_ARG")
 
     # Build reference docs content
     local reference_docs_content
@@ -124,6 +128,8 @@ render_template() {
         -e "s|{{examine_status}}|${examine_status}|g" \
         -e "s|{{test_status}}|${test_status}|g" \
         -e "s|{{pr_status}}|${pr_status}|g" \
+        -e "s|{{worktree_mode}}|${WORKTREE_MODE}|g" \
+        -e "s|{{worktree_path}}|${safe_worktree_path}|g" \
         -e "s|{{reference_docs}}|${safe_reference_docs}|g" \
         "$template_file" > "$output_file"
 }

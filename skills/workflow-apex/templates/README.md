@@ -2,17 +2,17 @@
 
 ## Overview
 
-This directory contains template files used to initialize APEX workflow outputs when save mode (`-s`) is enabled. This template system significantly reduces token usage by moving repetitive content out of step files.
+This directory contains template files used to initialize APEX workflow outputs. This template system significantly reduces token usage by moving repetitive content out of step files.
 
 ## Template Files
 
 | Template | Purpose | Created When |
 |----------|---------|--------------|
-| `00-context.md` | Workflow configuration and progress tracking | Always (if save_mode) |
-| `01-analyze.md` | Analysis findings | Always (if save_mode) |
-| `02-plan.md` | Implementation plan | Always (if save_mode) |
-| `03-execute.md` | Implementation log | Always (if save_mode) |
-| `04-validate.md` | Validation results | Always (if save_mode) |
+| `00-context.md` | Workflow configuration and progress tracking | Always |
+| `01-analyze.md` | Analysis findings | Always |
+| `02-plan.md` | Implementation plan | Always |
+| `03-execute.md` | Implementation log | Always |
+| `04-validate.md` | Validation results | Always |
 | `05-examine.md` | Adversarial review findings | Only if examine_mode enabled |
 | `06-resolve.md` | Finding resolution log | Only if examine_mode enabled |
 | `07-tests.md` | Test analysis and creation | Only if test_mode enabled |
@@ -165,9 +165,7 @@ bash scripts/session-boundary.sh <task_id> <step_num> <step_name> <summary> <nex
 Each step file contained full template content inline:
 
 ```markdown
-### 1. Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 1. Initialize Save Output
 
 Create `{output_dir}/01-analyze.md`:
 ```markdown
@@ -194,9 +192,7 @@ Update `00-context.md` progress:
 Step files now reference templates and scripts:
 
 ```markdown
-### 1. Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 1. Initialize Save Output
 
 The file `{output_dir}/01-analyze.md` has already been created by the setup script.
 

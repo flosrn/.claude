@@ -98,9 +98,7 @@ Read the reference file FIRST — it is the primary source of truth for what nee
 
 ### Phase 1: ANALYZE COMPLEXITY
 
-#### 1.1 Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+#### 1.1 Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "in_progress"
@@ -305,7 +303,7 @@ Task:
     6. Send a message to the team lead summarizing your findings
 ```
 
-**Log each spawn (if save_mode):**
+**Log each spawn:**
 ```markdown
 ### Researcher Spawned: {domain_name}
 - Domain: {domain_name}
@@ -462,7 +460,7 @@ Based on "{task_description}" and existing patterns:
 _These will be refined in the planning step._
 ```
 
-**If `{save_mode}` = true:** Update 00-context.md acceptance criteria section (replace `_Defined during step-01-analyze_` with the inferred AC)
+Update 00-context.md acceptance criteria section (replace `_Defined during step-01-analyze_` with the inferred AC)
 
 #### 5.4 Shutdown Researchers
 
@@ -502,9 +500,7 @@ TeamDelete
 → Proceeding to planning phase...
 ```
 
-### 6. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 6. Complete Save Output
 
 Append to `{output_dir}/01-analyze.md`:
 ```markdown
@@ -535,7 +531,7 @@ Note: Progress updates (marking step-01 complete and setting next_step) are hand
 ✅ All researchers shutdown cleanly
 ✅ Team deleted
 ✅ NO planning or implementation decisions made
-✅ Progress logged (if save_mode)
+✅ Progress logged
 
 ## FAILURE MODES:
 

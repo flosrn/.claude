@@ -19,7 +19,7 @@ next_step: ./step-01-analyze.md
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Parse flags first, then check resume, then setup
-- 💾 Create output structure if save_mode enabled
+- 💾 Create output structure
 - 📖 Initialize all state variables before proceeding
 - 🚫 FORBIDDEN to start analysis (that's step-01's job)
 - ✅ ALWAYS show COMPACT summary (one table) and proceed immediately
@@ -113,7 +113,7 @@ Other:
   Remainder        → {task_description}
 ```
 
-**Step 1d: Team mode validation:**
+**Step 1c: Team mode validation:**
 
 ```
 IF {team_mode} = true AND {economy_mode} = true:
@@ -121,7 +121,7 @@ IF {team_mode} = true AND {economy_mode} = true:
     → {economy_mode} = false
 ```
 
-**Step 1e: Detect reference files in input:**
+**Step 1d: Detect reference files in input:**
 
 ```
 Scan {task_description} for file path tokens:
@@ -157,7 +157,7 @@ Examples:
   → {task_description} = "add auth middleware"
 ```
 
-**Step 1f: Generate feature_name and task_id:**
+**Step 1e: Generate feature_name and task_id:**
 
 ```
 {feature_name} = kebab-case-description (without number prefix)
@@ -214,7 +214,7 @@ Example: `/apex -t -r 01` resumes task 01 with `{test_mode} = true` even if it w
 
 ```
 After restoring flags from 00-context.md and applying any CLI flag overrides:
-→ Re-run Step 1d (team mode checks) validations
+→ Re-run Step 1c (team mode checks) validations
   to ensure restored+overridden flags are consistent.
 ```
 
@@ -408,7 +408,7 @@ KEEP OUTPUT MINIMAL:
 ✅ Output is COMPACT (one table, no verbose logs)
 ✅ Variables shown with `{brackets}` notation
 ✅ Proceeded to step-01 immediately after table
-✅ Output folder created with 00-context.md (if save_mode)
+✅ Output folder created with 00-context.md
 
 ## FAILURE MODES:
 

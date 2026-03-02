@@ -78,9 +78,7 @@ From previous steps:
 
 ## EXECUTION SEQUENCE:
 
-### 1. Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 1. Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "in_progress"
@@ -93,10 +91,10 @@ Append logs to `{output_dir}/03-execute.md` as you work.
 Create a lightweight checkpoint before making changes:
 
 ```bash
-git add -u && git commit --allow-empty -m "apex: checkpoint before execute ({task_id})"
+git add -A && git commit -m "apex: checkpoint before execute ({task_id})" || true
 ```
 
-Uses `git add -u` (tracked files only) to avoid staging sensitive files like `.env`. This enables `git reset HEAD~1` to rollback if execution breaks the codebase.
+Uses `git add -A` to include all files (new and tracked). The `|| true` prevents failure if there's nothing to commit. This enables `git reset HEAD~1` to rollback if execution breaks the codebase.
 
 ### 3. Create Todos from Plan
 
@@ -113,7 +111,7 @@ Becomes:
 - [ ] src/auth/handler.ts: Handle expired token error
 ```
 
-Track progress with markdown checkboxes (in conversation and in `{output_dir}/03-execute.md` if save_mode).
+Track progress with markdown checkboxes (in conversation and in `{output_dir}/03-execute.md`).
 
 ### 4. Execute File by File
 
@@ -143,7 +141,7 @@ Make changes specified in the plan:
 - Mark todo complete RIGHT AFTER finishing
 - Don't batch completions
 
-**4.5 Log Progress (if save_mode)**
+**4.5 Log Progress**
 ```markdown
 ### ✓ src/auth/handler.ts
 - Added `validateToken` function (lines 45-78)
@@ -186,9 +184,7 @@ Fix any errors immediately.
 
 Implementation is automatically confirmed. Continue to section 8 (save output) then follow the session boundary.
 
-### 8. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 8. Complete Save Output
 
 Append to `{output_dir}/03-execute.md`:
 ```markdown
@@ -210,7 +206,7 @@ Append to `{output_dir}/03-execute.md`:
 ✅ No scope creep - only plan items
 ✅ Files read before modification
 ✅ Typecheck and lint pass
-✅ Progress logged (if save_mode)
+✅ Progress logged
 
 ## FAILURE MODES:
 

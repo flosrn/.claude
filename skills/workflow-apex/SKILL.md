@@ -180,7 +180,7 @@ When provided, step-00 will:
 7. **Load target step:** Each step has a Context Restoration block that reads its required prior outputs
 
 **Error handling:**
-- `/apex -r` without prior `-s`: no output dir → clear error message
+- `/apex -r` with no existing output dir → clear error message
 - No match found → list available tasks, ask user to specify
 
 Supports partial matching (e.g., `-r 01` finds `01-add-auth-middleware`).
@@ -190,7 +190,7 @@ Supports partial matching (e.g., `-r 01` finds `01-add-auth-middleware`).
 **Standard flow:**
 1. Parse flags and task description
 2. If `-r`: Execute resume workflow (restore state, load target step)
-3. If `-s`: Create output folder and 00-context.md
+3. Create output folder and 00-context.md
 4. Load step-01-analyze.md → gather context
 5. Load step-02-plan.md → create strategy
 6. Load step-03-execute.md → implement

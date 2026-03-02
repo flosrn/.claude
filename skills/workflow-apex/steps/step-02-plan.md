@@ -21,7 +21,7 @@ next_step: ./step-03-execute.md
 ## EXECUTION PROTOCOLS:
 
 - 🎯 ULTRA THINK before creating the plan
-- 💾 Save plan to output file (if save_mode)
+- 💾 Save plan to output file
 - 📖 Reference patterns from step-01 analysis
 
 ## CONTEXT BOUNDARIES:
@@ -68,9 +68,7 @@ From previous steps:
 
 ## EXECUTION SEQUENCE:
 
-### 1. Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 1. Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "02" "plan" "in_progress"
@@ -158,7 +156,7 @@ Reason: {why this approach was recommended}
 - Risk 1: [potential issue and mitigation]
 ```
 
-**If `{save_mode}` = true:** Append full plan to 02-plan.md
+Append full plan to 02-plan.md
 
 ### 4b. Domain Partitioning (if team_mode)
 
@@ -225,9 +223,7 @@ Checklist:
 
 Plan is automatically approved. Continue to section 7 (save output) then follow the session boundary.
 
-### 7. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 7. Complete Save Output
 
 Append to `{output_dir}/02-plan.md`:
 ```markdown
@@ -250,7 +246,7 @@ Append to `{output_dir}/02-plan.md`:
 ✅ Test strategy defined
 ✅ User approved plan (or auto-approved)
 ✅ NO code written or modified
-✅ Output saved (if save_mode)
+✅ Output saved
 
 ## FAILURE MODES:
 

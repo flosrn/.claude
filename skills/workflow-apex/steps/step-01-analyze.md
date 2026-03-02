@@ -30,7 +30,7 @@ Before exploring, THINK about what information you need and launch the RIGHT age
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Launch parallel exploration agents (unless economy_mode)
-- 💾 Append findings to output file (if save_mode)
+- 💾 Append findings to output file
 - 📖 Document patterns with specific file:line references
 - 🚫 FORBIDDEN to proceed until context is complete
 
@@ -85,9 +85,7 @@ From step-00-init:
 
 ## EXECUTION SEQUENCE:
 
-### 1. Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 1. Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "01" "analyze" "in_progress"
@@ -323,7 +321,7 @@ The Task Requirements section is MANDATORY — it must appear FIRST in the 01-an
 - Use httpOnly cookies for tokens
 ```
 
-**If `{save_mode}` = true:** Append synthesis to 01-analyze.md
+Append synthesis to 01-analyze.md
 
 ### 5. Infer Acceptance Criteria
 
@@ -341,7 +339,7 @@ Based on "{task_description}" and existing patterns:
 _These will be refined in the planning step._
 ```
 
-**If `{save_mode}` = true:** Update 00-context.md acceptance criteria section (replace `_Defined during step-01-analyze_` with the inferred AC)
+Update 00-context.md acceptance criteria section (replace `_Defined during step-01-analyze_` with the inferred AC)
 
 ### 6. Present Context Summary
 
@@ -366,9 +364,7 @@ Do NOT ask for user confirmation here - skip directly to section 7 (save output)
 The session boundary controls whether to stop or continue — NOT this section.
 </critical>
 
-### 7. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 7. Complete Save Output
 
 Append summary to `{output_dir}/01-analyze.md`.
 
@@ -384,7 +380,7 @@ Note: Progress updates (marking step-01 complete and setting next_step) are hand
 ✅ Dependencies listed
 ✅ Acceptance criteria inferred
 ✅ NO planning or implementation decisions made
-✅ Output saved (if save_mode)
+✅ Output saved
 ✅ Task complexity analyzed BEFORE launching agents
 ✅ Right NUMBER of agents launched (1-10 based on complexity)
 ✅ Right TYPE of agents chosen for the task

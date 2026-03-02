@@ -92,9 +92,12 @@ Append findings to `{output_dir}/05-examine.md` as you work.
 ### 2. Gather Changes
 
 ```bash
-git diff --name-only HEAD~1
+# Modified files are read from {output_dir}/03-execute.md (reliable source)
+# git diff HEAD~1 is NOT used — unreliable with per-step commits
 git status --porcelain
 ```
+
+Read the list of modified files from `{output_dir}/03-execute.md` (already restored during context restoration). Complement with `git status --porcelain` to detect any uncommitted changes.
 
 Group files: source, tests, config, other.
 

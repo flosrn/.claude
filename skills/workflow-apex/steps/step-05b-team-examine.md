@@ -90,9 +90,12 @@ Append logs to `{output_dir}/05-examine.md` as you work.
 #### 1.2 Collect Modified Files
 
 ```bash
-git diff --name-only HEAD~1
+# Modified files are read from {output_dir}/03-execute.md (reliable source)
+# git diff HEAD~1 is NOT used — unreliable with per-step commits
 git status --porcelain
 ```
+
+Read the list of modified files from `{output_dir}/03-execute.md` (already restored during context restoration). Complement with `git status --porcelain` to detect any uncommitted changes.
 
 Group files into categories:
 - **source**: Application code (*.ts, *.tsx, *.js, *.jsx, *.py, etc.)
@@ -489,7 +492,7 @@ Task:
     | [BLOCKING] | page.tsx:20 | Sequential awaits | 3 DB calls run in series, 2s latency | Use Promise.all() |
 ```
 
-**Log each spawn (if save_mode):**
+**Log each spawn:**
 ```markdown
 ### Reviewer Spawned: {reviewer_name}
 - Domain: {domain}
@@ -694,7 +697,7 @@ Append to `{output_dir}/05-examine.md`:
 ✅ Todos created for each finding
 ✅ All reviewers shutdown cleanly
 ✅ Team deleted
-✅ Progress logged (if save_mode)
+✅ Progress logged
 
 ## FAILURE MODES:
 

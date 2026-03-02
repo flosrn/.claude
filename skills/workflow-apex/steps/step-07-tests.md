@@ -21,7 +21,7 @@ next_step: ./step-08-run-tests.md
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Analyze test infrastructure first
-- 💾 Document test strategy (if save_mode)
+- 💾 Document test strategy
 - 📖 Read similar tests before writing
 - 🚫 FORBIDDEN to write tests without reading examples
 
@@ -66,9 +66,7 @@ From previous steps:
 
 ## EXECUTION SEQUENCE:
 
-### 1. Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 1. Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "07" "tests" "in_progress"
@@ -189,9 +187,7 @@ List created tests:
 - `src/utils/validation.test.ts` (2 tests)
 ```
 
-### 8. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 8. Complete Save Output
 
 Append to `{output_dir}/07-tests.md`:
 ```markdown

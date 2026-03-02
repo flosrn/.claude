@@ -22,7 +22,7 @@ next_step: conditional (05-examine | 09-finish | complete)
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Check requirements before running
-- 💾 Log each test run (if save_mode)
+- 💾 Log each test run
 - 📖 Analyze failures before fixing
 - 🚫 FORBIDDEN to proceed with failing tests (without explicit skip)
 
@@ -282,7 +282,7 @@ ELSE:
 
 **Determine next step based on flags (check in order):**
 - **If examine_mode AND examine not yet completed:** next = `05-examine`
-  - _Check: If save_mode, read progress table:_
+  - _Check: Read progress table:_
     - _If `06-resolve` shows `✓ Complete` OR `⏭ Skip`, examine already done → skip._
     - _If `05-examine` shows `✓ Complete` but `06-resolve` NOT `✓ Complete` and NOT `⏭ Skip` → route to `06-resolve` instead._
 - **If pr_mode:** next = `09-finish`

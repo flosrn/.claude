@@ -62,7 +62,7 @@ Use direct tools instead:
 - WebSearch only if absolutely necessary
 ```
 
-**NEVER use Task tool with subagent_type in economy mode.**
+**NEVER use Agent tool with subagent_type in economy mode.**
 
 ---
 
@@ -240,7 +240,7 @@ This reminds both Claude and the user that economy mode is active.
 
 <success_metrics>
 Economy mode is successful when:
-- No Task tool calls with subagent_type
+- No Agent tool calls with subagent_type
 - Direct Glob/Grep/Read usage instead
 - Fewer than 3 WebSearch calls total
 - Implementation still correct and working

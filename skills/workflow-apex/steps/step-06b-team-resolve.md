@@ -212,7 +212,7 @@ Task:
     your plan before you can proceed with fixes.
 ```
 
-**Log each spawn (if save_mode):**
+**Log each spawn:**
 ```markdown
 ### Resolver Spawned: resolver-{group_name}
 - Group: {group_name}
@@ -395,7 +395,7 @@ Append to `{output_dir}/06-resolve.md`:
 
 **Determine next step based on flags (check in order):**
 - **If test_mode AND tests not yet completed:** next = `07-tests`
-  - _Check: If save_mode, read progress table in 00-context.md. If `08-run-tests` shows `✓ Complete`, tests are already done → skip to next rule._
+  - _Check: Read progress table in 00-context.md. If `08-run-tests` shows `✓ Complete`, tests are already done → skip to next rule._
 - **If pr_mode:** next = `09-finish`
 - **Otherwise:** next_step = complete
 

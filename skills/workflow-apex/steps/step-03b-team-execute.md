@@ -73,9 +73,7 @@ From previous steps:
 
 ### Phase 1: PARTITION
 
-#### 1.1 Initialize Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+#### 1.1 Initialize Save Output
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "03" "execute" "in_progress"
@@ -114,7 +112,7 @@ IF validation fails:
 Create a lightweight checkpoint before making changes:
 
 ```bash
-git add -u && git commit --allow-empty -m "apex: checkpoint before team-execute ({task_id})"
+git add -A && git commit -m "apex: checkpoint before team-execute ({task_id})" || true
 ```
 
 #### 2.2 Create Team
@@ -201,7 +199,7 @@ Task:
 
 **Spawn dependency-free domains first.** If a domain has dependencies, wait for those to complete before spawning.
 
-**Log each spawn (if save_mode):**
+**Log each spawn:**
 ```markdown
 ### Teammate Spawned: {domain_name}-dev
 - Domain: {domain_name}
@@ -327,9 +325,7 @@ TeamDelete
 **Todos:** All domain tasks completed
 ```
 
-### 6. Complete Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 6. Complete Save Output
 
 Append to `{output_dir}/03-execute.md`:
 ```markdown
@@ -355,7 +351,7 @@ Append to `{output_dir}/03-execute.md`:
 ✅ Typecheck and lint pass
 ✅ All teammates shutdown cleanly
 ✅ Team deleted
-✅ Progress logged (if save_mode)
+✅ Progress logged
 
 ## FAILURE MODES:
 

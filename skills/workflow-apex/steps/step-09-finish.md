@@ -19,7 +19,7 @@ prev_step: ./step-08-run-tests.md (or ./step-04-validate.md if no tests)
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Verify git status before any push/PR operations
-- 💾 Save PR details to output file if save_mode enabled
+- 💾 Save PR details to output file
 - 📖 Provide clear workflow summary
 - 🚫 FORBIDDEN to proceed with uncommitted changes
 
@@ -47,9 +47,7 @@ Finalize the APEX workflow by committing remaining changes, pushing to remote, a
 
 ## EXECUTION SEQUENCE:
 
-### 0. Mark Step In Progress (if save_mode)
-
-**If `{save_mode}` = true:**
+### 0. Mark Step In Progress
 
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "09" "finish" "in_progress"
@@ -125,9 +123,7 @@ gh pr view --json url -q '.url'
 ```
 → Store as `{pr_url}`
 
-### 6. Save Output (if save_mode)
-
-**If `{save_mode}` = true:**
+### 6. Save Output
 
 Append to `{output_dir}/09-finish.md`: branch, PR URL, commits, timestamp.
 
@@ -172,7 +168,7 @@ Display workflow completion summary:
 ✅ Branch pushed to remote
 ✅ PR created with proper title and description (if pr_mode)
 ✅ PR URL captured and displayed
-✅ Output saved (if save_mode)
+✅ Output saved
 ✅ Clear completion summary provided
 
 ## FAILURE MODES:

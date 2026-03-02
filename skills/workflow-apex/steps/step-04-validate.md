@@ -21,7 +21,7 @@ next_step: conditional (07-tests | 05-examine | 09-finish | complete)
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Run all validation commands
-- 💾 Log results to output (if save_mode)
+- 💾 Log results to output
 - 📖 Check each AC against implementation
 - 🚫 FORBIDDEN to mark complete with failures
 

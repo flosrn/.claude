@@ -31,11 +31,6 @@ teams/
 # MCP cache
 mcp-needs-auth-cache.json
 
-# Node/npm
-node_modules/
-package.json
-package-lock.json
-
 # OS files
 .DS_Store
 

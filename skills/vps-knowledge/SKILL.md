@@ -69,6 +69,23 @@ Healthcheck: curl -sf http://127.0.0.1:18789/healthz
 Commande: node dist/index.js gateway --bind lan --port 18789
 ```
 
+## Logs internes (JSON structuré)
+
+Le fichier de log interne est **bien plus riche** que `docker compose logs`. Il contient du JSON structuré avec chatId, titres de groupes, raisons de skip, etc.
+
+```bash
+# Accès au log du jour
+ssh vps 'docker exec openclaw-openclaw-gateway-1 cat /tmp/openclaw/openclaw-$(date -u +%Y-%m-%d).log'
+
+# Filtrer les erreurs
+ssh vps 'docker exec openclaw-openclaw-gateway-1 cat /tmp/openclaw/openclaw-$(date -u +%Y-%m-%d).log' | grep '"logLevelName":"ERROR"'
+
+# Chercher les messages Telegram skippés
+ssh vps 'docker exec openclaw-openclaw-gateway-1 cat /tmp/openclaw/openclaw-$(date -u +%Y-%m-%d).log' | grep "skipping group"
+```
+
+Le fichier change chaque jour : `/tmp/openclaw/openclaw-YYYY-MM-DD.log` (à l'intérieur du conteneur).
+
 ## Chemins clés sur le VPS
 
 | Chemin | Description |
@@ -80,7 +97,8 @@ Commande: node dist/index.js gateway --bind lan --port 18789
 | `/root/openclaw/.env` | Variables d'environnement |
 | `/root/openclaw/auto-update.sh` | Script auto-updater |
 | `/root/.openclaw/` | Données OpenClaw (config, mémoire, agents, cron) |
-| `/root/.openclaw/workspace/` | Workspace OpenClaw (MEMORY.md, skills, IDENTITY.md) |
+| `/root/.openclaw/workspace/` | Workspace agent default (MEMORY.md, skills, IDENTITY.md) — repo git `flosrn/clawd` |
+| `/root/.openclaw/workspace-gapibot/` | Workspace agent gapibot — repo git `flosrn/gapibot` (branche `master`) |
 | `/root/.openclaw/openclaw.json` | Config principale OpenClaw |
 | `/root/.openclaw/telegram/` | État des bots Telegram |
 | `/root/.openclaw/memory/` | Fichiers mémoire (session memories) |
@@ -136,12 +154,72 @@ volumes:
 
 Les tokens et chat IDs sont dans `/root/.openclaw/openclaw.json` sur le VPS (clé `channels.telegram.accounts`).
 
-| Compte | Usage |
-|---|---|
-| **default** | Bot principal (Clawd.bot) — utilisé par l'auto-updater |
-| **english** | Variante anglaise |
-| **chinese** | Variante chinoise |
-| **gapibot** | Bot Gapila (commandes /bug, /feature, /status, /explore, /dev) |
+| Compte | Bot | Usage |
+|---|---|---|
+| **default** | @flosrn_ClawdBot | Bot principal (Clawd.bot) — utilisé par l'auto-updater |
+| **english** | @FloEnglishProf_bot | Variante anglaise |
+| **chinese** | @FloChineseProf_bot | Variante chinoise |
+| **gapibot** | @GapibotGapila_bot | Bot Gapila (commandes /bug, /feature, /status, /explore, /dev) |
+
+### Config Telegram : allowFrom vs groups
+
+⚠️ **`allowFrom` ne concerne que les DMs** (user IDs). Pour les groupes, il faut les lister dans `accounts.<bot>.groups.<chatId>`.
+
+```json
+{
+  "accounts": {
+    "gapibot": {
+      "allowFrom": ["1127788632"],           // DM — user IDs uniquement
+      "groupPolicy": "open",
+      "groups": {
+        "-1003718059427": {"requireMention": false},  // Gapila Board (3 membres)
+        "-5206151881": {"requireMention": false}       // Flo & Gapibot
+      }
+    }
+  }
+}
+```
+
+- `groupPolicy: "open"` = accepte les messages de tous les membres, mais le groupe doit quand même être **listé** dans `groups`
+- `requireMention: false` = le bot peut répondre sans @mention (mais peut choisir de requérir le @mention dans les groupes multi-utilisateurs)
+- `allowFrom` dans un groupe = restreint quels **expéditeurs** peuvent déclencher le bot dans ce groupe
+
+### Groupes configurés
+
+| Bot | Groupe | Chat ID |
+|---|---|---|
+| **default** | *(3 groupes)* | `-5136045193`, `-5184759927`, `-5201575851` |
+| **gapibot** | Gapila Board | `-1003718059427` |
+| **gapibot** | Flo & Gapibot | `-5206151881` |
+
+### Trouver un chat ID de groupe
+
+1. Envoyer un message dans le groupe
+2. Chercher dans les logs internes :
+```bash
+ssh vps 'docker exec openclaw-openclaw-gateway-1 cat /tmp/openclaw/openclaw-$(date -u +%Y-%m-%d).log' | grep -i "not-allowed\|skipping group"
+```
+Le log contient `chatId` et `title` du groupe dans le JSON.
+
+### Commandes Telegram et Skills
+
+⚠️ **`nativeSkills: false`** est configuré sur gapibot pour éviter d'exposer les skills partagés (compta-mensuelle, gmail, proton-pass...) et bundled (weather, coding-agent...) dans le menu Telegram.
+
+À la place, les commandes sont gérées via `customCommands` (entrées du menu Telegram) avec des **noms courts** (`/bug`, `/deploy`, `/gh`...).
+
+**Quand tu ajoutes un nouveau skill gapibot :**
+1. Créer le skill dans `/root/.openclaw/workspace-gapibot/skills/<name>/`
+2. Lancer le diagnostic : `ssh vps 'bash -s' < vps-telegram-sync.sh`
+3. Analyser le JSON retourné : les skills dans `unmatched_skills` n'ont pas de commande Telegram
+4. Choisir le meilleur nom court pour chaque skill manquant (concis, mémorable, sans conflit)
+5. Ajouter la commande via SSH (modifier `customCommands` dans openclaw.json)
+6. Restart le gateway
+
+**Script de diagnostic :**
+```bash
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-telegram-sync.sh gapibot
+```
+Retourne un JSON avec `skills`, `commands`, `matched`, `unmatched_skills`, `unmatched_commands`.
 
 **Envoyer un message Telegram :**
 ```bash
@@ -154,6 +232,7 @@ ssh vps 'bash -s' < scripts/tg-send.sh "Mon message"
 |---|---|---|---|
 | claude | `~/.claude/` | `/root/.claude/` | main |
 | clawd | `~/clawd/` | `/root/.openclaw/workspace/` | master |
+| gapibot | *(pas de clone local)* | `/root/.openclaw/workspace-gapibot/` | master |
 | gapila | `~/code/nextjs/gapila/` | `/root/projects/gapila/` | main |
 | lasdelaroute | `~/code/nextjs/lasdelaroute/` | `/root/lasdelaroute/` | main |
 
@@ -194,6 +273,13 @@ Tous les scripts sont dans `scripts/` de ce skill. Usage depuis le Mac via `ssh 
 | `memory-search.sh` | `"query"` | Recherche dans la mémoire OpenClaw |
 | `memory-save.sh` | `"topic" "contenu"` | Sauvegarde une mémoire + reindex |
 | `vps-browser.sh` | `start\|stop\|restart\|status\|logs [N]` | Toggle du conteneur sandbox-browser (Chromium CDP) |
+| `vps-auth-check.sh` | `[--verbose]` | Vérifie les tokens auth pour tous les agents (auth-profiles + credentials) |
+| `vps-doctor.sh` | `[--quick]` | Diagnostic complet (10 sections : conteneur, health, auth, ressources, services) |
+| `vps-agents.sh` | `[agent-id]` | Statut détaillé des agents (sessions, auth, erreurs, bindings Telegram) |
+| `vps-monitor.sh` | `[--follow\|-f] [--errors\|-e] [--agent <id>] [N]` | Surveillance erreurs/warnings dans les logs |
+| `vps-telegram.sh` | `[bot-name\|all] [--test]` | Diagnostics Telegram (API, webhook, pending updates, erreurs) |
+| `vps-auth-refresh.sh` | `[--dry-run]` | ⚠️ LOCAL Mac — Rafraîchit les tokens OAuth depuis le Keychain |
+| `vps-telegram-sync.sh` | `[bot]` | Diagnostic JSON : skills vs customCommands (Claude Code analyse et décide) |
 
 **Exemples :**
 ```bash
@@ -211,6 +297,31 @@ ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-cleanup.sh
 
 # Recherche mémoire
 ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/memory-search.sh "gapila"
+
+# Diagnostic complet du VPS (10 checks)
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-doctor.sh
+
+# Diagnostic rapide (skip health probes)
+ssh vps 'bash -s -- --quick' < ~/.claude/skills/vps-knowledge/scripts/vps-doctor.sh
+
+# Vérifier les tokens auth
+ssh vps 'bash -s -- --verbose' < ~/.claude/skills/vps-knowledge/scripts/vps-auth-check.sh
+
+# Statut des agents
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-agents.sh
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-agents.sh gapibot
+
+# Surveillance erreurs temps réel
+ssh vps 'bash -s -- --follow' < ~/.claude/skills/vps-knowledge/scripts/vps-monitor.sh
+ssh vps 'bash -s -- --errors --agent gapibot 200' < ~/.claude/skills/vps-knowledge/scripts/vps-monitor.sh
+
+# Diagnostics Telegram
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-telegram.sh
+ssh vps 'bash -s -- gapibot --test' < ~/.claude/skills/vps-knowledge/scripts/vps-telegram.sh
+
+# Rafraîchir les tokens OAuth (LOCAL — depuis le Mac)
+~/.claude/skills/vps-knowledge/scripts/vps-auth-refresh.sh
+~/.claude/skills/vps-knowledge/scripts/vps-auth-refresh.sh --dry-run
 ```
 
 ## Sandbox Browser (Chromium headful)

@@ -1,6 +1,6 @@
 ---
 name: vps-knowledge
-description: Référence complète du VPS de Flo (OpenClaw, Docker, services, réseau). ALWAYS use when the user mentions "vps", "openclaw", "serveur", "server", "gateway", "docker" (in VPS context), "telegram bot", "auto-update", "mise à jour", "gapila deploy", "lasdelaroute deploy", or asks about infrastructure, deployment, or VPS configuration.
+description: Référence complète du VPS de Flo (OpenClaw, Docker, services, réseau). ALWAYS use when the user mentions "vps", "openclaw", "serveur", "server", "gateway", "docker" (in VPS context), "telegram bot", "auto-update", "mise à jour", "gapila deploy", "lasdelaroute deploy", "sandbox browser", "browser vps", "chromium vps", or asks about infrastructure, deployment, or VPS configuration.
 ---
 
 <objective>
@@ -87,7 +87,8 @@ Commande: node dist/index.js gateway --bind lan --port 18789
 | `/root/.openclaw/memory/main.sqlite` | Index SQLite des mémoires |
 | `/root/.claude/` | Config Claude Code (synced depuis Mac) |
 | `/root/.claude.json` | Auth Claude Code |
-| `/root/gapila/` | Repo Gapila (bind-mounted dans le conteneur) |
+| `/root/projects/` | Repos git persistants (montés dans `/home/node/projects/`) |
+| `/root/projects/gapila/` | Repo Gapila |
 | `/root/lasdelaroute/` | Repo LasDelaRoute |
 | `/var/log/openclaw-update.log` | Logs auto-updater |
 
@@ -110,13 +111,15 @@ XDG_CONFIG_HOME=/home/node/.openclaw
 volumes:
   - /root/.openclaw:/home/node/.openclaw
   - /root/.openclaw/workspace:/home/node/.openclaw/workspace
-  - /root/.claude:/home/node/.claude
-  - /root/.claude.json:/home/node/.claude.json
-  - /root/.config/gh:/home/node/.config/gh
-  - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
-  - /var/run/docker.sock:/var/run/docker.sock  # gateway only
-  - /root/gapila:/home/node/gapila              # gateway only
+  - /root/projects:/home/node/projects          # git repos (gapila, etc.)
+  - /root/.config/gh:/home/node/.config/gh      # GitHub CLI auth
+  - /root/.claude:/home/node/.claude             # Claude Code config
+  - /root/.claude.json:/home/node/.claude.json:ro
+  - /root/.gitconfig:/home/node/.gitconfig:ro   # gh credential helper pour git
 ```
+
+**Env vars notables (docker-compose) :**
+- `GH_TOKEN` — token GitHub CLI (auth git + gh)
 
 ## Services systemd actifs
 
@@ -151,7 +154,7 @@ ssh vps 'bash -s' < scripts/tg-send.sh "Mon message"
 |---|---|---|---|
 | claude | `~/.claude/` | `/root/.claude/` | main |
 | clawd | `~/clawd/` | `/root/.openclaw/workspace/` | master |
-| gapila | `~/code/nextjs/gapila/` | `/root/gapila/` | main |
+| gapila | `~/code/nextjs/gapila/` | `/root/projects/gapila/` | main |
 | lasdelaroute | `~/code/nextjs/lasdelaroute/` | `/root/lasdelaroute/` | main |
 
 **Script** : `~/.claude/scripts/sync-vps.sh` (push/pull, un ou tous les repos)
@@ -190,6 +193,7 @@ Tous les scripts sont dans `scripts/` de ce skill. Usage depuis le Mac via `ssh 
 | `vps-rebuild.sh` | `[--no-restart]` | Rebuild complet de l'image + restart + cleanup |
 | `memory-search.sh` | `"query"` | Recherche dans la mémoire OpenClaw |
 | `memory-save.sh` | `"topic" "contenu"` | Sauvegarde une mémoire + reindex |
+| `vps-browser.sh` | `start\|stop\|restart\|status\|logs [N]` | Toggle du conteneur sandbox-browser (Chromium CDP) |
 
 **Exemples :**
 ```bash
@@ -207,6 +211,61 @@ ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-cleanup.sh
 
 # Recherche mémoire
 ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/memory-search.sh "gapila"
+```
+
+## Sandbox Browser (Chromium headful)
+
+Conteneur Docker séparé avec Chromium contrôlable via CDP (Chrome DevTools Protocol).
+Permet aux agents d'automatiser la navigation web (gmail, login, scraping...).
+
+| Élément | Valeur |
+|---|---|
+| **Image** | `openclaw-sandbox-browser:bookworm-slim` (~382 MB) |
+| **Base** | Debian bookworm-slim + Chromium + Xvfb + VNC + noVNC |
+| **Dockerfile** | `/root/openclaw/Dockerfile.sandbox-browser` |
+| **Entrypoint** | `/root/openclaw/scripts/sandbox-browser-entrypoint.sh` |
+| **CDP** | Port 9222 (interne, entre conteneurs) |
+| **VNC** | Port 5900 (`127.0.0.1` — debug via SSH tunnel) |
+| **noVNC** | Port 6080 (`127.0.0.1` — debug via navigateur web) |
+| **RAM** | ~500 MB - 1 GB (limite : 1 GB) |
+| **CPU** | Limite : 1.5 CPUs |
+| **Profile Compose** | `browser` (ne démarre PAS avec `docker compose up` normal) |
+| **Restart** | `no` (start/stop à la demande) |
+
+**Config dans openclaw.json :**
+```json
+{
+  "browser": {
+    "profiles": {
+      "sandbox": {
+        "cdpUrl": "http://sandbox-browser:9222"
+      }
+    }
+  }
+}
+```
+
+**Commandes toggle :**
+```bash
+# Démarrer
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-browser.sh start
+
+# Arrêter
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-browser.sh stop
+
+# Status
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-browser.sh status
+
+# Logs
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-browser.sh logs 100
+
+# Debug visuel via noVNC (SSH tunnel puis ouvrir http://localhost:6080)
+ssh -L 6080:127.0.0.1:6080 vps
+```
+
+**Rebuild image :**
+```bash
+ssh vps 'cd /root/openclaw && bash scripts/sandbox-browser-setup.sh'
 ```
 
 ## Contraintes et limites

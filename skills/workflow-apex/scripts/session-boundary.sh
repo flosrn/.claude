@@ -34,6 +34,9 @@ if [[ "$BRANCH_MODE" == "true" && "$COMMIT_FLAG" == "commit" ]]; then
         git add -A 2>/dev/null || true
         git commit -m "apex(${TASK_ID}): step ${STEP_NUM} - ${STEP_NAME}" --no-verify 2>/dev/null || true
         echo "✓ Committed: apex(${TASK_ID}): step ${STEP_NUM} - ${STEP_NAME}"
+        # Push so step output is visible on GitHub immediately
+        git push 2>/dev/null || git push --set-upstream origin "$(git branch --show-current)" 2>/dev/null || true
+        echo "✓ Pushed to remote"
     fi
 fi
 

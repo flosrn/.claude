@@ -34,12 +34,16 @@ case "$EVENT_TYPE" in
   *)               EMOJI="📌"; LABEL="Event: $EVENT_TYPE" ;;
 esac
 
-# 1. Telegram notification — ONLY for needs-attention (skip task-completed entirely)
-# task-completed fires for EVERY session (including sub-agents in team mode),
-# causing spam "Tâche complétée" for each sub-agent. Step transitions are
-# already notified by apex-step-done.sh with proper step numbers.
-if [ "$EVENT_TYPE" = "task-completed" ]; then
-    echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) SKIP_TG: task-completed notification suppressed (handled by apex-step-done.sh)" >> /tmp/apex-hook-debug.log 2>/dev/null
+# Telegram notifications — suppress both task-completed and needs-attention:
+#
+# task-completed: fires for EVERY session (including sub-agents in team mode),
+# causing spam. Step transitions handled by apex-step-done.sh.
+#
+# needs-attention: apex runs with --dangerously-skip-permissions so these are
+# almost always false alarms (e.g. RC UI dialogs, sub-agent input prompts).
+# Transitions are notified by the cron orchestrator instead.
+if [ "$EVENT_TYPE" = "task-completed" ] || [ "$EVENT_TYPE" = "needs-attention" ]; then
+    echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) SKIP_TG: ${EVENT_TYPE} suppressed" >> /tmp/apex-hook-debug.log 2>/dev/null
     exit 0
 fi
 

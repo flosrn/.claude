@@ -40,3 +40,4 @@ credentials.json
 *.pem
 .credentials.json
 .git-broken
+settings.json.bak

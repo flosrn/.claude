@@ -128,5 +128,23 @@
   },
   "spinnerTipsEnabled": false,
   "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "trustedDirectories": [
+    "/home/node",
+    "/home/node/.openclaw",
+    "/home/node/.openclaw/code-projects",
+    "/home/node/.openclaw/code-projects/plans-config-ssot",
+    "/home/node/.openclaw/workspace",
+    "/home/node/projects/gapila",
+    "/tmp"
+  ],
+  "allowedDirectories": [
+    "/home/node",
+    "/home/node/.openclaw",
+    "/home/node/.openclaw/code-projects",
+    "/home/node/.openclaw/code-projects/plans-config-ssot",
+    "/home/node/.openclaw/workspace",
+    "/home/node/projects/gapila",
+    "/tmp"
+  ]
 }

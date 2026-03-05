@@ -41,11 +41,11 @@ fi
 bash "${SCRIPT_DIR}/update-progress.sh" "${TASK_ID}" "${STEP_NUM}" "${STEP_NAME}" "complete"
 
 # Step 3: Update state snapshot
-NEXT_STEP="${NEXT_STEP_NUM}-${NEXT_STEP_DESC}"
+# next_step uses just the step identifier (e.g. "03-execute"), not the description
 if [[ -n "$GOTCHA" ]]; then
-    bash "${SCRIPT_DIR}/update-state-snapshot.sh" "${TASK_ID}" "${NEXT_STEP}" "${STEP_CONTEXT_LINE}" "${GOTCHA}"
+    bash "${SCRIPT_DIR}/update-state-snapshot.sh" "${TASK_ID}" "${NEXT_STEP_NUM}" "${STEP_CONTEXT_LINE}" "${GOTCHA}"
 else
-    bash "${SCRIPT_DIR}/update-state-snapshot.sh" "${TASK_ID}" "${NEXT_STEP}" "${STEP_CONTEXT_LINE}"
+    bash "${SCRIPT_DIR}/update-state-snapshot.sh" "${TASK_ID}" "${NEXT_STEP_NUM}" "${STEP_CONTEXT_LINE}"
 fi
 
 # Step 4: Display session boundary

@@ -44,9 +44,14 @@ if echo "$COMMAND" | grep -q "session-boundary.sh"; then
     [ -z "$STEP_NUM" ] && STEP_NUM=$(echo "$COMMAND" | grep -oP 'session-boundary\.sh\s+\S+\s+(\d{2})' | grep -oP '\d{2}$' || true)
     echo "MATCH: session-boundary.sh, STEP_NUM=$STEP_NUM" >> "$DEBUG_LOG"
 
-# ─── Pattern 2: update-progress.sh with "complete" (legacy) ──────
+# ─── Pattern 2: update-progress.sh with "complete" (legacy / step-09) ─
 elif echo "$COMMAND" | grep -q "update-progress.sh" && echo "$COMMAND" | grep -q '"complete"'; then
     STEP_NUM=$(echo "$COMMAND" | grep -oP 'update-progress\.sh\s+\S+\s+"?\K\d{2}' || true)
+    # Step 09 = final step → skip transition signal (TaskCompleted writes completion signal)
+    if [ "$STEP_NUM" = "09" ]; then
+        echo "EXIT: step 09 (finish) — skip transition, let TaskCompleted handle completion" >> "$DEBUG_LOG"
+        exit 0
+    fi
     echo "MATCH: update-progress.sh complete, STEP_NUM=$STEP_NUM" >> "$DEBUG_LOG"
 
 # ─── No match ────────────────────────────────────────────────────

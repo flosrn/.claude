@@ -54,7 +54,6 @@
     "deny": [],
     "defaultMode": "bypassPermissions"
   },
-  "model": "opus",
   "hooks": {
     "SessionStart": [
       {

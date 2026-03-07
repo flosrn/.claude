@@ -79,6 +79,15 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/apex-step-done.sh"
+          }
+        ]
+      },
+      {
         "matcher": "Edit|Write|NotebookEdit",
         "hooks": [
           {
@@ -99,13 +108,24 @@
         ]
       }
     ],
+    "TaskCompleted": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/notify-openclaw.sh task-completed"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/bin/run-hook --sound need-human.mp3"
+            "command": "$HOME/.claude/hooks/notify-openclaw.sh needs-attention"
           }
         ]
       }

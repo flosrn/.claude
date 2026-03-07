@@ -5,6 +5,8 @@
 
 ---
 
-## Pull Request Creation
+## Pull Request
 
-_PR creation process will be logged here..._
+_To be filled by step-09 execution — PR URL, branch, commits._
+
+<!-- REQUIRED: Write PR URL here so the orchestrator can extract it via grep -->

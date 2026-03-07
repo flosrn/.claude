@@ -125,13 +125,39 @@ gh pr view --json url -q '.url'
 
 ### 6. Save Output
 
-Append to `{output_dir}/09-finish.md`: branch, PR URL, commits, timestamp.
+**MANDATORY** — write PR details to `{output_dir}/09-finish.md` now (the orchestrator reads this file to extract the PR URL for completion notifications):
 
+Write to `{output_dir}/09-finish.md`:
+```markdown
+# Step 09: Finish
+
+**Task:** {task_description}
+**Completed:** {ISO timestamp}
+
+---
+
+## Pull Request
+
+- **Branch:** {branch_name}
+- **PR URL:** {pr_url}
+- **Commits pushed:** {count}
+
+### Commit list
+
+{output of: git log origin/main..HEAD --oneline}
+
+---
+
+## Step Complete
+**Status:** ✓ Complete
+**Timestamp:** {ISO timestamp}
+```
+
+Then mark complete and update state:
 ```bash
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "09" "finish" "complete"
 ```
 
-Update state snapshot to mark workflow complete:
 ```bash
 bash {skill_dir}/scripts/update-state-snapshot.sh "{task_id}" "complete" "**09-finish:** PR created, workflow complete"
 ```

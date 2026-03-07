@@ -5,6 +5,18 @@
 
 ---
 
-## Validation Progress
+## Validation Suite
 
-_Validation results will be appended here..._
+| Check | Status | Notes |
+|-------|--------|-------|
+| Typecheck | ⏳ Running... | |
+| Lint | ⏳ Running... | |
+| Tests | ⏳ Running... | |
+
+## Acceptance Criteria
+
+_To be filled — check each AC from 00-context.md_
+
+## Files Modified (vs main)
+
+_To be filled from 03-execute.md_

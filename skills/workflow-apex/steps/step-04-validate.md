@@ -74,7 +74,36 @@ From previous steps:
 bash {skill_dir}/scripts/update-progress.sh "{task_id}" "04" "validate" "in_progress"
 ```
 
-Append results to `{output_dir}/04-validate.md` as you work.
+**Immediately overwrite the template with a live results skeleton** (replace placeholder content):
+
+Write to `{output_dir}/04-validate.md`:
+```markdown
+# Step 04: Validate
+
+**Task:** {task_description}
+**Started:** {ISO timestamp}
+
+---
+
+## Validation Suite
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Typecheck | ⏳ Running... | |
+| Lint | ⏳ Running... | |
+| Tests | ⏳ Running... | |
+
+## Acceptance Criteria
+
+{acceptance_criteria from 00-context.md — list each AC as unchecked}
+- [ ] AC1: ...
+
+## Files Modified (vs main)
+
+{list from 03-execute.md}
+```
+
+Update this file in-place as each check completes (replace ⏳ with ✓/❌).
 
 ### 2. Discover Available Commands
 
@@ -199,7 +228,14 @@ ELSE:
 
 ### 9. Complete Save Output
 
-Append to `{output_dir}/04-validate.md`:
+**MANDATORY before calling session-boundary.sh** — write the final state to `{output_dir}/04-validate.md`.
+
+The file must contain real results (not the ⏳ placeholders). Update it now with:
+- Final status for each check (✓ Pass / ❌ Fail + details)
+- Each AC ticked `[x]` or `[ ]` with a one-line explanation of how it was verified
+- Full list of modified files
+
+Then append the step complete footer:
 ```markdown
 ---
 ## Step Complete
@@ -210,6 +246,8 @@ Append to `{output_dir}/04-validate.md`:
 **Next:** {next step based on flags}
 **Timestamp:** {ISO timestamp}
 ```
+
+⚠️ Do NOT call session-boundary.sh with ⏳ placeholders still in the file.
 
 ---
 

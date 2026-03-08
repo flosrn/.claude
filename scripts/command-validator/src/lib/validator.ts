@@ -40,7 +40,7 @@ export class CommandValidator {
 			return result;
 		}
 
-		if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/.test(command)) {
+		if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(command)) {
 			result.isValid = false;
 			result.severity = "HIGH";
 			result.violations.push("Binary or encoded content detected");
@@ -214,7 +214,7 @@ export class CommandValidator {
 			return result;
 		}
 
-		if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/.test(command)) {
+		if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(command)) {
 			result.isValid = false;
 			result.severity = "HIGH";
 			result.violations.push("Binary or encoded content detected");

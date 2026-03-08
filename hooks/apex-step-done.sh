@@ -69,4 +69,14 @@ if [ -n "$TMUX_SESSION" ]; then
     (sleep 2 && tmux kill-session -t "$TMUX_SESSION" 2>/dev/null) &
 fi
 
+# ─── Trigger cron immédiatement (event-driven) ───────────────────
+CRON_ID_FILE="${CWD}/.claude/apex-cron-job-id"
+if [ -f "$CRON_ID_FILE" ]; then
+    CRON_ID=$(cat "$CRON_ID_FILE" 2>/dev/null || echo "")
+    if [ -n "$CRON_ID" ]; then
+        echo "TRIGGER: cron run $CRON_ID" >> "$DEBUG_LOG"
+        (sleep 3 && node /app/dist/index.js cron run "$CRON_ID" >> "$DEBUG_LOG" 2>&1) &
+    fi
+fi
+
 exit 0

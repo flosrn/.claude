@@ -50,6 +50,11 @@ if [[ ! -f "$SCRIPT_PATH" ]]; then
     exit 0
 fi
 
+# ─── StatusLine: skip on VPS/Linux (headless, no human watching) ────
+if [[ "$HOOK_SCRIPT" == "statusline/src/index.ts" && "$OS" != "Darwin" ]]; then
+    exit 0
+fi
+
 # ─── Install deps if needed (first run after sync) ──────────────────
 
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"

@@ -5,7 +5,7 @@
       "repo": "anthropics/claude-plugins-official"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/claude-plugins-official",
-    "lastUpdated": "2026-03-07T14:13:25.055Z"
+    "lastUpdated": "2026-03-08T11:56:41.062Z"
   },
   "marketingskills": {
     "source": {
@@ -13,7 +13,7 @@
       "repo": "coreyhaines31/marketingskills"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/marketingskills",
-    "lastUpdated": "2026-03-07T14:13:26.913Z"
+    "lastUpdated": "2026-03-08T11:56:42.838Z"
   },
   "superpowers-marketplace": {
     "source": {
@@ -21,6 +21,6 @@
       "repo": "obra/superpowers-marketplace"
     },
     "installLocation": "/Users/flo/.claude/plugins/marketplaces/superpowers-marketplace",
-    "lastUpdated": "2026-03-07T14:13:28.199Z"
+    "lastUpdated": "2026-03-08T11:56:44.579Z"
   }
 }

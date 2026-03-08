@@ -13,6 +13,7 @@ INTERACTIVE=""
 COMMIT_MSG=""
 
 REPO_DEFS=(
+  "dot-claude|$HOME/.claude|/home/node/.claude|main"
   "shipmate-agent|$HOME/Code/claude/shipmate-agent|/home/node/.openclaw/workspace-shipmate|main"
   "shipmate-bot|$HOME/Code/claude/shipmate-bot|/home/node/projects/shipmate-bot|main"
   "shipmate|$HOME/Code/claude/shipmate|/home/node/projects/shipmate|main"
@@ -42,7 +43,7 @@ while [ $# -gt 0 ]; do
       echo "  -m, --message  Custom commit message (default: auto-generated)"
       echo "  --dry-run    Preview without changes"
       echo ""
-      echo "  Repos: shipmate-agent, shipmate-bot, shipmate, clawd, gapibot, gapila"
+      echo "  Repos: dot-claude, shipmate-agent, shipmate-bot, shipmate, clawd, gapibot, gapila"
       exit 0
       ;;
     *) SELECTED+=("$1") ;;

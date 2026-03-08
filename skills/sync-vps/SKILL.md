@@ -1,6 +1,6 @@
 ---
 name: sync-vps
-description: "Sync repos between Mac and VPS, or show their git status. ALWAYS use when the user says 'sync', 'sync vps', 'sync shipmate', 'sync clawd', 'sync gapibot', 'sync gapila', 'push vps', 'pull vps', 'status vps', 'repos status', 'etat des repos', 'etat vps', or mentions syncing local and VPS code. Also triggers on 'dirty repos', 'uncommitted changes vps', 'what needs pushing'."
+description: "Sync repos between Mac and VPS, or show their git status. ALWAYS use when the user says 'sync', 'sync vps', 'sync shipmate', 'sync clawd', 'sync gapibot', 'sync gapila', 'sync .claude', 'sync dot-claude', 'push vps', 'pull vps', 'status vps', 'repos status', 'etat des repos', 'etat vps', or mentions syncing local and VPS code. Also triggers on 'dirty repos', 'uncommitted changes vps', 'what needs pushing'."
 allowed-tools: Bash
 ---
 
@@ -17,6 +17,7 @@ ssh vps 'docker exec -u node openclaw-openclaw-gateway-1 bash -c "..."'
 
 | Name | Local (Mac) | VPS (container) | Sync? |
 |------|-------------|-----------------|:-----:|
+| dot-claude | `~/.claude` | `/home/node/.claude` | yes |
 | shipmate-agent | `~/Code/claude/shipmate-agent` | `/home/node/.openclaw/workspace-shipmate` | yes |
 | shipmate-bot | `~/Code/claude/shipmate-bot` | `/home/node/projects/shipmate-bot` | yes |
 | shipmate | `~/Code/claude/shipmate` | `/home/node/projects/shipmate` | yes |
@@ -24,7 +25,7 @@ ssh vps 'docker exec -u node openclaw-openclaw-gateway-1 bash -c "..."'
 | gapibot | `~/Code/claude/gapibot` | `/home/node/.openclaw/workspace-gapibot` | yes |
 | gapila | `~/Code/nextjs/gapila` | `/home/node/projects/gapila` | yes |
 
-All 6 repos are syncable (local Mac + VPS).
+All 7 repos are syncable (local Mac + VPS).
 
 ## Usage
 
@@ -45,6 +46,7 @@ All 6 repos are syncable (local Mac + VPS).
 | `sync-vps.sh --pull shipmate-bot` | Pull only shipmate-bot |
 | `sync-vps.sh --sync shipmate` | Bidirectional sync only shipmate |
 | `sync-vps.sh --status clawd` | Show status of clawd |
+| `sync-vps.sh --sync dot-claude` | Sync only .claude config repo |
 | `sync-vps.sh --dry-run` | Preview what would happen |
 | `sync-vps.sh --sync -m "feat: add new skills"` | Sync with custom commit message |
 

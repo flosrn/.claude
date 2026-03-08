@@ -50,7 +50,9 @@ All 7 repos are syncable (local Mac + VPS).
 | `sync-vps.sh --dry-run` | Preview what would happen |
 | `sync-vps.sh --sync -m "feat: add new skills"` | Sync with custom commit message |
 
-Interactive mode (`-i`) shows all repos with fzf, lets you pick one, see details, and choose an action (push, pull, sync both, discard). Loops until you press Esc. Requires `fzf` (brew install fzf).
+Interactive mode (`-i`) shows all 7 repos (including dot-claude) with fzf, lets you pick one, see details, and choose an action (push, pull, sync both, discard). Also has a "Sync All" option at the top. Loops until you press Esc. Requires `fzf` (brew install fzf).
+
+**Note:** Interactive mode runs in the terminal and requires user input — do NOT use `-i` from Claude Code. Always use the non-interactive flags instead.
 
 ### Intent mapping
 
@@ -58,11 +60,13 @@ Interactive mode (`-i`) shows all repos with fzf, lets you pick one, see details
 |-----------|---------|
 | "sync" / "sync vps" / "sync all" | push all |
 | "sync shipmate" / "sync agent" | push that repo |
+| "sync .claude" / "sync dot-claude" / "sync config" | `--sync dot-claude` |
 | "sync both" / "sync bidirectionnel" | `--sync` |
 | "pull" / "pull vps" / "recupere" | `--pull` |
 | "push" / "envoie" | push (default) |
 | "status" / "etat" / "repos status" | `--status` |
 | "dry run" / "preview" | `--dry-run` |
+| "interactif" / "interactive" / "menu" | `-i` |
 
 ### Commit messages
 

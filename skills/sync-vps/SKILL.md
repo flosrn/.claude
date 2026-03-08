@@ -46,6 +46,7 @@ All 6 repos are syncable (local Mac + VPS).
 | `sync-vps.sh --sync shipmate` | Bidirectional sync only shipmate |
 | `sync-vps.sh --status clawd` | Show status of clawd |
 | `sync-vps.sh --dry-run` | Preview what would happen |
+| `sync-vps.sh --sync -m "feat: add new skills"` | Sync with custom commit message |
 
 Interactive mode (`-i`) shows all repos with fzf, lets you pick one, see details, and choose an action (push, pull, sync both, discard). Loops until you press Esc. Requires `fzf` (brew install fzf).
 
@@ -60,3 +61,15 @@ Interactive mode (`-i`) shows all repos with fzf, lets you pick one, see details
 | "push" / "envoie" | push (default) |
 | "status" / "etat" / "repos status" | `--status` |
 | "dry run" / "preview" | `--dry-run` |
+
+### Commit messages
+
+The script accepts `-m "message"` or `--message "message"` to set a custom commit message (applies to all repos in the invocation).
+
+**When syncing repos with uncommitted changes, ALWAYS:**
+1. Run `--dry-run` first to see what changed in each repo
+2. Generate a meaningful commit message based on the actual changes (not a generic one)
+3. Pass it via `-m "message"`
+4. If repos have very different changes, run the script once per repo with a tailored message
+
+**Do NOT** use the default generic "chore: sync" messages when you can see what the changes are.

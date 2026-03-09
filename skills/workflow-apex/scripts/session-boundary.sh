@@ -37,18 +37,10 @@ if [[ "$BRANCH_MODE" == "true" && "$COMMIT_FLAG" == "commit" ]]; then
     fi
 fi
 
-# Step 1b: Always commit + push apex output files (for traceability)
-# Even read-only steps (analyze, plan, validate, examine) produce .md output
-APEX_OUTPUT_DIR=".claude/output/apex/${TASK_ID}"
-if [ -d "$APEX_OUTPUT_DIR" ]; then
-    git add "$APEX_OUTPUT_DIR/" 2>/dev/null || true
-    git add .claude/apex-start-time 2>/dev/null || true
-    # Commit output (may be empty if already committed in 1a)
-    git diff --cached --quiet 2>/dev/null || \
-        git commit -m "apex(${TASK_ID}): output step ${STEP_NUM} - ${STEP_NAME}" --no-verify 2>/dev/null || true
-    # Push everything
+# Step 1b: Push code changes (apex output .md files are NOT committed — local only)
+# Only push if step 1a committed something (branch_mode + commit_flag)
+if [[ "$BRANCH_MODE" == "true" && "$COMMIT_FLAG" == "commit" ]]; then
     git push 2>/dev/null || git push --set-upstream origin "$(git branch --show-current)" 2>/dev/null || true
-    echo "✓ Pushed step ${STEP_NUM} output to remote"
 fi
 
 # Step 2: Mark step complete

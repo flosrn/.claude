@@ -22,11 +22,16 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null | tr '\n
 echo "COMMAND=${COMMAND:0:300}" >> "$DEBUG_LOG"
 
 # ─── Pattern 1: session-boundary.sh (steps 01-08) ────────────────
-# session-boundary.sh handles both progress update AND state snapshot
-# in a single command, so the hook fires AFTER state is fully written.
+# session-boundary.sh args: <task_id> <step_num> <step_name> <summary> <next_step_num> <next_step_desc> ...
+# Extract both completed step (arg 2) and next step (arg 5) for the orchestrator.
 if echo "$COMMAND" | grep -q "session-boundary.sh"; then
-    STEP_NUM=$(echo "$COMMAND" | grep -oP '"\K\d{2}(?=")' | head -1 || true)
-    echo "MATCH: session-boundary.sh, STEP_NUM=$STEP_NUM" >> "$DEBUG_LOG"
+    # grep -oP '"\K\d{2}(?=")' matches "XX" (exactly 2-digit quoted numbers)
+    # head -1 = completed step (arg 2), sed -n 2p = next step (arg 5)
+    ALL_STEPS=$(echo "$COMMAND" | grep -oP '"\K\d{2}(?=")' || true)
+    STEP_NUM=$(echo "$ALL_STEPS" | head -1 || true)
+    NEXT_STEP_NUM=$(echo "$ALL_STEPS" | sed -n '2p' || true)
+    [ -z "$NEXT_STEP_NUM" ] && NEXT_STEP_NUM=$(printf "%02d" $((10#${STEP_NUM} + 1)))
+    echo "MATCH: session-boundary.sh, STEP_NUM=$STEP_NUM, NEXT=$NEXT_STEP_NUM" >> "$DEBUG_LOG"
 
 # ─── Pattern 2: update-progress.sh "XX" "name" "complete" ────────
 # Economy mode (-e) doesn't call session-boundary.sh between steps.
@@ -34,7 +39,8 @@ if echo "$COMMAND" | grep -q "session-boundary.sh"; then
 # Handle ALL steps here: step 09 → completion signal, others → transition.
 elif echo "$COMMAND" | grep -q 'update-progress.sh' && echo "$COMMAND" | grep -q '"complete"'; then
     STEP_NUM=$(echo "$COMMAND" | grep -oP '"\K\d{2}(?=")' | head -1 || true)
-    echo "MATCH: update-progress.sh step $STEP_NUM complete" >> "$DEBUG_LOG"
+    NEXT_STEP_NUM=$(printf "%02d" $((10#${STEP_NUM} + 1)))
+    echo "MATCH: update-progress.sh step $STEP_NUM complete, NEXT=$NEXT_STEP_NUM" >> "$DEBUG_LOG"
 
 # ─── No match ────────────────────────────────────────────────────
 else
@@ -56,10 +62,10 @@ if [ "${STEP_NUM}" = "09" ]; then
       > "${CWD}/.claude/apex-completion-signal"
     echo "WROTE: apex-completion-signal" >> "$DEBUG_LOG"
 else
-    # Steps 01-08 = TRANSITION
-    echo "step=${STEP_NUM:-00}|ts=$(date +%s)|tmux=${TMUX_SESSION}|chat=${CHAT_ID}|feature=${FEATURE}" \
+    # Steps 01-08 = TRANSITION (include next= for orchestrator notifications)
+    echo "step=${STEP_NUM:-00}|next=${NEXT_STEP_NUM:-00}|ts=$(date +%s)|tmux=${TMUX_SESSION}|chat=${CHAT_ID}|feature=${FEATURE}" \
       > "${CWD}/.claude/apex-transition-signal"
-    echo "WROTE: apex-transition-signal step=${STEP_NUM}" >> "$DEBUG_LOG"
+    echo "WROTE: apex-transition-signal step=${STEP_NUM} next=${NEXT_STEP_NUM}" >> "$DEBUG_LOG"
 fi
 
 sync 2>/dev/null || true

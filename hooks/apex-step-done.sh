@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# apex-step-done.sh — Detect apex step completion
-# SIMPLE: write signal file + kill tmux. That's it.
-# All orchestration (notify, relaunch) handled by cron.
+# apex-step-done.sh — Detect apex step completion and trigger orchestrator.
+# Writes signal file, then delegates to watcher (primary) or fires hook directly (fallback).
+# Watcher = primary (≤2s, 0 token). Hook = fallback if watcher dead (3s). Recovery = 60s.
 
 set -euo pipefail
 
@@ -12,8 +12,10 @@ CHAT_ID="${NOTIFY_CHAT_ID:-}"
 TMUX_SESSION="${NOTIFY_TMUX_SESSION:-}"
 BOT_TOKEN="${NOTIFY_BOT_TOKEN:-}"
 
-[ -z "$BOT_TOKEN" ] && { echo "EXIT: no bot token" >> "$DEBUG_LOG"; exit 0; }
-[ -z "$CHAT_ID" ] && { echo "EXIT: no chat id" >> "$DEBUG_LOG"; exit 0; }
+# NOTE: BOT_TOKEN and CHAT_ID are no longer used for direct Telegram sends.
+# All notifications go through the orchestrator cron (message tool).
+# Do NOT exit early here — the signal file MUST be written regardless.
+[ -z "$CHAT_ID" ] && { echo "WARN: no chat id — signal will still be written" >> "$DEBUG_LOG"; }
 
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null | tr '\n' ' ' | tr -s ' ')
@@ -68,14 +70,41 @@ if [ -n "$TMUX_SESSION" ]; then
     (sleep 2 && tmux kill-session -t "$TMUX_SESSION" 2>/dev/null) &
 fi
 
-# ─── Trigger cron immédiatement (event-driven) ───────────────────
-CRON_ID_FILE="${CWD}/.claude/apex-cron-job-id"
-if [ -f "$CRON_ID_FILE" ]; then
-    CRON_ID=$(cat "$CRON_ID_FILE" 2>/dev/null || echo "")
-    if [ -n "$CRON_ID" ]; then
-        echo "TRIGGER: cron run $CRON_ID" >> "$DEBUG_LOG"
-        (sleep 3 && node /app/dist/index.js cron run "$CRON_ID" >> "$DEBUG_LOG" 2>&1) &
-    fi
+# ─── Trigger orchestrateur via webhook ───────────────────────────
+# Strategy: delegate to watcher if alive (it polls every 2s, already saw the signal).
+# Hook fires as fallback only if watcher is dead — avoids double-trigger waste.
+MESSAGE_FILE="${CWD}/.claude/apex-cron-message.txt"
+HOOKS_TOKEN=$(python3 -c "import json; c=json.load(open('/home/node/.openclaw/openclaw.json')); print(c.get('hooks',{}).get('token',''))" 2>/dev/null || echo "")
+HOOKS_URL="http://127.0.0.1:18789/hooks/apex-watcher"
+
+# Check if watcher process is alive
+WATCHER_PID_FILE="${CWD}/.claude/apex-watcher-pid"
+WATCHER_ALIVE=false
+if [ -f "$WATCHER_PID_FILE" ]; then
+    WATCHER_PID=$(cat "$WATCHER_PID_FILE" 2>/dev/null || echo "")
+    [ -n "$WATCHER_PID" ] && kill -0 "$WATCHER_PID" 2>/dev/null && WATCHER_ALIVE=true
+fi
+
+if [ "$WATCHER_ALIVE" = "true" ]; then
+    echo "HOOK: watcher alive (pid=$WATCHER_PID) — delegating trigger to watcher (≤2s)" >> "$DEBUG_LOG"
+elif [ -n "$HOOKS_TOKEN" ] && [ -f "$MESSAGE_FILE" ]; then
+    echo "HOOK: watcher dead — hook fires as fallback (3s)" >> "$DEBUG_LOG"
+    (
+      sleep 3  # laisser le temps au signal file d'être synced par le fs
+      JSON=$(python3 -c "
+import json
+msg = open('$MESSAGE_FILE').read()
+print(json.dumps({'message': msg, 'name': 'apex-$FEATURE', 'agentId': 'gapibot', 'wakeMode': 'now', 'deliver': False}))
+" 2>/dev/null) || { echo "HOOK: json build failed — signal file is backup" >> "$DEBUG_LOG"; exit 0; }
+      HTTP=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$HOOKS_URL" \
+        -H "Authorization: Bearer $HOOKS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$JSON" 2>/dev/null) || HTTP="000"
+      echo "HOOK: webhook → HTTP $HTTP" >> "$DEBUG_LOG"
+      # Signal file kept as backup if POST failed — apex-recovery.sh handles it within 60s
+    ) &
+else
+    echo "HOOK: watcher dead + no token/message file — signal file only (recovery in ≤60s)" >> "$DEBUG_LOG"
 fi
 
 exit 0

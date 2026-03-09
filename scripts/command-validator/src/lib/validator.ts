@@ -33,7 +33,7 @@ export class CommandValidator {
 			return result;
 		}
 
-		if (command.length > 2000) {
+		if (command.length > 10000) {
 			result.isValid = false;
 			result.severity = "MEDIUM";
 			result.violations.push("Command too long (potential buffer overflow)");
@@ -207,7 +207,7 @@ export class CommandValidator {
 			return result;
 		}
 
-		if (command.length > 2000) {
+		if (command.length > 10000) {
 			result.isValid = false;
 			result.severity = "MEDIUM";
 			result.violations.push("Command too long (potential buffer overflow)");

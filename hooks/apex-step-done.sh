@@ -26,14 +26,13 @@ if echo "$COMMAND" | grep -q "session-boundary.sh"; then
     STEP_NUM=$(echo "$COMMAND" | grep -oP '"\K\d{2}(?=")' | head -1 || true)
     echo "MATCH: session-boundary.sh, STEP_NUM=$STEP_NUM" >> "$DEBUG_LOG"
 
-# ─── Pattern 2: update-progress.sh "09" "finish" "complete" ──────
-# Step 09 (finish) doesn't use session-boundary.sh. It calls
-# update-progress.sh directly. Only match step 09 here to write
-# the completion signal. Do NOT match other steps — they get killed
-# before state snapshot can run, causing stale next_step.
-elif echo "$COMMAND" | grep -q 'update-progress.sh' && echo "$COMMAND" | grep -q '"complete"' && echo "$COMMAND" | grep -q '"09"'; then
-    STEP_NUM="09"
-    echo "MATCH: update-progress.sh step 09 complete" >> "$DEBUG_LOG"
+# ─── Pattern 2: update-progress.sh "XX" "name" "complete" ────────
+# Economy mode (-e) doesn't call session-boundary.sh between steps.
+# It calls update-progress.sh directly when a step completes.
+# Handle ALL steps here: step 09 → completion signal, others → transition.
+elif echo "$COMMAND" | grep -q 'update-progress.sh' && echo "$COMMAND" | grep -q '"complete"'; then
+    STEP_NUM=$(echo "$COMMAND" | grep -oP '"\K\d{2}(?=")' | head -1 || true)
+    echo "MATCH: update-progress.sh step $STEP_NUM complete" >> "$DEBUG_LOG"
 
 # ─── No match ────────────────────────────────────────────────────
 else

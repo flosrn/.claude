@@ -130,14 +130,15 @@ Economy exploration strategy:
 
 ```
 Economy validation:
-1. Run typecheck and lint (required)
-2. Run affected tests (required)
-3. Quick self-review checklist:
+1. SKIP typecheck — too RAM-intensive (~1.5GB on monorepos, can OOM VPS)
+2. Run lint --fix (required)
+3. Run affected tests (required)
+4. Quick self-review checklist:
    - [ ] No obvious bugs
    - [ ] Follows existing patterns
    - [ ] Error handling present
    - [ ] No security issues
-4. Skip adversarial review agent
+5. Skip adversarial review agent
 ```
 
 ---
@@ -182,17 +183,22 @@ Same as default - planning doesn't use agents
 
 ### Step 03: Execute (Economy)
 ```
-Same as default - execution doesn't use agents
+Same as default for execution logic (no subagents).
+EXCEPTION: Section 6 "Verify Implementation"
+  → SKIP typecheck (pnpm run typecheck is RAM-intensive, ~1.5GB on monorepos)
+  → Run lint --fix only: pnpm run lint --fix
 ```
 
 ### Step 04: Validate (Economy)
 ```
 INSTEAD OF: Comprehensive validation
 DO:
-1. Run typecheck + lint
-2. Run only affected tests
-3. Quick manual review
-4. Skip coverage analysis
+1. SKIP typecheck (too RAM-intensive — can OOM a 4GB VPS)
+   Log: "Typecheck: ⏭ Skipped (economy mode — lint-only validation)"
+2. Run lint: pnpm run lint --fix (MUST pass)
+3. Run only affected tests (MUST pass)
+4. Quick manual review
+5. Skip coverage analysis
 ```
 
 ### Step 05: Examine (Economy)

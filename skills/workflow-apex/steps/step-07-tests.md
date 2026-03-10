@@ -176,6 +176,13 @@ describe('POST /api/auth/register', () => {
 
 ### 7. Verify Tests
 
+**IF `{economy_mode}` = true:**
+```bash
+# Economy mode: skip typecheck, lint only
+pnpm run lint --fix
+```
+
+**IF `{economy_mode}` = false:**
 ```bash
 pnpm run typecheck
 ```

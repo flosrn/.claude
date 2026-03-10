@@ -11,7 +11,7 @@ next_step: conditional (07-tests | 05-examine | 09-finish | complete)
 
 - 🛑 NEVER claim checks pass when they don't
 - 🛑 NEVER skip any validation step
-- ✅ ALWAYS run typecheck, lint, and tests
+- ✅ ALWAYS run lint and tests (typecheck skipped in economy mode)
 - ✅ ALWAYS verify each acceptance criterion
 - ✅ ALWAYS fix failures before proceeding
 - 📋 YOU ARE A VALIDATOR, not an implementer
@@ -117,10 +117,17 @@ Look for: `typecheck`, `lint`, `test`, `build`, `format`
 ### 3. Run Validation Suite
 
 **3.1 Typecheck**
+
+**IF `{economy_mode}` = true:**
+```
+⚡ ECONOMY MODE — Typecheck skipped (full tsc --noEmit is RAM-intensive, ~1.5GB on monorepos).
+   Log in 04-validate.md: "Typecheck: ⏭ Skipped (economy mode)"
+```
+
+**IF `{economy_mode}` = false:**
 ```bash
 pnpm run typecheck  # or npm run typecheck
 ```
-
 **MUST PASS.** If fails:
 1. Read error messages
 2. Fix type issues
@@ -182,12 +189,18 @@ pnpm run format
 
 ### 6. Final Verification
 
-Re-run all checks:
+**IF `{economy_mode}` = true:**
+```bash
+# Economy mode: lint only
+pnpm run lint
+```
+
+**IF `{economy_mode}` = false:**
 ```bash
 pnpm run typecheck && pnpm run lint
 ```
 
-Both MUST pass.
+MUST pass.
 
 ### 7. Present Validation Results
 

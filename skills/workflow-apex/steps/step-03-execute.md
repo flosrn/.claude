@@ -161,11 +161,18 @@ Log decision:
 
 After completing all todos:
 
+**IF `{economy_mode}` = true:**
+```bash
+# Economy mode: lint only (typecheck skipped — too RAM-intensive for VPS)
+pnpm run lint --fix
+```
+
+**IF `{economy_mode}` = false:**
 ```bash
 pnpm run typecheck && pnpm run lint --fix
 ```
 
-Fix any errors immediately.
+Fix any errors immediately. In economy mode, note that typecheck was skipped — it will be caught in step-04-validate if applicable.
 
 ### 7. Implementation Summary
 

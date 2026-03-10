@@ -105,11 +105,17 @@ For each Real finding (in severity order):
 
 After any fixes:
 
+**IF `{economy_mode}` = true:**
+```bash
+pnpm run lint --fix
+```
+
+**IF `{economy_mode}` = false:**
 ```bash
 pnpm run typecheck && pnpm run lint
 ```
 
-Both MUST pass.
+MUST pass.
 
 ### 5. Resolution Summary
 

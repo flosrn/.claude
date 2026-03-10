@@ -96,6 +96,21 @@ async function main() {
 
 		const confirmationMessage = `⚠️  Potentially dangerous command detected!\n\nCommand: ${command}\nViolations: ${result.violations.join(", ")}\nSeverity: ${result.severity}\n\nDo you want to proceed with this command?`;
 
+		// Notify via Telegram so user can intervene even without watching tmux
+		try {
+			const botToken = process.env.NOTIFY_BOT_TOKEN;
+			const chatId = process.env.NOTIFY_CHAT_ID;
+			if (botToken && chatId) {
+				const shortCmd = command.substring(0, 200).replace(/\n/g, "↵");
+				const msg = `🚨 Claude Code bloqué — confirmation requise\n\n⚠️ Commande détectée : \`${shortCmd}\`\n🔍 Violations: ${result.violations.join(", ")}\n\nRépondre dans le tmux pour continuer.`;
+				await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: "Markdown" }),
+				});
+			}
+		} catch (_) { /* silent — ne jamais bloquer sur la notif */ }
+
 		const hookOutput: HookOutput = {
 			hookSpecificOutput: {
 				hookEventName: "PreToolUse",

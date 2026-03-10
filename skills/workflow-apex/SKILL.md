@@ -279,6 +279,9 @@ APEX runs one step per session:
 | `{resume_task}`         | string  | Task ID to resume (if -r provided)                     |
 | `{output_dir}`          | string  | Full path to output directory                          |
 | `{branch_name}`         | string  | Created branch name (if branch_mode)                   |
+| `{base_branch}`         | string  | PR target branch for feature→feature PRs (empty = default branch) |
+| `{issue_url}`           | string  | GitHub issue URL (if passed in task description or 00-context.md) |
+| `{skill_dir}`           | string  | Absolute path to this skill's directory (auto-resolved) |
 
 </state_variables>
 

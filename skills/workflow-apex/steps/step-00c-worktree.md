@@ -31,6 +31,19 @@ Create an isolated git worktree using Claude Code's native `EnterWorktree`, then
 
 ## EXECUTION SEQUENCE:
 
+### 0. Guard Against Nested Worktrees
+
+**Before creating a worktree, check if we're already inside one:**
+
+```bash
+# Check if current directory is already a git worktree (not the main working tree)
+IS_WORKTREE=$(git rev-parse --is-inside-work-tree 2>/dev/null && git rev-parse --git-common-dir 2>/dev/null)
+MAIN_GIT=$(git rev-parse --git-dir 2>/dev/null)
+```
+
+If `MAIN_GIT` contains `/worktrees/` (i.e., we're already in a worktree):
+→ **STOP** with error: "⚠️ Already inside a git worktree. Cannot create nested worktrees. Use `-b` (branch mode) instead of `-wt` (worktree mode) when running inside an existing worktree."
+
 ### 1. Capture Main Repo Root
 
 **Before entering the worktree**, capture the current working directory:

@@ -25,9 +25,11 @@ prev_step: ./step-08-run-tests.md (or ./step-04-validate.md if no tests)
 
 ## CONTEXT BOUNDARIES:
 
-- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{pr_mode}`, `{output_dir}`, `{worktree_mode}`, `{worktree_path}`
+- Variables available: `{task_id}`, `{task_description}`, `{branch_name}`, `{pr_mode}`, `{output_dir}`, `{worktree_mode}`, `{worktree_path}`, `{issue_url}`, `{base_branch}`
 - Previous steps completed: analyze, plan, execute, validate (+ optional: tests, examine)
 - All implementation should be done at this point
+- `{issue_url}` may be passed as part of the original task description or stored in 00-context.md
+- `{base_branch}` may be set for feature→feature PRs (targets that branch instead of main)
 
 ## CONTEXT RESTORATION (resume mode):
 
@@ -35,8 +37,10 @@ prev_step: ./step-08-run-tests.md (or ./step-04-validate.md if no tests)
 If this step was loaded via `/apex -r {task_id}` resume:
 
 1. Read `{output_dir}/00-context.md` → restore flags, task info, branch_name, task_id
-2. All state variables are now available from the restored context
-3. Proceed with normal execution below
+2. Extract `{issue_url}` from the User Request section (look for GitHub issue URLs) or from the original task description
+3. Check for `{base_branch}`: `cat .claude/apex-pr-base 2>/dev/null` (set by code-process for feature→feature PRs)
+4. All state variables are now available from the restored context
+5. Proceed with normal execution below
 </critical>
 
 ## YOUR TASK:
@@ -92,15 +96,38 @@ git push -u origin {branch_name}
 
 **If `{pr_mode}` = true:**
 
-Generate PR content:
-- **Title:** `feat({task_id}): {task_description}`
-- **Body:** Summary of changes from the workflow
+**Step 5a: Extract issue number (if available):**
 
 ```bash
-gh pr create --title "feat({task_id}): {task_description}" --body "$(cat <<'EOF'
+# From {issue_url} or from task description (e.g., "https://github.com/.../issues/42" → 42)
+ISSUE_NUMBER=$(echo "{issue_url}" | grep -oE '[0-9]+$' || echo "")
+```
+
+**Step 5b: Determine PR base branch:**
+
+```bash
+# Check if a base branch file exists (set by code-process for feature→feature PRs)
+BASE_BRANCH=$(cat .claude/apex-pr-base 2>/dev/null || echo "")
+```
+
+If `BASE_BRANCH` is non-empty, add `--base {BASE_BRANCH}` to the `gh pr create` command.
+
+**Step 5c: Generate PR content:**
+
+- **Title:** `feat({feature_name}): {task_description}` (use `{feature_name}` as scope, not full task_id)
+- **Body:** Must include `Closes #XX` for GitHub automation (Kanban board, auto-close)
+
+```bash
+gh pr create --title "feat({feature_name}): {task_description}" \
+  ${BASE_BRANCH:+--base "$BASE_BRANCH"} \
+  --body "$(cat <<EOF
 ## Summary
 
 {Brief description of what was implemented}
+
+## Linked Issue
+
+Closes #${ISSUE_NUMBER}
 
 ## Changes
 
@@ -117,7 +144,9 @@ EOF
 )"
 ```
 
-**Capture PR URL:**
+> **CRITICAL:** `Closes #XX` MUST appear in the PR body (not title). GitHub's `closingIssuesReferences` API only works with body keywords. If no issue number is available, omit the "Linked Issue" section entirely.
+
+**Step 5d: Capture PR URL:**
 ```bash
 gh pr view --json url -q '.url'
 ```

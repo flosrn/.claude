@@ -280,6 +280,7 @@ Tous les scripts sont dans `scripts/` de ce skill. Usage depuis le Mac via `ssh 
 | `vps-telegram.sh` | `[bot-name\|all] [--test]` | Diagnostics Telegram (API, webhook, pending updates, erreurs) |
 | `vps-auth-refresh.sh` | `[--dry-run]` | ⚠️ LOCAL Mac — Rafraîchit les tokens OAuth depuis le Keychain |
 | `vps-telegram-sync.sh` | `[bot]` | Diagnostic JSON : skills vs customCommands (Claude Code analyse et décide) |
+| `vps-provider-toggle.sh` | `<agent_id> <mode>` | Toggle provider d'un agent (claude, claude-opus, blockrun, blockrun-eco, blockrun-premium, blockrun-free) |
 
 **Exemples :**
 ```bash
@@ -322,6 +323,11 @@ ssh vps 'bash -s -- gapibot --test' < ~/.claude/skills/vps-knowledge/scripts/vps
 # Rafraîchir les tokens OAuth (LOCAL — depuis le Mac)
 ~/.claude/skills/vps-knowledge/scripts/vps-auth-refresh.sh
 ~/.claude/skills/vps-knowledge/scripts/vps-auth-refresh.sh --dry-run
+
+# Toggle provider d'un agent (ClawRouter / Claude Max)
+ssh vps 'bash -s -- clawd blockrun' < ~/.claude/skills/vps-knowledge/scripts/vps-provider-toggle.sh
+ssh vps 'bash -s -- clawd claude' < ~/.claude/skills/vps-knowledge/scripts/vps-provider-toggle.sh
+ssh vps 'bash -s -- shipmate-agent blockrun-eco' < ~/.claude/skills/vps-knowledge/scripts/vps-provider-toggle.sh
 ```
 
 ## Sandbox Browser (Chromium headful)

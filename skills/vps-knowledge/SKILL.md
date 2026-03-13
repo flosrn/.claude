@@ -258,6 +258,23 @@ ssh vps 'crontab -r'                                # Désactiver
 ssh vps 'echo "0 21 * * * /root/openclaw/auto-update.sh >> /var/log/openclaw-update.log 2>&1" | crontab -'  # Réactiver
 ```
 
+**Self-update depuis le conteneur (par l'agent) :**
+Le script `/patches/self-update.sh` (bind-mounted depuis `/root/openclaw/patches/`) permet à l'agent de déclencher sa propre mise à jour via docker socket. Il lance un conteneur helper détaché qui exécute `auto-update.sh`. Le helper survit à l'arrêt du gateway.
+```bash
+# Depuis l'intérieur du conteneur (par l'agent)
+bash /patches/self-update.sh
+
+# Depuis le Mac
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-self-update.sh
+```
+
+**Image Docker officielle (ghcr.io) :**
+```
+ghcr.io/openclaw/openclaw:latest    # Image officielle (non utilisée actuellement)
+ghcr.io/openclaw/openclaw:<version> # Ex: 2026.2.26
+```
+L'image `openclaw:local` est buildée depuis les sources (Dockerfile.clawpro), pas depuis le registry.
+
 ## Scripts utilitaires
 
 Tous les scripts sont dans `scripts/` de ce skill. Usage depuis le Mac via `ssh vps 'bash -s' < script.sh [args]`.
@@ -281,6 +298,7 @@ Tous les scripts sont dans `scripts/` de ce skill. Usage depuis le Mac via `ssh 
 | `vps-auth-refresh.sh` | `[--dry-run]` | ⚠️ LOCAL Mac — Rafraîchit les tokens OAuth depuis le Keychain |
 | `vps-telegram-sync.sh` | `[bot]` | Diagnostic JSON : skills vs customCommands (Claude Code analyse et décide) |
 | `vps-provider-toggle.sh` | `<agent_id> <mode>` | Toggle provider d'un agent (claude, claude-opus, blockrun, blockrun-eco, blockrun-premium, blockrun-free) |
+| `vps-self-update.sh` | *(aucun)* | Déclenche la mise à jour autonome via docker socket (helper container) |
 
 **Exemples :**
 ```bash
@@ -328,6 +346,9 @@ ssh vps 'bash -s -- gapibot --test' < ~/.claude/skills/vps-knowledge/scripts/vps
 ssh vps 'bash -s -- clawd blockrun' < ~/.claude/skills/vps-knowledge/scripts/vps-provider-toggle.sh
 ssh vps 'bash -s -- clawd claude' < ~/.claude/skills/vps-knowledge/scripts/vps-provider-toggle.sh
 ssh vps 'bash -s -- shipmate-agent blockrun-eco' < ~/.claude/skills/vps-knowledge/scripts/vps-provider-toggle.sh
+
+# Self-update autonome (via docker socket helper container)
+ssh vps 'bash -s' < ~/.claude/skills/vps-knowledge/scripts/vps-self-update.sh
 ```
 
 ## Sandbox Browser (Chromium headful)

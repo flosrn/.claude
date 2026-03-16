@@ -112,7 +112,7 @@ IF validation fails:
 Create a lightweight checkpoint before making changes:
 
 ```bash
-git add -A && git commit -m "apex: checkpoint before team-execute ({task_id})" || true
+git add -u && git commit -m "apex: checkpoint before team-execute ({task_id})" || true
 ```
 
 #### 2.2 Create Team

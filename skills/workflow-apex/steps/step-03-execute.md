@@ -91,12 +91,10 @@ Append logs to `{output_dir}/03-execute.md` as you work.
 Create a lightweight checkpoint before making changes:
 
 ```bash
-git add . && git commit -m "apex: checkpoint before execute ({task_id})" || true
+git add -u && git commit -m "apex: checkpoint before execute ({task_id})" || true
 ```
 
-Uses `git add .` to include all tracked and new files in the current directory. The `|| true` prevents failure if there's nothing to commit. This enables `git reset HEAD~1` to rollback if execution breaks the codebase.
-
-> **Note:** This is the only place where bulk staging is acceptable (safety checkpoint, not a real commit). All other commits should stage files explicitly.
+Uses `git add -u` to stage only tracked files (excludes `.claude/output/` and other untracked files). The `|| true` prevents failure if there's nothing to commit. This enables `git reset HEAD~1` to rollback if execution breaks the codebase.
 
 ### 3. Create Todos from Plan
 

@@ -31,14 +31,15 @@ if [[ "$BRANCH_MODE" == "true" && "$COMMIT_FLAG" == "commit" ]]; then
     if git diff --cached --quiet 2>/dev/null && git diff --quiet 2>/dev/null; then
         echo "ℹ️  No changes to commit"
     else
-        git add -A 2>/dev/null || true
-        git commit -m "apex(${TASK_ID}): step ${STEP_NUM} - ${STEP_NAME}" --no-verify 2>/dev/null || true
+        git add -u 2>/dev/null || true
+        git commit -m "apex(${TASK_ID}): step ${STEP_NUM} - ${STEP_NAME}" 2>/dev/null || true
         echo "✓ Committed: apex(${TASK_ID}): step ${STEP_NUM} - ${STEP_NAME}"
     fi
 fi
 
-# Step 1b: Push code changes (apex output .md files are NOT committed — local only)
+# Step 1b: Push code changes
 # Only push if step 1a committed something (branch_mode + commit_flag)
+# Note: git add -u only stages tracked files — .claude/output/ stays local
 if [[ "$BRANCH_MODE" == "true" && "$COMMIT_FLAG" == "commit" ]]; then
     git push 2>/dev/null || git push --set-upstream origin "$(git branch --show-current)" 2>/dev/null || true
 fi

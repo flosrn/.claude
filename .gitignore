@@ -1,4 +1,5 @@
 # Session & cache files
+sessions/
 cache/
 debug/
 file-history/

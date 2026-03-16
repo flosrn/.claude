@@ -1,7 +1,7 @@
 import type { StatuslineConfig } from "../../statusline.config";
 import type { StatuslineData } from "../index";
 import { renderStatusline as render } from "../index";
-import { getContextData } from "./context";
+import { getContextData, getEffectiveContextWindow } from "./context";
 import {
 	formatBranch,
 	formatCost,
@@ -18,10 +18,20 @@ export async function renderStatusline(
 	config: StatuslineConfig,
 ): Promise<{ output: string }> {
 	const git = await getGitStatus();
+	const effectiveCtx = getEffectiveContextWindow(
+		input.model.id,
+		input.exceeds_200k_tokens,
+	);
+	const maxContextTokens = config.context.maxContextTokens === 200_000
+		? effectiveCtx.maxTokens
+		: config.context.maxContextTokens;
+	const autocompactBufferTokens = config.context.autocompactBufferTokens === 45_000
+		? effectiveCtx.autocompactBuffer
+		: config.context.autocompactBufferTokens;
 	const contextData = await getContextData({
 		transcriptPath: input.transcript_path,
-		maxContextTokens: config.context.maxContextTokens,
-		autocompactBufferTokens: config.context.autocompactBufferTokens,
+		maxContextTokens,
+		autocompactBufferTokens,
 		useUsableContextOnly: config.context.useUsableContextOnly,
 		overheadTokens: config.context.overheadTokens,
 	});
@@ -37,6 +47,7 @@ export async function renderStatusline(
 		sessionDuration: formatDuration(input.cost.total_duration_ms),
 		contextTokens: contextData.tokens,
 		contextPercentage: contextData.percentage,
+		maxContextTokens,
 		usageLimits: {
 			five_hour: usageLimits.five_hour
 				? {

@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { StatuslineConfig } from "../statusline.config";
 import { defaultConfig } from "../statusline.config";
-import { getContextData } from "./lib/context";
+import { getContextData, getEffectiveContextWindow } from "./lib/context";
 import {
 	colors,
 	formatBranch,
@@ -44,6 +44,7 @@ export interface StatuslineData {
 	sessionDuration: string;
 	contextTokens: number;
 	contextPercentage: number;
+	maxContextTokens: number;
 	usageLimits: {
 		five_hour: UsageLimit | null;
 		seven_day: UsageLimit | null;
@@ -84,7 +85,7 @@ export function renderStatusline(
 		data.sessionCost,
 		data.sessionDuration,
 		data.contextTokens,
-		config.context.maxContextTokens,
+		data.maxContextTokens,
 		data.contextPercentage,
 		config.session,
 	);
@@ -189,10 +190,20 @@ async function main() {
 		await saveSession(input);
 
 		const git = await getGitStatus();
+		const effectiveCtx = getEffectiveContextWindow(
+			input.model.id,
+			input.exceeds_200k_tokens,
+		);
+		const maxContextTokens = config.context.maxContextTokens === 200_000
+			? effectiveCtx.maxTokens
+			: config.context.maxContextTokens;
+		const autocompactBufferTokens = config.context.autocompactBufferTokens === 45_000
+			? effectiveCtx.autocompactBuffer
+			: config.context.autocompactBufferTokens;
 		const contextData = await getContextData({
 			transcriptPath: input.transcript_path,
-			maxContextTokens: config.context.maxContextTokens,
-			autocompactBufferTokens: config.context.autocompactBufferTokens,
+			maxContextTokens,
+			autocompactBufferTokens,
 			useUsableContextOnly: config.context.useUsableContextOnly,
 			overheadTokens: config.context.overheadTokens,
 		});
@@ -208,6 +219,7 @@ async function main() {
 			sessionDuration: formatDuration(input.cost.total_duration_ms),
 			contextTokens: contextData.tokens,
 			contextPercentage: contextData.percentage,
+			maxContextTokens,
 			usageLimits: {
 				five_hour: usageLimits.five_hour
 					? {

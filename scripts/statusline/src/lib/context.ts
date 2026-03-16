@@ -1,5 +1,24 @@
 import { existsSync } from "node:fs";
 
+const CONTEXT_WINDOWS: Record<string, { maxTokens: number; autocompactBuffer: number }> = {
+	"200k": { maxTokens: 200_000, autocompactBuffer: 45_000 },
+	"1m": { maxTokens: 1_000_000, autocompactBuffer: 200_000 },
+};
+
+/**
+ * Detect effective context window from model info.
+ * Uses exceeds_200k_tokens flag and model ID pattern (e.g. [1m] suffix).
+ */
+export function getEffectiveContextWindow(
+	modelId: string,
+	exceeds200k?: boolean,
+): { maxTokens: number; autocompactBuffer: number } {
+	if (exceeds200k || modelId.includes("[1m]")) {
+		return CONTEXT_WINDOWS["1m"];
+	}
+	return CONTEXT_WINDOWS["200k"];
+}
+
 export interface TokenUsage {
 	input_tokens: number;
 	output_tokens: number;

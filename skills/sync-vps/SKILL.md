@@ -10,7 +10,7 @@ Sync repos between local Mac and VPS via git, or show status of all repos across
 
 The VPS runs repos inside a Docker container. All VPS git commands go through:
 ```
-ssh vps 'docker exec -u node openclaw-openclaw-gateway-1 bash -c "..."'
+ssh vps 'docker exec -u node openclaw-gateway bash -c "..."'
 ```
 
 ## Repos

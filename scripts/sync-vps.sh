@@ -5,7 +5,7 @@
 set -uo pipefail
 
 VPS="vps"
-CONTAINER="openclaw-openclaw-gateway-1"
+CONTAINER="openclaw-gateway"
 DRY_RUN=""
 DIRECTION="push"
 STATUS_ONLY=""

@@ -1,6 +1,6 @@
 ---
 name: hetzner-vps
-description: "Complete reference for Flo's Hetzner VPS infrastructure (OpenClaw production). ALWAYS use when the user mentions \"vps\", \"hetzner\", \"openclaw\", \"serveur\", \"server\", \"gateway\", \"docker\" (in VPS context), \"monitoring\", \"traefik\", \"backup\", \"infrastructure\", \"telegram bot\", \"auto-update\", \"mise à jour\", \"deploy\", \"sandbox browser\", \"browser vps\", \"clawmetry\", \"beszel\", \"uptime kuma\", \"dozzle\", \"ntfy\", \"crowdsec\", \"xray\", \"vless\", \"ops.shipmate.bot\", or asks about VPS configuration, deployment, architecture, or operational tasks. This skill is the single source of truth for the VPS — use it instead of guessing."
+description: "Complete reference for Flo's Hetzner VPS infrastructure (OpenClaw production). ALWAYS use when the user mentions \"vps\", \"hetzner\", \"openclaw\", \"serveur\", \"server\", \"gateway\", \"docker\" (in VPS context), \"monitoring\", \"traefik\", \"backup\", \"infrastructure\", \"telegram bot\", \"auto-update\", \"mise à jour\", \"deploy\", \"sandbox browser\", \"browser vps\", \"clawmetry\", \"beszel\", \"uptime kuma\", \"dozzle\", \"ntfy\", \"crowdsec\", \"xray\", \"vless\", \"ops.shipmate.bot\", \"oktsec\", \"pinchtab\", \"keychains\", \"clawsec\", \"soul-guardian\", \"agent security\", \"mission control\", \"clawbridge\", \"mengram\", \"mc.ops\", \"bridge.ops\", or asks about VPS configuration, deployment, architecture, or operational tasks. This skill is the single source of truth for the VPS — use it instead of guessing."
 ---
 
 # Hetzner VPS — Infrastructure Reference
@@ -16,22 +16,32 @@ This skill documents the complete architecture of Flo's production VPS on Hetzne
 | **Type** | CX53 — 16 vCPU, 32 GB RAM, 320 GB SSD |
 | **IP** | `204.168.138.162` |
 | **OS** | Ubuntu 24.04 LTS |
-| **SSH** | `ssh root@204.168.138.162` |
+| **Connect** | `mosh vps` (preferred — faster from Bangkok) |
+| **SSH** | `ssh root@204.168.138.162` (for non-interactive commands) |
+| **Tailscale IP** | `100.77.103.17` |
 | **Cost** | ~€17/mois |
 | **Domain** | `*.ops.shipmate.bot` (Cloudflare) |
 
 ## Architecture Overview
 
 ```
-Internet → Cloudflare (DDoS + Access SSO) → Traefik v3 (reverse proxy)
-                                                    │
-              ┌─────────┬──────────┬────────────────┼──────────┐
-              ▼          ▼          ▼                ▼          ▼
-          OpenClaw    Beszel    Grafana/Loki    Uptime Kuma   ntfy
-          Gateway     Dozzle    Promtail        Clawmetry
-              │
-              ▼
-          oc-ops (sidecar) → wollomatic/socket-proxy → Docker daemon
+Internet → Cloudflare (DDoS) → Traefik v3 (reverse proxy)
+                                       │
+         ┌──────────┬──────────┬───────┼──────────┬──────────┐
+         ▼          ▼          ▼       ▼          ▼          ▼
+     OpenClaw    Beszel    Uptime    Dozzle     ntfy    Clawmetry
+     Gateway     hub+agent  Kuma    (logs)    (push)   (metrics)
+         │
+         ▼
+     oc-ops (sidecar) → wollomatic/socket-proxy → Docker daemon
+
+ Host-level services (systemd, via Traefik host.docker.internal):
+     Oktsec v0.9.1      → oktsec.ops.shipmate.bot     (:8082 dashboard, :9090 MCP gateway)
+     PinchTab v0.8.2    → pinchtab.ops.shipmate.bot   (:9867 browser automation API)
+     Keychains Proxy    → keychains.ops.shipmate.bot   (:3100 credential delegation)
+
+ Security skills (inside OpenClaw container):
+     clawsec-suite v0.1.4, soul-guardian v0.0.2, openclaw-audit-watchdog v0.1.1
 ```
 
 ## Directory Structure
@@ -41,7 +51,7 @@ Internet → Cloudflare (DDoS + Access SSO) → Traefik v3 (reverse proxy)
 ├── traefik/          # Reverse proxy + Let's Encrypt
 ├── monitoring/       # Beszel, Uptime Kuma, Dozzle, Grafana, Loki, ntfy
 ├── openclaw/         # Gateway + CLI + oc-ops sidecar
-├── services/         # Browser, Clawmetry
+├── services/         # Browser, Clawmetry, Keychains Proxy
 ├── security/         # CrowdSec + Docker Socket Proxy
 ├── scripts/          # backup.sh, health-check.sh, update.sh
 └── Makefile          # make up, make down, make logs, make backup
@@ -60,12 +70,17 @@ All services accessible via `*.ops.shipmate.bot` with Cloudflare Access (email O
 | ntfy | `ntfy.ops.shipmate.bot` | Push notifications |
 | Clawmetry | `clawmetry.ops.shipmate.bot` | Agent metrics |
 | Traefik | `traefik.ops.shipmate.bot` | Proxy dashboard |
+| Oktsec | `oktsec.ops.shipmate.bot` | AI agent runtime security (188 rules) |
+| PinchTab | `pinchtab.ops.shipmate.bot` | Browser automation bridge |
+| Keychains | `keychains.ops.shipmate.bot` | Credential delegation proxy |
+| Mission Control | `mc.ops.shipmate.bot` | Agent orchestration dashboard (Builderz v2.0, Docker) |
+| ClawBridge | `bridge.ops.shipmate.bot` | Mobile agent monitor (systemd :3200) |
 
 ## Common Operations
 
 ```bash
-# SSH into VPS
-ssh root@204.168.138.162
+# Connect to VPS (interactive — use mosh, faster from Bangkok)
+mosh vps
 
 # View all containers
 ssh root@204.168.138.162 'docker ps'
@@ -84,6 +99,16 @@ ssh root@204.168.138.162 '/opt/docker/scripts/health-check.sh'
 
 # Update a stack (pull + recreate)
 ssh root@204.168.138.162 '/opt/docker/scripts/update.sh openclaw'
+
+# Host-level services (systemd)
+ssh root@204.168.138.162 'systemctl status oktsec pinchtab keychains-proxy'
+ssh root@204.168.138.162 'systemctl restart oktsec'  # regenerates access code
+
+# Oktsec access code (changes on restart)
+ssh root@204.168.138.162 'journalctl -u oktsec --no-pager -n 30 | grep "Access code"'
+
+# Soul Guardian — check agent file integrity
+ssh root@204.168.138.162 'docker exec openclaw-gateway bash -c "cd /home/node/.openclaw/workspace && python3 skills/soul-guardian/scripts/soul_guardian.py check"'
 ```
 
 ## When to Read More

@@ -136,10 +136,12 @@ Execute test strategy and validate implementation against test suite until green
 
 9. **Run test suite**
    ```bash
-   pnpm run test
+   # Use detected package manager from phase 03
+   {PM} run test
    # OR for specific files:
-   pnpm run test -- path/to/test.spec.ts
+   {PM} run test -- path/to/test.spec.ts
    ```
+   For non-Node.js projects, use the stack-equivalent command (see phase-03 toolchain table).
 
 10. **Analyze failures (detailed failure analysis)**
 

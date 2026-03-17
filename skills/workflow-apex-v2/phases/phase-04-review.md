@@ -78,14 +78,15 @@ Conduct adversarial code review and resolve Real findings in a single phase.
      - Read affected file
      - Understand issue
      - Apply focused fix
-     - Verify: `pnpm run typecheck && pnpm run lint`
+     - Verify: `{PM} run typecheck && {PM} run lint` (or stack equivalent)
      - Commit: `git add -u && git commit -m "apex({task_id}): review fix - {brief description}" || true`
 
 7. **Post-resolution validation**
-   - Run full validation suite:
+   - Run full validation suite (using detected package manager from phase 03):
      ```bash
-     pnpm run typecheck && pnpm run lint
+     {PM} run typecheck && {PM} run lint
      ```
+     For non-Node.js projects, use the stack-equivalent commands (see phase-03 toolchain table).
    - If failures: read error → fix root cause → re-run
    - Continue until clean
 

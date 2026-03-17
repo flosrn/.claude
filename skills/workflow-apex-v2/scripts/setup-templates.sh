@@ -24,6 +24,7 @@ WORKTREE_MODE="${12:-false}"
 WORKTREE_PATH_ARG="${13:-}"
 AUTO_MODE="${14:-false}"
 PAUSE_MODE="${15:-false}"
+QUICK_MODE="${16:-false}"
 
 # Validate required arguments
 if [[ -z "$INPUT_NAME" ]]; then
@@ -90,6 +91,12 @@ render_template() {
     local pr_status="⏭ Skip"
     [[ "$PR_MODE" == "true" ]] && pr_status="⏸ Pending"
 
+    local context_status="⏸ Pending"
+    [[ "$QUICK_MODE" == "true" ]] && context_status="⏭ Skip"
+
+    local plan_status="⏸ Pending"
+    [[ "$QUICK_MODE" == "true" ]] && plan_status="⏭ Skip"
+
     # Escape user-provided values (may contain special chars)
     local safe_task_desc
     safe_task_desc=$(escape_sed_replacement "$TASK_DESCRIPTION")
@@ -131,6 +138,9 @@ render_template() {
         -e "s|{{reference_docs}}|${safe_reference_docs}|g" \
         -e "s|{{auto_mode}}|${AUTO_MODE}|g" \
         -e "s|{{pause_mode}}|${PAUSE_MODE}|g" \
+        -e "s|{{quick_mode}}|${QUICK_MODE}|g" \
+        -e "s|{{context_status}}|${context_status}|g" \
+        -e "s|{{plan_status}}|${plan_status}|g" \
         "$template_file" > "$output_file"
 }
 

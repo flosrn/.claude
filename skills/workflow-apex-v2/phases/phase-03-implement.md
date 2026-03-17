@@ -49,23 +49,48 @@ Execute approved plan and validate implementation in a single phase.
      - Verify syntax (no parsing errors)
      - Commit per-file: `git add -u && git commit -m "apex({task_id}): implement {filename}" || true`
 
-5. **Log progress**
-   - Append to `{output_dir}/03-implement.md`
+5. **Log progress (save-every-2 rule)**
+   - After every 2 file modifications, append progress to `{output_dir}/03-implement.md`
    - Track: files modified, lines changed, issues encountered, workarounds applied
+   - Do NOT wait until the end to log — compaction can happen mid-implementation
 
 ---
 
 ## Part B: Validate (integrated, no session break)
 
-6. **Discover available commands**
-   - Read `package.json` scripts section
-   - Identify: typecheck, lint, test, format commands
+6. **Detect project toolchain**
+
+   ```bash
+   # Detect package manager
+   if [ -f "bun.lockb" ] || [ -f "bun.lock" ]; then PM="bun"
+   elif [ -f "pnpm-lock.yaml" ]; then PM="pnpm"
+   elif [ -f "yarn.lock" ]; then PM="yarn"
+   elif [ -f "package.json" ]; then PM="npm"
+   fi
+
+   # Detect available scripts (Node.js projects)
+   if [ -f "package.json" ]; then
+     HAS_TYPECHECK=$(node -e "const p=require('./package.json'); process.exit(p.scripts?.typecheck ? 0 : 1)" 2>/dev/null && echo "true" || echo "false")
+     HAS_LINT=$(node -e "const p=require('./package.json'); process.exit(p.scripts?.lint ? 0 : 1)" 2>/dev/null && echo "true" || echo "false")
+     HAS_TEST=$(node -e "const p=require('./package.json'); process.exit(p.scripts?.test ? 0 : 1)" 2>/dev/null && echo "true" || echo "false")
+     HAS_FORMAT=$(node -e "const p=require('./package.json'); process.exit(p.scripts?.format ? 0 : 1)" 2>/dev/null && echo "true" || echo "false")
+   fi
+   ```
+
+   **Non-Node.js project detection:**
+   | Marker | Stack | Typecheck | Lint | Test | Format |
+   |--------|-------|-----------|------|------|--------|
+   | `pyproject.toml` / `requirements.txt` | Python | `mypy .` | `ruff check .` | `pytest` | `ruff format --check .` |
+   | `go.mod` | Go | `go vet ./...` | `golangci-lint run` | `go test ./...` | `gofmt -l .` |
+   | `Cargo.toml` | Rust | `cargo check` | `cargo clippy` | `cargo test` | `cargo fmt --check` |
+   | `composer.json` | PHP | — | `composer lint` | `composer test` | — |
+   | `Makefile` | Generic | — | `make lint` | `make test` | — |
 
 7. **Run validation suite (MUST ALL PASS)**
-   - Typecheck: `pnpm run typecheck`
-   - Lint: `pnpm run lint --fix`
-   - Tests: `pnpm run test`
-   - Format: `pnpm run format` (if available)
+   - Typecheck: `{PM} run typecheck` (or stack equivalent)
+   - Lint: `{PM} run lint --fix` (or stack equivalent)
+   - Tests: `{PM} run test` (or stack equivalent)
+   - Format: `{PM} run format` (if available)
    - Fix any failures immediately and re-run until green
 
 ### Pre-existing Failures
@@ -74,7 +99,7 @@ Before attributing failures to your changes, check if they pre-exist:
 
 ```bash
 # Stash your changes and run tests on the base state
-git stash && pnpm run test 2>&1 | tail -5; git stash pop
+git stash && {PM} run test 2>&1 | tail -5; git stash pop
 ```
 
 If tests fail without your changes:

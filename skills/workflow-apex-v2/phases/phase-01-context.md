@@ -37,6 +37,25 @@ Mark phase in progress.
 - Extract labels, assignee, description
 - Parse acceptance criteria from issue body (look for "Acceptance Criteria", "Requirements", checkboxes)
 
+### 2b. Similar Issue Search (optional)
+
+**IF {ISSUE_NUMBER} is set:**
+
+Search for similar resolved issues to avoid regressions and learn from past fixes:
+
+```bash
+# Extract 2-3 key terms from issue title
+KEYWORDS=$(echo "{task_description}" | tr ' ' '\n' | grep -vE '^(the|a|an|in|on|to|for|and|or|is|it|of|with)$' | head -3 | tr '\n' ' ')
+gh issue list --search "$KEYWORDS" --state closed --limit 5 --json number,title,labels
+```
+
+For each similar closed issue:
+- Note how it was resolved (linked PR, closing comment)
+- Flag potential regression if same area of code is involved
+- Add to `{output_dir}/01-context.md` section: "Similar Issues"
+
+If no similar issues found, skip silently.
+
 ### 3. Extract Search Keywords
 
 From task_description + issue body:
@@ -48,6 +67,25 @@ Examples:
 ```
 
 Store as {search_keywords} array.
+
+### 3b. Save-Every-2 Rule (applies to ALL exploration below)
+
+**CRITICAL: Context is RAM, files are disk.**
+
+After every 2 research/exploration operations (Read, Grep, Glob, agent results), immediately append key findings to `{output_dir}/01-context.md`. Do NOT accumulate findings only in conversation context.
+
+```
+Pattern:
+  Operation 1 (e.g., Glob for *.ts files)
+  Operation 2 (e.g., Read main entry point)
+  → SAVE: append discovered file list + patterns to 01-context.md
+
+  Operation 3 (e.g., Grep for auth patterns)
+  Operation 4 (e.g., Read utility file)
+  → SAVE: append auth patterns + utilities to 01-context.md
+```
+
+This prevents information loss if context compaction occurs mid-phase. Each save is an incremental append, not a full rewrite.
 
 ### 4. Explore Codebase
 

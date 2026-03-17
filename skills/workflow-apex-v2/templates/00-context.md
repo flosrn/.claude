@@ -19,6 +19,7 @@
 | Pause (`-p`) | {{pause_mode}} |
 | Interactive (`-i`) | {{interactive_mode}} |
 | Worktree (`-wt`) | {{worktree_mode}} |
+| Quick (`-q`) | {{quick_mode}} |
 | Branch name | {{branch_name}} |
 | Worktree path | {{worktree_path}} |
 
@@ -41,8 +42,8 @@
 | Phase | Status | Timestamp |
 |-------|--------|-----------|
 | 00-init | ⏸ Pending | |
-| 01-context | ⏸ Pending | |
-| 02-plan | ⏸ Pending | |
+| 01-context | {{context_status}} | |
+| 02-plan | {{plan_status}} | |
 | 03-implement | ⏸ Pending | |
 | 04-review | {{examine_status}} | |
 | 05-test | {{test_status}} | |

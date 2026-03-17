@@ -9,13 +9,14 @@
 
 set -e
 
-TASK_ID="${1:?Usage: update-state-snapshot.sh <task_id> <next_step> <step_context_line> [gotcha]}"
+TASK_ID="${1:?Usage: update-state-snapshot.sh <task_id> <next_step> <step_context_line> [gotcha] [output_base]}"
 NEXT_STEP="${2:?}"
 STEP_CONTEXT_LINE="${3:?}"
 GOTCHA="${4:-}"
+OUTPUT_BASE="${5:-$(pwd)}"  # Optional: absolute path to repo root (for worktree mode)
 
-# Find project root
-PROJECT_ROOT=$(pwd)
+# Find context file — use OUTPUT_BASE (main repo) not pwd (may be worktree)
+PROJECT_ROOT="$OUTPUT_BASE"
 CONTEXT_FILE="${PROJECT_ROOT}/.claude/output/apex/${TASK_ID}/00-context.md"
 
 if [[ ! -f "$CONTEXT_FILE" ]]; then

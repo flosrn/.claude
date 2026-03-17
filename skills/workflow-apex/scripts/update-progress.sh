@@ -9,16 +9,17 @@ TASK_ID="$1"
 STEP_NUMBER="$2"
 STEP_NAME="$3"
 STATUS="$4"  # "in_progress", "complete", or "skip"
+OUTPUT_BASE="${5:-$(pwd)}"  # Optional: absolute path to repo root (for worktree mode)
 
 # Validate required arguments
 if [[ -z "$TASK_ID" ]] || [[ -z "$STEP_NUMBER" ]] || [[ -z "$STEP_NAME" ]] || [[ -z "$STATUS" ]]; then
-    echo "Usage: $0 <task_id> <step_number> <step_name> <status>"
-    echo "Example: $0 01-add-auth 01 analyze complete"
+    echo "Usage: $0 <task_id> <step_number> <step_name> <status> [output_base]"
+    echo "Example: $0 01-add-auth 01 analyze complete /path/to/main/repo"
     exit 1
 fi
 
-# Find project root (use pwd for consistency with setup-templates.sh)
-PROJECT_ROOT=$(pwd)
+# Find context file — use OUTPUT_BASE (main repo) not pwd (may be worktree)
+PROJECT_ROOT="$OUTPUT_BASE"
 CONTEXT_FILE="${PROJECT_ROOT}/.claude/output/apex/${TASK_ID}/00-context.md"
 
 # Validate context file exists

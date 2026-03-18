@@ -42,3 +42,4 @@ credentials.json
 .credentials.json
 .git-broken
 settings.json.bak
+*.env

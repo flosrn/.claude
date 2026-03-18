@@ -20,7 +20,18 @@ REPO_DEFS=(
   "clawd|$HOME/Code/claude/clawd|/home/node/.openclaw/workspace|master"
   "gapibot|$HOME/Code/claude/gapibot|/home/node/.openclaw/workspace-gapibot|master"
   "gapila|$HOME/Code/nextjs/gapila|/home/node/projects/gapila|main"
+  "shared-skills|$HOME/Code/claude/shared-skills|/home/node/shared-skills|master"
 )
+
+# Repos that contain skills → which agents they affect
+# shared-skills affects all agents, workspace repos affect their own agent
+SKILL_REPO_MAP=(
+  "clawd|default"
+  "gapibot|gapibot"
+  "shipmate-agent|shipmate"
+  "shared-skills|all"
+)
+SYNCED_REPOS=()  # Track which repos were actually synced
 
 SELECTED=()
 
@@ -70,6 +81,44 @@ step()   { echo -e "  ${C_CYAN}$1${C_RESET}"; }
 
 vps_exec() {
   echo "$1" | ssh "$VPS" "docker exec -i -u node $CONTAINER bash" 2>/dev/null
+}
+
+# For repos mounted read-only in container (e.g. shared-skills), run on host
+vps_host_exec() {
+  ssh "$VPS" "bash -c '$1'" 2>/dev/null
+}
+
+# Repos with host-side VPS paths (mounted :ro in container, git ops must run on host)
+# Format: repo_name|host_vps_path
+HOST_REPOS=(
+  "shared-skills|/root/shared-skills"
+)
+
+# Resolve host path for a repo (returns empty if repo uses container)
+get_host_path() {
+  local repo_name="$1"
+  for hr in "${HOST_REPOS[@]}"; do
+    IFS='|' read -r hr_name hr_path <<< "$hr"
+    if [ "$hr_name" = "$repo_name" ]; then
+      echo "$hr_path"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Run a git command on VPS — routes to host or container depending on repo
+vps_git() {
+  local name="$1" vps_dir="$2"
+  shift 2
+  local cmd="$*"
+  local host_path
+  host_path=$(get_host_path "$name") || true
+  if [ -n "$host_path" ]; then
+    vps_host_exec "cd '$host_path' && $cmd"
+  else
+    vps_exec "cd \"$vps_dir\" && $cmd"
+  fi
 }
 
 count_changes() {
@@ -258,7 +307,7 @@ sync_repo() {
   if [ -n "$DRY_RUN" ]; then
     local lst vst
     lst=$(cd "$local_dir" && git status --short 2>/dev/null)
-    vst=$(vps_exec "cd \"$vps_dir\" && git status --short 2>/dev/null" || echo "(unreachable)")
+    vst=$(vps_git "$name" "$vps_dir" "git status --short 2>/dev/null" || echo "(unreachable)")
     [ -n "$lst" ] && echo -e "  ${C_YELLOW}Mac:${C_RESET}" && echo "$lst" | while read -r l; do echo "      $l"; done || info "Mac: clean"
     [ -n "$vst" ] && ! echo "$vst" | grep -q "unreachable" && echo -e "  ${C_YELLOW}VPS:${C_RESET}" && echo "$vst" | while read -r l; do echo "      $l"; done || info "VPS: clean"
     return 0
@@ -273,11 +322,11 @@ sync_repo() {
         step "Mac committed"
       fi
       git push origin "$branch" 2>/dev/null && step "Pushed to origin" || info "Already up to date"
-      vps_exec "cd \"$vps_dir\" && git pull --ff-only origin $branch 2>&1" >/dev/null && ok "VPS pulled" || err "VPS pull failed"
+      vps_git "$name" "$vps_dir" "git pull --ff-only origin $branch 2>&1" >/dev/null && ok "VPS pulled" || err "VPS pull failed"
       ;;
     pull)
       local vps_msg="${COMMIT_MSG:-chore: sync VPS changes}"
-      vps_exec "cd \"$vps_dir\" && git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>/dev/null || true" >/dev/null
+      vps_git "$name" "$vps_dir" "git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>/dev/null || true" >/dev/null
       step "VPS committed & pushed"
       cd "$local_dir"
       git pull --ff-only origin "$branch" 2>/dev/null && ok "Mac pulled" || err "Mac pull failed"
@@ -286,6 +335,9 @@ sync_repo() {
       sync_both "$name" "$local_dir" "$vps_dir" "$branch"
       ;;
   esac
+
+  # Track synced repo for post-sync hooks
+  SYNCED_REPOS+=("$name")
 }
 
 # -- Bidirectional sync --
@@ -304,11 +356,11 @@ sync_both() {
   # Step 2: commit + push VPS
   local vps_push_out
   local vps_msg="${COMMIT_MSG:-chore: sync VPS changes}"
-  vps_push_out=$(vps_exec "cd \"$vps_dir\" && git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>&1 || echo 'PUSH_FAILED'")
+  vps_push_out=$(vps_git "$name" "$vps_dir" "git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>&1 || echo 'PUSH_FAILED'")
   if echo "$vps_push_out" | grep -q "PUSH_FAILED"; then
     # VPS push failed -- likely behind origin. Pull first, then retry.
     step "VPS behind origin, pulling first..."
-    vps_exec "cd \"$vps_dir\" && git pull --rebase origin $branch 2>/dev/null && git push origin $branch 2>/dev/null" >/dev/null \
+    vps_git "$name" "$vps_dir" "git pull --rebase origin $branch 2>/dev/null && git push origin $branch 2>/dev/null" >/dev/null \
       && step "VPS rebased & pushed" || err "VPS push conflict -- resolve manually"
   else
     step "VPS committed & pushed"
@@ -317,7 +369,7 @@ sync_both() {
   # Step 3: pull both sides
   cd "$local_dir"
   git pull --ff-only origin "$branch" 2>/dev/null && ok "Mac synced" || err "Mac pull failed (merge needed?)"
-  vps_exec "cd \"$vps_dir\" && git pull --ff-only origin $branch 2>&1" >/dev/null && ok "VPS synced" || err "VPS pull failed"
+  vps_git "$name" "$vps_dir" "git pull --ff-only origin $branch 2>&1" >/dev/null && ok "VPS synced" || err "VPS pull failed"
 }
 
 # -- Sync all syncable repos bidirectionally --
@@ -328,6 +380,7 @@ sync_all() {
     [ ! -d "$local_dir/.git" ] && continue
     header "$name"
     sync_both "$name" "$local_dir" "$vps_dir" "$branch"
+    SYNCED_REPOS+=("$name")
   done
 }
 
@@ -409,8 +462,10 @@ if [ -n "$INTERACTIVE" ]; then
       clear
       echo -e "\n  ${C_BOLD}${C_CYAN}>> Sync All${C_RESET}\n"
       sync_all
+      post_sync_telegram
       echo ""
       echo -e "  ${C_DIM}press any key${C_RESET}"
+      SYNCED_REPOS=()
       read -r -n 1 -s
       continue
     fi
@@ -477,14 +532,21 @@ if [ -n "$INTERACTIVE" ]; then
     case "$action" in
       *"Sync both"*)
         sync_both "$name" "$local_dir" "$vps_dir" "$branch"
+        SYNCED_REPOS+=("$name")
+        post_sync_telegram
+        SYNCED_REPOS=()
         ;;
       *"Push"*"Mac"*)
         DIRECTION="push"
         sync_repo "$name" "$local_dir" "$vps_dir" "$branch"
+        post_sync_telegram
+        SYNCED_REPOS=()
         ;;
       *"Pull"*"VPS"*)
         DIRECTION="pull"
         sync_repo "$name" "$local_dir" "$vps_dir" "$branch"
+        post_sync_telegram
+        SYNCED_REPOS=()
         ;;
       *"Commit & push VPS"*)
         local vps_msg="${COMMIT_MSG:-chore: sync VPS changes}"
@@ -520,6 +582,58 @@ if [ -n "$INTERACTIVE" ]; then
 fi
 
 # ==========================================
+# POST-SYNC: Telegram command registration
+# ==========================================
+
+post_sync_telegram() {
+  # Determine which agents need Telegram command refresh
+  local agents_to_refresh=()
+  local refresh_all=false
+
+  for mapping in "${SKILL_REPO_MAP[@]}"; do
+    IFS='|' read -r repo agent_id <<< "$mapping"
+    for synced in "${SYNCED_REPOS[@]}"; do
+      if [ "$synced" = "$repo" ]; then
+        if [ "$agent_id" = "all" ]; then
+          refresh_all=true
+          break 2
+        fi
+        agents_to_refresh+=("$agent_id")
+      fi
+    done
+  done
+
+  if [ ${#agents_to_refresh[@]} -eq 0 ] && ! $refresh_all; then
+    return 0
+  fi
+
+  header "Telegram commands sync"
+  local register_script="/home/node/shared-skills/telegram-sync/scripts/register_commands.py"
+  local vps_args="--quiet"
+  [ -n "$DRY_RUN" ] && vps_args="--dry-run"
+
+  if $refresh_all; then
+    local result
+    result=$(vps_exec "python3 $register_script $vps_args 2>&1") || true
+    if [ -n "$result" ]; then
+      echo "$result" | while IFS= read -r line; do [ -n "$line" ] && echo -e "  ${C_CYAN}${line}${C_RESET}"; done
+    else
+      ok "All agents up to date"
+    fi
+  else
+    for agent_id in "${agents_to_refresh[@]}"; do
+      local result
+      result=$(vps_exec "python3 $register_script $agent_id $vps_args 2>&1") || true
+      if [ -n "$result" ]; then
+        echo "$result" | while IFS= read -r line; do [ -n "$line" ] && echo -e "  ${C_CYAN}${line}${C_RESET}"; done
+      else
+        ok "$agent_id: up to date"
+      fi
+    done
+  fi
+}
+
+# ==========================================
 # NON-INTERACTIVE MODE
 # ==========================================
 
@@ -552,5 +666,10 @@ for def in "${REPO_DEFS[@]}"; do
     sync_repo "$name" "$local_dir" "$vps_dir" "$branch"
   fi
 done
+
+# Post-sync: register new Telegram commands if skill repos were synced
+if [ -z "$STATUS_ONLY" ] && [ ${#SYNCED_REPOS[@]} -gt 0 ]; then
+  post_sync_telegram
+fi
 
 echo -e "\n  ${C_GREEN}${C_BOLD}Done${C_RESET}\n"

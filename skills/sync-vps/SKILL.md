@@ -24,8 +24,9 @@ ssh vps 'docker exec -u node openclaw-gateway bash -c "..."'
 | clawd | `~/Code/claude/clawd` | `/home/node/.openclaw/workspace` | yes |
 | gapibot | `~/Code/claude/gapibot` | `/home/node/.openclaw/workspace-gapibot` | yes |
 | gapila | `~/Code/nextjs/gapila` | `/home/node/projects/gapila` | yes |
+| shared-skills | `~/Code/claude/shared-skills` | `/home/node/shared-skills` | yes |
 
-All 7 repos are syncable (local Mac + VPS).
+All 8 repos are syncable (local Mac + VPS). `shared-skills` contains 24 skills shared across all agents via `extraDirs` in `openclaw.json`.
 
 ## Usage
 

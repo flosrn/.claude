@@ -1,11 +1,9 @@
 ---
 name: hetzner-vps
-description: "Complete reference for Flo's Hetzner VPS infrastructure (OpenClaw production). ALWAYS use when the user mentions \"vps\", \"hetzner\", \"openclaw\", \"serveur\", \"server\", \"gateway\", \"docker\" (in VPS context), \"monitoring\", \"traefik\", \"backup\", \"infrastructure\", \"telegram bot\", \"auto-update\", \"mise à jour\", \"deploy\", \"sandbox browser\", \"browser vps\", \"clawmetry\", \"beszel\", \"uptime kuma\", \"dozzle\", \"ntfy\", \"crowdsec\", \"xray\", \"vless\", \"ops.shipmate.bot\", \"oktsec\", \"pinchtab\", \"keychains\", \"clawsec\", \"soul-guardian\", \"agent security\", \"mission control\", \"clawbridge\", \"mengram\", \"mc.ops\", \"bridge.ops\", or asks about VPS configuration, deployment, architecture, or operational tasks. This skill is the single source of truth for the VPS — use it instead of guessing."
+description: "Complete operational reference for Flo's Hetzner VPS running the OpenClaw agent platform (5 Telegram bots, Docker stacks, monitoring, security). Single source of truth for VPS infrastructure — architecture, services, deployments, troubleshooting. Use this skill whenever working with the production server: deploying services, checking status, debugging containers, configuring Traefik, managing backups, reviewing security, updating memory backends (QMD/lossless-claw), or managing shared skills. Also use when discussing any ops.shipmate.bot service (Beszel, Dozzle, Grafana, ntfy, Clawmetry, Oktsec, PinchTab, Mission Control, ClawBridge), Docker operations on the VPS, the oc-ops sidecar, or Xray/VLESS proxy. This skill is authoritative — use it instead of guessing about VPS configuration."
 ---
 
 # Hetzner VPS — Infrastructure Reference
-
-This skill documents the complete architecture of Flo's production VPS on Hetzner Cloud. Read ARCHITECTURE.md for the full technical reference.
 
 ## Quick Reference
 
@@ -17,7 +15,7 @@ This skill documents the complete architecture of Flo's production VPS on Hetzne
 | **IP** | `204.168.138.162` |
 | **OS** | Ubuntu 24.04 LTS |
 | **Connect** | `mosh vps` (preferred — faster from Bangkok) |
-| **SSH** | `ssh root@204.168.138.162` (for non-interactive commands) |
+| **SSH** | `ssh root@204.168.138.162` |
 | **Tailscale IP** | `100.77.103.17` |
 | **Cost** | ~€17/mois |
 | **Domain** | `*.ops.shipmate.bot` (Cloudflare) |
@@ -36,76 +34,69 @@ Internet → Cloudflare (DDoS) → Traefik v3 (reverse proxy)
      oc-ops (sidecar) → wollomatic/socket-proxy → Docker daemon
 
  Host-level services (systemd, via Traefik host.docker.internal):
-     Oktsec v0.9.1      → oktsec.ops.shipmate.bot     (:8082 dashboard, :9090 MCP gateway)
-     PinchTab v0.8.2    → pinchtab.ops.shipmate.bot   (:9867 browser automation API)
-     Keychains Proxy    → keychains.ops.shipmate.bot   (:3100 credential delegation)
+     Oktsec v0.9.1      → oktsec.ops.shipmate.bot
+     PinchTab v0.8.2    → pinchtab.ops.shipmate.bot
+     Keychains Proxy    → keychains.ops.shipmate.bot
 
  Security skills (inside OpenClaw container):
      clawsec-suite v0.1.4, soul-guardian v0.0.2, openclaw-audit-watchdog v0.1.1
 ```
 
-## Directory Structure
+## Agents
 
-```
-/opt/docker/
-├── traefik/          # Reverse proxy + Let's Encrypt
-├── monitoring/       # Beszel, Uptime Kuma, Dozzle, Grafana, Loki, ntfy
-├── openclaw/         # Gateway + CLI + oc-ops sidecar
-├── services/         # Browser, Clawmetry, Keychains Proxy
-├── security/         # CrowdSec + Docker Socket Proxy
-├── scripts/          # backup.sh, health-check.sh, update.sh
-└── Makefile          # make up, make down, make logs, make backup
-```
+5 agents on the gateway, each with a distinct role:
+
+| Agent | Role | Telegram |
+|-------|------|----------|
+| **Claude Code** | Developer / executor | N/A (CLI) |
+| **Clawd** | Personal agent | @flosrn_ClawdBot |
+| **Gapibot** | PM for Gapila startup | @GapibotGapila_bot |
+| **Shipmate** | VPS infra architect | @Shipmatethebot |
+| **Teachers** | Language practice | @FloEnglishProf_bot / @FloChineseProf_bot |
+
+22 **shared-skills** loaded by all agents via `extraDirs` in `openclaw.json`. Agent-specific skills live in each workspace's `skills/` directory.
 
 ## Service URLs
 
-All services accessible via `*.ops.shipmate.bot` with Cloudflare Access (email OTP).
+All behind `*.ops.shipmate.bot` with Cloudflare Access (email OTP).
 
-| Service | URL | Purpose |
-|---------|-----|---------|
-| Grafana | `grafana.ops.shipmate.bot` | Dashboards + logs |
-| Beszel | `beszel.ops.shipmate.bot` | System + Docker metrics |
-| Uptime Kuma | `status.ops.shipmate.bot` | Uptime + SSL monitoring |
-| Dozzle | `logs.ops.shipmate.bot` | Real-time Docker logs |
-| ntfy | `ntfy.ops.shipmate.bot` | Push notifications |
-| Clawmetry | `clawmetry.ops.shipmate.bot` | Agent metrics |
-| Traefik | `traefik.ops.shipmate.bot` | Proxy dashboard |
-| Oktsec | `oktsec.ops.shipmate.bot` | AI agent runtime security (188 rules) |
-| PinchTab | `pinchtab.ops.shipmate.bot` | Browser automation bridge |
-| Keychains | `keychains.ops.shipmate.bot` | Credential delegation proxy |
-| Mission Control | `mc.ops.shipmate.bot` | Agent orchestration dashboard (Builderz v2.0, Docker) |
-| ClawBridge | `bridge.ops.shipmate.bot` | Mobile agent monitor (systemd :3200) |
+| Service | URL |
+|---------|-----|
+| Grafana | `grafana.ops.shipmate.bot` |
+| Beszel | `beszel.ops.shipmate.bot` |
+| Uptime Kuma | `status.ops.shipmate.bot` |
+| Dozzle | `logs.ops.shipmate.bot` |
+| ntfy | `ntfy.ops.shipmate.bot` |
+| Clawmetry | `clawmetry.ops.shipmate.bot` |
+| Traefik | `traefik.ops.shipmate.bot` |
+| Oktsec | `oktsec.ops.shipmate.bot` |
+| PinchTab | `pinchtab.ops.shipmate.bot` |
+| Keychains | `keychains.ops.shipmate.bot` |
+| Mission Control | `mc.ops.shipmate.bot` |
+| ClawBridge | `bridge.ops.shipmate.bot` |
 
 ## Common Operations
 
 ```bash
-# Connect to VPS (interactive — use mosh, faster from Bangkok)
+# Connect (interactive — use mosh from Bangkok)
 mosh vps
 
 # View all containers
 ssh root@204.168.138.162 'docker ps'
 
-# View logs of a service
+# View logs of a stack
 ssh root@204.168.138.162 'cd /opt/docker/openclaw && docker compose logs -f --tail=50'
 
 # Restart a stack
 ssh root@204.168.138.162 'cd /opt/docker/openclaw && docker compose up -d --force-recreate'
 
-# Run backup
+# Run backup / health check / update
 ssh root@204.168.138.162 '/opt/docker/scripts/backup.sh'
-
-# Health check
 ssh root@204.168.138.162 '/opt/docker/scripts/health-check.sh'
-
-# Update a stack (pull + recreate)
 ssh root@204.168.138.162 '/opt/docker/scripts/update.sh openclaw'
 
-# Host-level services (systemd)
+# Host services (systemd)
 ssh root@204.168.138.162 'systemctl status oktsec pinchtab keychains-proxy'
-ssh root@204.168.138.162 'systemctl restart oktsec'  # regenerates access code
-
-# Oktsec access code (changes on restart)
-ssh root@204.168.138.162 'journalctl -u oktsec --no-pager -n 30 | grep "Access code"'
 
 # Soul Guardian — check agent file integrity
 ssh root@204.168.138.162 'docker exec openclaw-gateway bash -c "cd /home/node/.openclaw/workspace && python3 skills/soul-guardian/scripts/soul_guardian.py check"'
@@ -113,24 +104,25 @@ ssh root@204.168.138.162 'docker exec openclaw-gateway bash -c "cd /home/node/.o
 
 ## When to Read More
 
-- **Full architecture details** → Read `ARCHITECTURE.md`
-- **Backup/restore procedures** → Read `scripts/backup.sh`
-- **Traefik label patterns** → Read `references/traefik-labels.md`
-- **Cloudflare Access setup** → Read `references/cloudflare-access.md`
-- **Docker daemon config** → Read `references/daemon.json`
+| Task | Read |
+|------|------|
+| Server specs, directory layout, Docker config, Traefik, installed software | `references/infrastructure.md` |
+| Service details (monitoring, host services, MC, ClawBridge, Clawmetry, browser, Xray) | `references/services.md` |
+| Security layers, firewall, CrowdSec, SSH, Docker socket | `references/security.md` |
+| Gateway self-update via oc-ops sidecar | `references/oc-ops.md` |
+| Memory search (QMD), context engine (lossless-claw) | `references/memory-stack.md` |
+| Shared skills architecture, sync, Telegram commands | `references/shared-skills.md` |
+| Traefik label patterns for new services | `references/traefik-labels.md` |
+| Cloudflare Access / Zero Trust setup | `references/cloudflare-access.md` |
+| Container diagnostic commands (inside gateway) | `references/container-diagnostics.md` |
+| Docker daemon config | `references/daemon.json` |
 
-## Migration Context
+## Secrets
 
-This VPS replaces the old RackNerd VPS (`192.210.136.198`). Migration plan is in Claude memory (`project_vps-migration-hetzner.md`). Key difference: the new architecture uses `/opt/docker/` structure with isolated stacks, Traefik reverse proxy, proper monitoring, and security hardening.
+All secrets in `.env` files per stack — never hardcoded.
 
-## Key Secrets Locations
-
-All secrets are in `.env` files per stack — never hardcoded in compose files.
-
-| Stack | .env path |
-|-------|-----------|
+| Stack | Path |
+|-------|------|
 | OpenClaw | `/opt/docker/openclaw/.env` |
 | Traefik | `/opt/docker/traefik/.env` |
 | Monitoring | `/opt/docker/monitoring/.env` |
-
-Cloudflare API token (DNS challenge) is in Traefik's `.env`.

@@ -17,8 +17,7 @@ telemetry/
 session-env/
 tool-usage.log
 
-# Symlinks to base config (managed by CWM)
-/scripts
+# Auto-managed by Claude Code
 plugins
 
 # Backups

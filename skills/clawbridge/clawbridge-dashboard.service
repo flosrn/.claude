@@ -1,0 +1,15 @@
+[Unit]
+Description=ClawBridge Dashboard Backend
+After=network.target
+
+[Service]
+Type=simple
+# User=root # Removed to allow user-level systemd
+WorkingDirectory=%h/skills/clawbridge
+ExecStart=/usr/bin/env node index.js
+EnvironmentFile=%h/skills/clawbridge/.env
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=ClawBridge Cloudflare Tunnel
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/skills/clawbridge
+ExecStart=%h/skills/clawbridge/cloudflared tunnel run
+EnvironmentFile=%h/skills/clawbridge/.env
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

@@ -10,6 +10,12 @@ Finisher role (no code changes).
 
 ## Sequence
 
+0. **Restore context from `.env.local`**
+   ```bash
+   source {output_dir}/.env.local
+   ```
+   This loads `{main_repo_path}`, `{worktree_path}`, `{task_id}`, `{pm}`, `{is_monorepo}`, etc.
+
 1. Mark 06 in_progress using `update-progress.sh 06`
 2. Verify git status: `git status --short`
 3. Commit remaining changes:

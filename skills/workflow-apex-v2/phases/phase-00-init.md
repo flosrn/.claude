@@ -191,10 +191,23 @@ This absolute path is used by all scripts (`update-progress.sh`, `update-state-s
 ```bash
 # Create worktree with feature branch from current HEAD
 git worktree add .worktrees/{task_id} -b {task_id}
-cd .worktrees/{task_id}
+{worktree_path} = {main_repo_path}/.worktrees/{task_id}
 ```
 
 All subsequent operations happen in the worktree. But output files remain in `{main_repo_path}/.claude/output/apex/`.
+
+**7a. Run worktree setup script (worktree mode only):**
+
+**This script handles EVERYTHING: .env copy, dependency install, port allocation, monorepo detection.**
+
+```bash
+bash {skill_dir}/scripts/setup-worktree.sh "{main_repo_path}" "{worktree_path}" "{task_id}"
+```
+
+Then cd into worktree:
+```bash
+cd {worktree_path}
+```
 
 **7b. Detect package manager (applies to ALL modes, not just worktree):**
 
@@ -204,18 +217,23 @@ if [ -f "bun.lockb" ] || [ -f "bun.lock" ]; then PM="bun"
 elif [ -f "pnpm-lock.yaml" ]; then PM="pnpm"
 elif [ -f "yarn.lock" ]; then PM="yarn"
 elif [ -f "package.json" ]; then PM="npm"
+else PM=""
 fi
 ```
 
 Set `{pm}` = detected package manager. Used by phases 03, 04, 05 for validation commands.
 
-**7c. Install dependencies (worktree mode only):**
+**7c. Install dependencies (worktree mode only, if not already done by setup-worktree.sh):**
 
-**IF worktree_mode = true AND package.json exists:**
+**IF worktree_mode = false AND package.json exists:** Skip (working directory already has dependencies).
 
+**IF worktree_mode = true:** Dependencies were already installed by `setup-worktree.sh` in step 7a. Verify:
 ```bash
-# Worktrees don't have node_modules — install deps
-{PM} install --frozen-lockfile 2>&1 | tail -5
+# Verify node_modules exists (setup-worktree.sh should have installed)
+if [ ! -d "node_modules" ]; then
+    echo "⚠ node_modules missing — running install"
+    {PM} install --frozen-lockfile 2>&1 | tail -5
+fi
 ```
 
 For non-Node.js projects:
@@ -223,8 +241,6 @@ For non-Node.js projects:
 - `go.mod` → `go mod download`
 - `Cargo.toml` → no install needed (cargo builds on demand)
 - `composer.json` → `composer install --no-dev`
-
-**IF worktree_mode = false:** Skip install (working directory already has dependencies).
 
 ### 8. Create Output Structure
 
@@ -293,8 +309,31 @@ LINKED_PRS={linked_prs}
 PM={pm}
 WORKTREE_PATH={worktree_path}
 MAIN_REPO_PATH={main_repo_path}
+IS_MONOREPO={is_monorepo}
+MAIN_APP={main_app}
 EOF
 ```
+
+**9b. Monorepo detection (worktree mode):**
+
+**IF worktree_mode = true AND (turbo.json exists OR pnpm-workspace.yaml exists):**
+
+Set `{is_monorepo}` = true.
+
+Detect main app package name:
+```bash
+{main_app} = $(node -e "console.log(require('./apps/web/package.json').name)" 2>/dev/null || echo "")
+```
+
+**CRITICAL for Turborepo monorepos in worktrees:**
+- NEVER use `pnpm dev` in a worktree — it launches ALL packages (44+)
+- ALWAYS use `--filter` to run only the target app and its dependencies:
+  ```bash
+  pnpm turbo dev --filter={main_app}...    # app + transitive deps
+  pnpm --filter {main_app} dev             # app only (fastest)
+  ```
+- Turbo 2.8+ shares cache automatically between main repo and worktrees (no config needed)
+- Do NOT symlink `node_modules` in pnpm monorepos — run `pnpm install --frozen-lockfile` instead
 
 ### 10. Route to Next Phase
 

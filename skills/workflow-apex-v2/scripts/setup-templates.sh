@@ -40,8 +40,10 @@ fi
 # Get current timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# Use current working directory as project root
-PROJECT_ROOT=$(pwd)
+# Use OUTPUT_BASE if provided (critical for worktree mode), else fall back to pwd
+# In worktree mode, pwd is the worktree — but output files must live in the main repo
+OUTPUT_BASE="${17:-}"
+PROJECT_ROOT="${OUTPUT_BASE:-$(pwd)}"
 APEX_OUTPUT_DIR="${PROJECT_ROOT}/.claude/output/apex"
 
 # Create apex output directory if it doesn't exist

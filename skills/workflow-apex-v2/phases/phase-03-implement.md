@@ -87,11 +87,26 @@ Execute approved plan and validate implementation in a single phase.
    | `Makefile` | Generic | — | `make lint` | `make test` | — |
 
 7. **Run validation suite (MUST ALL PASS)**
+
+   **IF worktree_mode = true:** Ensure CWD is the worktree before running validation:
+   ```bash
+   cd {worktree_path}  # Critical: validation must run from worktree, not main repo
+   ```
+
+   **IF monorepo (turbo.json exists):** Use `--filter` for validation:
+   ```bash
+   pnpm turbo typecheck --filter={main_app}...
+   pnpm turbo lint --filter={main_app}...
+   pnpm turbo test --filter={main_app}...
+   ```
+
+   **ELSE (single app):**
    - Typecheck: `{PM} run typecheck` (or stack equivalent)
    - Lint: `{PM} run lint --fix` (or stack equivalent)
    - Tests: `{PM} run test` (or stack equivalent)
    - Format: `{PM} run format` (if available)
-   - Fix any failures immediately and re-run until green
+
+   Fix any failures immediately and re-run until green
 
 ### Pre-existing Failures
 

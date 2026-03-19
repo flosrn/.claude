@@ -1667,21 +1667,48 @@
     },
     {
       "id": "328730b1-b4a3-4c41-a246-e6ca4012b913",
-      "cost": 8.415089850000001,
-      "date": "2026-03-18",
-      "duration_ms": 12668670,
+      "cost": 10.01934785,
+      "date": "2026-03-19",
+      "duration_ms": 94693675,
       "lines_added": 365,
       "lines_removed": 135,
       "cwd": "/Users/flo/Code/nextjs/lasdelaroute"
     },
     {
       "id": "09aef151-9ebf-4849-9779-9c24f6c9768c",
-      "cost": 5.515173899999997,
+      "cost": 6.248943899999998,
       "date": "2026-03-18",
-      "duration_ms": 2754367,
+      "duration_ms": 2955839,
       "lines_added": 750,
       "lines_removed": 83,
       "cwd": "/Users/flo/Code/claude"
+    },
+    {
+      "id": "8bc1fd73-977a-438d-845d-c4e7dc2dfd1b",
+      "cost": 3.6121487500000002,
+      "date": "2026-03-18",
+      "duration_ms": 1462054,
+      "lines_added": 0,
+      "lines_removed": 0,
+      "cwd": "/Users/flo/Code/claude"
+    },
+    {
+      "id": "dada427f-5ceb-4a81-82e6-0fdb84643fc0",
+      "cost": 40.23074775,
+      "date": "2026-03-19",
+      "duration_ms": 94477598,
+      "lines_added": 726,
+      "lines_removed": 185,
+      "cwd": "/Users/flo/Code/claude/openclaw-config"
+    },
+    {
+      "id": "959465bd-f98f-4168-bea3-e78c9216c6c0",
+      "cost": 7.308320999999997,
+      "date": "2026-03-19",
+      "duration_ms": 4458597,
+      "lines_added": 60,
+      "lines_removed": 23,
+      "cwd": "/Users/flo/Code/nextjs/gapila"
     }
   ]
 }

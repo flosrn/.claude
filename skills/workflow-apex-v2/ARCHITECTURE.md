@@ -304,6 +304,7 @@ For context optimization in 1M token environment:
 - NEVER create worktree inside the project folder → use `{worktree_root}` (central)
 - NEVER symlink entire `.claude/` directory → only symlink config subdirs
 - NEVER read worktree files after removal → collect data before `git worktree remove`
+- NEVER spawn Agent/Explore subagents to verify changes in worktree mode → they resolve paths to main repo, not worktree (claude-code bug #29083). Use `git diff main..HEAD` or read files directly with absolute worktree paths instead.
 - NEVER run without `OPENCLAW_ROOT` → fallback `.` creates worktree inside project
 - NEVER forget tmux cleanup → `tmux kill-session -t apex-v2-{feature_name}`
 - NEVER skip phase-00-init → flags and state initialization are non-negotiable

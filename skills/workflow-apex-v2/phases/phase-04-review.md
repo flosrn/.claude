@@ -21,7 +21,8 @@ Conduct adversarial code review and resolve Real findings in a single phase.
 
 2. **Gather implemented changes**
    - Read `{output_dir}/03-implement.md` → list of modified files
-   - Run `git status` to confirm current state
+   - Run `git diff main..HEAD --stat` to confirm current state (preferred over `git status` — works correctly in worktrees)
+   - **If worktree_mode:** DO NOT spawn Agent/Explore subagents for file reading — they resolve paths to main repo, not the worktree (claude-code bug #29083). Instead, read files directly with the Read tool using absolute worktree paths.
    - Prepare file list for review team
 
 3. **Conduct adversarial review**

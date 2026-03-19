@@ -17,10 +17,11 @@ REPO_DEFS=(
   "shipmate-agent|$HOME/Code/claude/shipmate-agent|/home/node/.openclaw/workspace-shipmate|main"
   "shipmate-bot|$HOME/Code/claude/shipmate-bot|/home/node/projects/shipmate-bot|main"
   "shipmate|$HOME/Code/claude/shipmate|/home/node/projects/shipmate|main"
-  "clawd|$HOME/Code/claude/clawd|/home/node/.openclaw/workspace|master"
-  "gapibot|$HOME/Code/claude/gapibot|/home/node/.openclaw/workspace-gapibot|master"
+  "clawd|$HOME/Code/claude/clawd|/home/node/.openclaw/workspace|main"
+  "gapibot|$HOME/Code/claude/gapibot|/home/node/.openclaw/workspace-gapibot|main"
   "gapila|$HOME/Code/nextjs/gapila|/home/node/projects/gapila|main"
-  "shared-skills|$HOME/Code/claude/shared-skills|/home/node/shared-skills|master"
+  "shared-skills|$HOME/Code/claude/shared-skills|/home/node/shared-skills|main"
+  "openclaw-config|$HOME/Code/claude/openclaw-config|/opt/docker/openclaw|main"
 )
 
 # Repos that contain skills → which agents they affect
@@ -83,15 +84,16 @@ vps_exec() {
   echo "$1" | ssh "$VPS" "docker exec -i -u node $CONTAINER bash" 2>/dev/null
 }
 
-# For repos mounted read-only in container (e.g. shared-skills), run on host
+# For repos that need git commands on the host instead of in-container
 vps_host_exec() {
   ssh "$VPS" "bash -c '$1'" 2>/dev/null
 }
 
-# Repos with host-side VPS paths (mounted :ro in container, git ops must run on host)
+# Repos with host-side VPS paths (bind-mounted rw, but git runs on host for simplicity)
 # Format: repo_name|host_vps_path
 HOST_REPOS=(
   "shared-skills|/root/shared-skills"
+  "openclaw-config|/root/openclaw-config"
 )
 
 # Resolve host path for a repo (returns empty if repo uses container)
@@ -147,7 +149,7 @@ collect_status() {
 
     if [ -n "$local_dir" ] && [ -d "$local_dir/.git" ]; then
       local lst
-      lst=$(cd "$local_dir" && git status --short 2>/dev/null)
+      lst=$(cd "$local_dir" && git status --short --ignore-submodules=dirty 2>/dev/null)
       REPO_LOCAL_STATUS+=("$lst")
       REPO_LOCAL_COUNT+=("$(count_changes "$lst")")
       REPO_LOCAL_BRANCH+=("$(cd "$local_dir" && git branch --show-current 2>/dev/null)")
@@ -306,8 +308,8 @@ sync_repo() {
 
   if [ -n "$DRY_RUN" ]; then
     local lst vst
-    lst=$(cd "$local_dir" && git status --short 2>/dev/null)
-    vst=$(vps_git "$name" "$vps_dir" "git status --short 2>/dev/null" || echo "(unreachable)")
+    lst=$(cd "$local_dir" && git status --short --ignore-submodules=dirty 2>/dev/null)
+    vst=$(vps_git "$name" "$vps_dir" "git status --short --ignore-submodules=dirty 2>/dev/null" || echo "(unreachable)")
     [ -n "$lst" ] && echo -e "  ${C_YELLOW}Mac:${C_RESET}" && echo "$lst" | while read -r l; do echo "      $l"; done || info "Mac: clean"
     [ -n "$vst" ] && ! echo "$vst" | grep -q "unreachable" && echo -e "  ${C_YELLOW}VPS:${C_RESET}" && echo "$vst" | while read -r l; do echo "      $l"; done || info "VPS: clean"
     return 0
@@ -316,7 +318,7 @@ sync_repo() {
   case "$DIRECTION" in
     push)
       cd "$local_dir"
-      if [ -n "$(git status --porcelain)" ]; then
+      if [ -n "$(git status --porcelain --ignore-submodules=dirty)" ]; then
         git add -A
         git commit -m "${COMMIT_MSG:-chore: sync local changes}" --no-verify 2>/dev/null || true
         step "Mac committed"
@@ -346,7 +348,7 @@ sync_both() {
 
   # Step 1: commit + push Mac
   cd "$local_dir"
-  if [ -n "$(git status --porcelain)" ]; then
+  if [ -n "$(git status --porcelain --ignore-submodules=dirty)" ]; then
     git add -A
     git commit -m "${COMMIT_MSG:-chore: sync local changes}" --no-verify 2>/dev/null || true
     step "Mac committed"
@@ -393,7 +395,7 @@ show_status() {
 
   if [ -n "$local_dir" ] && [ -d "$local_dir/.git" ]; then
     local lst lc lb
-    lst=$(cd "$local_dir" && git status --short 2>/dev/null)
+    lst=$(cd "$local_dir" && git status --short --ignore-submodules=dirty 2>/dev/null)
     lc=$(count_changes "$lst"); lb=$(cd "$local_dir" && git branch --show-current 2>/dev/null)
     if [ "$lc" -eq 0 ]; then ok "Mac: clean ($lb)"
     else warn "Mac: $lc changes ($lb)"; echo "$lst" | head -10 | while read -r l; do echo "      $l"; done; fi

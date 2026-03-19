@@ -294,6 +294,14 @@ For context optimization in 1M token environment:
 
 ---
 
+## User Interaction Rule
+
+**ALWAYS use the `AskUserQuestion` tool when asking the user a question that requires a response.** Never display a question as plain text and wait — Claude Code cannot "wait" for a text reply. The AskUserQuestion tool creates an interactive prompt that blocks until the user responds.
+
+Applies to: plan approval checkpoint, interactive flag configuration (`-i`), content isolation confirmation, and any other decision point.
+
+---
+
 ## Anti-Patterns
 
 - NEVER use `claude-run -p` → use tmux + claude interactive for remote-control
@@ -307,6 +315,7 @@ For context optimization in 1M token environment:
 - NEVER spawn Agent/Explore subagents to verify changes in worktree mode → they resolve paths to main repo, not worktree (claude-code bug #29083). Use `git diff main..HEAD` or read files directly with absolute worktree paths instead.
 - NEVER run without `OPENCLAW_ROOT` → fallback `.` creates worktree inside project
 - NEVER forget tmux cleanup → `tmux kill-session -t apex-v2-{feature_name}`
+- NEVER display a question as plain text when expecting a user response → use `AskUserQuestion` tool (text output cannot block for input)
 - NEVER skip phase-00-init → flags and state initialization are non-negotiable
 - NEVER mix single-session and pause modes in one task → pick one mode, commit to it
 - NEVER load multiple phase files in one session → load sequentially, never in parallel

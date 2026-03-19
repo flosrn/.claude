@@ -157,17 +157,11 @@ Plan saved to: {output_dir}/02-plan.md
 
 **IF auto_mode = false (default):**
 
-Ask user via markdown prompt:
+**CRITICAL: Use the `AskUserQuestion` tool — do NOT just print text.**
 
-```
-## Approval Required
-
-✏️ **Plan ready.** What would you like to do?
-
-- **✅ Approve** — Proceed to implementation
-- **✏️ Edit plan** — Describe changes needed
-- **❌ Cancel** — Stop workflow
-```
+Use `AskUserQuestion` with:
+- **question:** "Plan ready — approve, edit, or cancel?"
+- **options:** `["Approve — proceed to implementation", "Edit plan — describe changes needed", "Cancel — stop workflow"]`
 
 **Response handling:**
 
@@ -175,7 +169,7 @@ Ask user via markdown prompt:
 → proceed to phase-03-implement
 
 **If "Edit plan":**
-1. Use AskUserQuestion: "What would you like to change?" (free text)
+1. Use `AskUserQuestion` (free text, no options): "What would you like to change?"
 2. Apply requested changes to `{output_dir}/02-plan.md`
 3. Show updated plan summary (changed sections only, not full re-display):
    ```
@@ -183,7 +177,7 @@ Ask user via markdown prompt:
    - {changed_section_1}: {brief_summary}
    - {changed_section_2}: {brief_summary}
    ```
-4. Re-present checkpoint: "Updated plan. Approve?"
+4. Use `AskUserQuestion` again: "Updated plan. Approve?" with options `["Approve", "Edit again", "Cancel"]`
 5. If user approves → proceed to phase-03
 6. If user wants more edits → loop back to step 1
 

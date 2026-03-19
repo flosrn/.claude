@@ -66,7 +66,8 @@ Conduct adversarial code review and resolve Real findings in a single phase.
 
 5. **Get human checkpoint** (if not auto_mode)
    - Show findings table
-   - Ask: "Proceed with auto-fixes for all Real findings?"
+   - Use `AskUserQuestion` tool with question: "Proceed with auto-fixes for all Real findings?" and options: `["Yes — fix all Real findings", "Select which to fix", "Skip fixes — keep as-is"]`
+   - If user selects → use `AskUserQuestion` (free text) to ask which findings to fix
    - If user rejects → update severity/validity → proceed only for approved
 
 ---

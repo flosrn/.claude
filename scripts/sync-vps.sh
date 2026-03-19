@@ -161,15 +161,25 @@ collect_status() {
     fi
   done
 
-  local vps_script=""
+  # Build two scripts: one for container repos, one for host repos
+  local container_script="" host_script=""
   for def in "${REPO_DEFS[@]}"; do
     IFS='|' read -r name local_dir vps_dir branch <<< "$def"
-    vps_script+="echo \"===REPO:${name}===\"; "
-    vps_script+="if cd \"${vps_dir}\" 2>/dev/null; then echo \"BRANCH:\$(git branch --show-current 2>/dev/null)\"; git status --short 2>/dev/null; else echo \"UNREACHABLE\"; fi; "
+    local host_path
+    host_path=$(get_host_path "$name") || true
+    if [ -n "$host_path" ]; then
+      host_script+="echo \"===REPO:${name}===\"; "
+      host_script+="if cd \"${host_path}\" 2>/dev/null; then echo \"BRANCH:\$(git branch --show-current 2>/dev/null)\"; git status --short 2>/dev/null; else echo \"UNREACHABLE\"; fi; "
+    else
+      container_script+="echo \"===REPO:${name}===\"; "
+      container_script+="if cd \"${vps_dir}\" 2>/dev/null; then echo \"BRANCH:\$(git branch --show-current 2>/dev/null)\"; git status --short 2>/dev/null; else echo \"UNREACHABLE\"; fi; "
+    fi
   done
 
-  local vps_raw
-  vps_raw=$(echo "$vps_script" | ssh "$VPS" "docker exec -i -u node $CONTAINER bash" 2>/dev/null) || vps_raw="UNREACHABLE"
+  local vps_raw=""
+  [ -n "$container_script" ] && vps_raw+=$(echo "$container_script" | ssh "$VPS" "docker exec -i -u node $CONTAINER bash" 2>/dev/null) || true
+  vps_raw+=$'\n'
+  [ -n "$host_script" ] && vps_raw+=$(ssh "$VPS" "bash -c '$host_script'" 2>/dev/null) || true
 
   local current_repo="" current_branch="" current_status=""
   while IFS= read -r line; do
@@ -403,8 +413,8 @@ show_status() {
   else info "Mac: (VPS-only)"; fi
 
   local vst vc vb
-  vst=$(vps_exec "cd \"$vps_dir\" && git status --short 2>/dev/null" || echo "(unreachable)")
-  vc=$(count_changes "$vst"); vb=$(vps_exec "cd \"$vps_dir\" && git branch --show-current 2>/dev/null" || echo "?")
+  vst=$(vps_git "$name" "$vps_dir" "git status --short 2>/dev/null" || echo "(unreachable)")
+  vc=$(count_changes "$vst"); vb=$(vps_git "$name" "$vps_dir" "git branch --show-current 2>/dev/null" || echo "?")
   if echo "$vst" | grep -q "unreachable"; then err "VPS: unreachable"
   elif [ "$vc" -eq 0 ]; then ok "VPS: clean ($vb)"
   else warn "VPS: $vc changes ($vb)"; echo "$vst" | head -10 | while read -r l; do echo "      $l"; done; fi

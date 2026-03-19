@@ -31,6 +31,9 @@ teams/
 # MCP cache
 mcp-needs-auth-cache.json
 
+# Auto-generated data
+scripts/statusline/data/
+
 # OS files
 .DS_Store
 

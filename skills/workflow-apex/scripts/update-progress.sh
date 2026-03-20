@@ -20,7 +20,7 @@ fi
 
 # Find context file — use OUTPUT_BASE (main repo) not pwd (may be worktree)
 PROJECT_ROOT="$OUTPUT_BASE"
-CONTEXT_FILE="${PROJECT_ROOT}/.claude/output/apex/${TASK_ID}/00-context.md"
+CONTEXT_FILE="${PROJECT_ROOT}/.claude/output/apex-v2/${TASK_ID}/00-context.md"
 
 # Validate context file exists
 if [[ ! -f "$CONTEXT_FILE" ]]; then

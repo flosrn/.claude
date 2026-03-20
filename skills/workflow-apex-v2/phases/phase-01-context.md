@@ -211,17 +211,6 @@ Add inferred criteria to context file.
 bash {skill_dir}/scripts/update-progress.sh "{TASK_ID}" "01" "context" "complete"
 ```
 
-### 8. Handle Phase Boundary
+### 8. Proceed to Phase 02
 
-**IF pause_mode = true:**
-
-```bash
-bash {skill_dir}/scripts/session-boundary.sh "{TASK_ID}"
-echo "ℹ️ Session paused. Resume with: /apex -r {TASK_ID}"
-```
-
-STOP execution. User resumes next session.
-
-**IF pause_mode = false (default):**
-
-Proceed directly to phase-02-plan.
+**Always proceed to phase-02-plan** — phases 00+01+02 run together as a single research block, regardless of pause_mode. The first pause point is after the plan checkpoint (end of phase 02).

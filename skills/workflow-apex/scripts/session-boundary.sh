@@ -32,8 +32,8 @@ if [[ "$BRANCH_MODE" == "true" && "$COMMIT_FLAG" == "commit" ]]; then
         echo "ℹ️  No changes to commit"
     else
         git add -u 2>/dev/null || true
-        git commit -m "apex(${TASK_ID}): step ${STEP_NUM} - ${STEP_NAME}" 2>/dev/null || true
-        echo "✓ Committed: apex(${TASK_ID}): step ${STEP_NUM} - ${STEP_NAME}"
+        git commit -m "apex-v2(${TASK_ID}): phase ${STEP_NUM} - ${STEP_NAME}" 2>/dev/null || true
+        echo "✓ Committed: apex-v2(${TASK_ID}): phase ${STEP_NUM} - ${STEP_NAME}"
     fi
 fi
 
@@ -58,10 +58,10 @@ fi
 # Step 4: Display session boundary
 echo ""
 echo "═══════════════════════════════════════"
-echo "  STEP ${STEP_NUM} COMPLETE: ${STEP_NAME}"
+echo "  PHASE ${STEP_NUM} COMPLETE: ${STEP_NAME}"
 echo "═══════════════════════════════════════"
 echo "  ${SUMMARY}"
-echo "  Resume: /apex -r ${TASK_ID}"
+echo "  Resume: /apex-v2 -p -r ${TASK_ID}"
 echo "  Next: Step ${NEXT_STEP_NUM} - ${NEXT_STEP_DESC}"
 echo "═══════════════════════════════════════"
 echo ""

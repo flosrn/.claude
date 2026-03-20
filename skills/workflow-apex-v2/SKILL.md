@@ -95,7 +95,7 @@ Standard:    00 → 01 → 02 → [checkpoint] → 03 → [complete]
 Review:      00 → 01 → 02 → [checkpoint] → 03 → 04 → [complete]
 Full:        00 → 01 → 02 → [checkpoint] → 03 → 04 → 05 → 06 → [complete]
 Team:        00 → 01(team) → 02 → [checkpoint] → 03(team) → 04(team) → 06 → [complete]
-Pause Mode:  00 → 01 → STOP → [user resumes] → 02 → STOP → [user resumes] → 03 → ...
+Pause Mode:  00 → 01 → 02 → [plan checkpoint] → STOP → [user resumes] → 03 → STOP → ...
 ```
 
 ---

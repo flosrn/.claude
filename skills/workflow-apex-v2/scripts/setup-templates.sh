@@ -44,7 +44,7 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # In worktree mode, pwd is the worktree — but output files must live in the main repo
 OUTPUT_BASE="${17:-}"
 PROJECT_ROOT="${OUTPUT_BASE:-$(pwd)}"
-APEX_OUTPUT_DIR="${PROJECT_ROOT}/.claude/output/apex"
+APEX_OUTPUT_DIR="${PROJECT_ROOT}/.claude/output/apex-v2"
 
 # Create apex output directory if it doesn't exist
 mkdir -p "$APEX_OUTPUT_DIR"

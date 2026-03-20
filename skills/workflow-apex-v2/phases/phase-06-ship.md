@@ -65,7 +65,8 @@ Finisher role (no code changes).
 
 7. IF pr_mode: **Optional CI monitoring**
    - Check if CronCreate tool is available
-   - If available, propose: "Monitor CI status? (polls every 5 min, auto-stops on green/red)"
+   - If available AND auto_mode=false: use `AskUserQuestion` with question "Monitor CI status? (polls every 5 min, auto-stops on green/red)" and options `["Yes — start monitoring", "No — skip"]`
+   - If auto_mode=true: auto-approve CI monitoring
    - If user approves (or auto_mode=true):
      ```
      CronCreate(

@@ -195,12 +195,13 @@ Use `AskUserQuestion` with:
 
 **IF pause_mode = true:**
 
+After plan approval, STOP execution and display resume command:
+
 ```bash
 bash {skill_dir}/scripts/session-boundary.sh "{TASK_ID}"
-echo "ℹ️ Session paused. Resume with: /apex -r {TASK_ID}"
 ```
 
-STOP execution. User resumes next session.
+User kills the session and resumes later with `/apex-v2 -p -r {TASK_ID}`.
 
 **IF pause_mode = false (default):**
 

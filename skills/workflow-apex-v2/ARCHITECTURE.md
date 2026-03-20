@@ -11,9 +11,10 @@ Single-Session (Default):
   Load phase-00 → 01 → 02 → [checkpoint] → 03 → 04(if -x) → 05(if -t) → 06(if -pr) → [complete]
 
 Pause Mode (-p):
-  Session 1:  phase-00 → phase-01 → STOP (resume command shown)
-  Session 2:  phase-02 → STOP
-  Session 3:  phase-03 → [complete]
+  Session 1:  phase-00 → phase-01 → phase-02 → [plan checkpoint] → STOP
+  Session 2:  phase-03 → STOP
+  Session 3:  phase-04(if -x) → STOP
+  ...
 ```
 
 ### Why Single-Session by Default

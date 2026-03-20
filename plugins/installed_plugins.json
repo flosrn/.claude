@@ -24,10 +24,10 @@
     "frontend-design@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/frontend-design/d53f6ca4cdb0",
-        "version": "d53f6ca4cdb0",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/frontend-design/b664e152af57",
+        "version": "b664e152af57",
         "installedAt": "2026-02-13T02:59:12.449Z",
-        "lastUpdated": "2026-03-19T06:08:18.989Z",
+        "lastUpdated": "2026-03-20T13:07:18.055Z",
         "gitCommitSha": "2cd88e7947b7382e045666abee790c7f55f669f3"
       }
     ],
@@ -54,20 +54,20 @@
     "code-review@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/code-review/d53f6ca4cdb0",
-        "version": "d53f6ca4cdb0",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/code-review/b664e152af57",
+        "version": "b664e152af57",
         "installedAt": "2026-02-13T03:09:16.560Z",
-        "lastUpdated": "2026-03-19T06:08:18.988Z",
+        "lastUpdated": "2026-03-20T13:07:18.054Z",
         "gitCommitSha": "2cd88e7947b7382e045666abee790c7f55f669f3"
       }
     ],
     "plugin-dev@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/plugin-dev/d53f6ca4cdb0",
-        "version": "d53f6ca4cdb0",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/plugin-dev/b664e152af57",
+        "version": "b664e152af57",
         "installedAt": "2026-02-13T03:15:28.482Z",
-        "lastUpdated": "2026-03-19T06:08:19.015Z",
+        "lastUpdated": "2026-03-20T13:07:18.074Z",
         "gitCommitSha": "2cd88e7947b7382e045666abee790c7f55f669f3"
       }
     ],

@@ -1,20 +1,220 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "$schema": "https:\/\/json.schemastore.org\/claude-code-settings.json",
+  "allowedDirectories": [
+    "\/home\/node",
+    "\/home\/node\/.openclaw",
+    "\/home\/node\/.openclaw\/code-projects",
+    "\/home\/node\/.openclaw\/code-projects\/plans-config-ssot",
+    "\/home\/node\/.openclaw\/workspace",
+    "\/home\/node\/projects\/gapila",
+    "\/tmp"
+  ],
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "marketing-skills@marketingskills": false,
+    "plugin-dev@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true
+  },
   "env": {
-    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
-    "MAX_THINKING_TOKENS": "31999",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "90",
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_CODE_EFFORT_LEVEL": "high",
-    "MAX_MCP_OUTPUT_TOKENS": "50000",
+    "ALLOW_GIT_COMMIT": "1",
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
     "BASH_MAX_TIMEOUT_MS": "600000",
-    "GIT_AUTHOR_NAME": "Claude Code",
-    "GIT_COMMITTER_NAME": "Claude Code",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "90",
+    "CLAUDE_CODE_EFFORT_LEVEL": "high",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
     "GIT_AUTHOR_EMAIL": "flosrn@users.noreply.github.com",
+    "GIT_AUTHOR_NAME": "Claude Code",
     "GIT_COMMITTER_EMAIL": "flosrn@users.noreply.github.com",
-    "ALLOW_GIT_COMMIT": "1",
-    "RIPGREP_CONFIG_PATH": "/Users/flo/.config/ripgrep/.emptyripgreprc"
+    "GIT_COMMITTER_NAME": "Claude Code",
+    "MAX_MCP_OUTPUT_TOKENS": "50000",
+    "MAX_THINKING_TOKENS": "31999",
+    "RIPGREP_CONFIG_PATH": "\/Users\/flo\/.config\/ripgrep\/.emptyripgreprc"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "command": "$HOME\/.claude\/hooks\/notify-openclaw.sh needs-attention",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "$HOME\/.claude\/hooks\/apex-step-done.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "$HOME\/.claude\/bin\/run-hook hook-ts-quality-gate.ts",
+            "type": "command"
+          }
+        ],
+        "matcher": "Edit|Write|NotebookEdit"
+      },
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "auto"
+      },
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "manual"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "$HOME\/.claude\/bin\/run-hook command-validator\/src\/cli.ts",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "$HOME\/.claude\/bin\/run-hook hook-git-context.ts",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      },
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "$HOME\/.claude\/bin\/run-hook hook-completion-handler.ts",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      },
+      {
+        "hooks": [
+          {
+            "command": "$HOME\/.claude\/bin\/run-hook hook-typecheck-stop.ts",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      },
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "command": "$HOME\/.claude\/hooks\/notify-openclaw.sh task-completed",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/notchi-hook.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ]
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -51,129 +251,23 @@
       "mcp__playwright__browser_take_screenshot",
       "mcp__exa__get_code_context_exa"
     ],
-    "deny": [],
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "bypassPermissions",
+    "deny": []
   },
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-git-context.ts"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/bin/run-hook command-validator/src/cli.ts"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/apex-step-done.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write|NotebookEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-ts-quality-gate.ts"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-completion-handler.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-typecheck-stop.ts"
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/notify-openclaw.sh task-completed"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/notify-openclaw.sh needs-attention"
-          }
-        ]
-      }
-    ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "$HOME/.claude/bin/run-hook statusline/src/index.ts",
-    "padding": 0
-  },
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "claude-code-setup@claude-plugins-official": true,
-    "code-review@claude-plugins-official": true,
-    "plugin-dev@claude-plugins-official": true,
-    "marketing-skills@marketingskills": false,
-    "superpowers@claude-plugins-official": false
-  },
-  "spinnerTipsEnabled": false,
-  "alwaysThinkingEnabled": true,
   "skipDangerousModePermissionPrompt": true,
+  "spinnerTipsEnabled": false,
+  "statusLine": {
+    "command": "$HOME\/.claude\/bin\/run-hook statusline\/src\/index.ts",
+    "padding": 0,
+    "type": "command"
+  },
   "trustedDirectories": [
-    "/home/node",
-    "/home/node/.openclaw",
-    "/home/node/.openclaw/code-projects",
-    "/home/node/.openclaw/code-projects/plans-config-ssot",
-    "/home/node/.openclaw/workspace",
-    "/home/node/projects/gapila",
-    "/tmp"
-  ],
-  "allowedDirectories": [
-    "/home/node",
-    "/home/node/.openclaw",
-    "/home/node/.openclaw/code-projects",
-    "/home/node/.openclaw/code-projects/plans-config-ssot",
-    "/home/node/.openclaw/workspace",
-    "/home/node/projects/gapila",
-    "/tmp"
-  ],
-  "effortLevel": "low"
+    "\/home\/node",
+    "\/home\/node\/.openclaw",
+    "\/home\/node\/.openclaw\/code-projects",
+    "\/home\/node\/.openclaw\/code-projects\/plans-config-ssot",
+    "\/home\/node\/.openclaw\/workspace",
+    "\/home\/node\/projects\/gapila",
+    "\/tmp"
+  ]
 }

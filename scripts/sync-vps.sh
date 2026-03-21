@@ -640,6 +640,45 @@ if [ -n "$INTERACTIVE" ]; then
 fi
 
 # ==========================================
+# POST-SYNC: Symlink shared-skills → ~/.claude/skills/
+# ==========================================
+
+post_sync_symlinks() {
+  # Only run when shared-skills was synced
+  local shared_synced=false
+  for synced in "${SYNCED_REPOS[@]}"; do
+    [ "$synced" = "shared-skills" ] && shared_synced=true && break
+  done
+  $shared_synced || return 0
+
+  local shared_dir="$HOME/Code/claude/shared-skills"
+  local skills_dir="$HOME/.claude/skills"
+  local created=0
+
+  for skill_dir in "$shared_dir"/*/; do
+    local name
+    name=$(basename "$skill_dir")
+    [[ "$name" == .* ]] && continue
+    [ ! -f "$skill_dir/SKILL.md" ] && continue
+
+    if [ ! -L "$skills_dir/$name" ]; then
+      if [ -n "$DRY_RUN" ]; then
+        echo -e "  ${C_YELLOW}Would symlink:${C_RESET} $name"
+        ((created++))
+      else
+        ln -s "$skill_dir" "$skills_dir/$name"
+        ((created++))
+      fi
+    fi
+  done
+
+  if [ "$created" -gt 0 ]; then
+    header "Skill symlinks"
+    ok "created $created new symlink(s) in ~/.claude/skills/"
+  fi
+}
+
+# ==========================================
 # POST-SYNC: Telegram command registration
 # ==========================================
 
@@ -733,6 +772,7 @@ done
 # Post-sync: register new Telegram commands if skill repos were synced
 if [ -z "$STATUS_ONLY" ] && [ ${#SYNCED_REPOS[@]} -gt 0 ]; then
   post_sync_telegram
+  post_sync_symlinks
 fi
 
 echo -e "\n  ${C_GREEN}${C_BOLD}Done${C_RESET}\n"

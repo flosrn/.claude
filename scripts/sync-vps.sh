@@ -16,7 +16,6 @@ REPO_DEFS=(
   "dot-claude|$HOME/.claude|/home/node/.claude|main"
   "shipmate-agent|$HOME/Code/claude/shipmate-agent|/home/node/.openclaw/workspace-shipmate|main"
   "shipmate-bot|$HOME/Code/claude/shipmate-bot|/home/node/projects/shipmate-bot|main"
-  "shipmate|$HOME/Code/claude/shipmate|/home/node/projects/shipmate|main"
   "clawd|$HOME/Code/claude/clawd|/home/node/.openclaw/workspace|main"
   "gapibot|$HOME/Code/claude/gapibot|/home/node/.openclaw/workspace-gapibot|main"
   "gapila|$HOME/Code/nextjs/gapila|/home/node/projects/gapila|main"

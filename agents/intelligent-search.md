@@ -3,7 +3,7 @@ name: intelligent-search
 description: Intelligent multi-provider web search with LLM-based routing. Use for deep research, privacy-sensitive queries, complex reasoning, or when you need the best provider for the job. Routes to Tavily (quick), Exa (deep), Brave (privacy), or Perplexity (reasoning).
 color: blue
 tools: mcp__omnisearch__web_search, mcp__omnisearch__ai_search, mcp__omnisearch__github_search
-model: sonnet
+model: haiku
 permissionMode: plan
 ---
 

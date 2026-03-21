@@ -86,7 +86,28 @@ vps_exec() {
 
 # For repos that need git commands on the host instead of in-container
 vps_host_exec() {
-  ssh "$VPS" "bash -c '$1'" 2>/dev/null
+  ssh "$VPS" "bash -c '$1'" 2>&1
+}
+
+# Ensure VPS host has git config (survives VPS recreation)
+ensure_vps_git_config() {
+  local needs_fix
+  needs_fix=$(ssh "$VPS" 'bash -c "
+    ok=1
+    git config --global user.name  >/dev/null 2>&1 || ok=0
+    git config --global user.email >/dev/null 2>&1 || ok=0
+    git config --global pull.rebase >/dev/null 2>&1 || ok=0
+    echo \$ok
+  "' 2>/dev/null)
+
+  if [ "$needs_fix" != "1" ]; then
+    ssh "$VPS" 'bash -c "
+      git config --global user.name \"Flo\" 2>/dev/null
+      git config --global user.email \"florian.music.music@gmail.com\" 2>/dev/null
+      git config --global pull.rebase false 2>/dev/null
+    "' 2>/dev/null
+    info "VPS git config initialized"
+  fi
 }
 
 # Repos with host-side VPS paths (bind-mounted rw, but git runs on host for simplicity)
@@ -122,6 +143,31 @@ vps_git() {
   else
     vps_exec "cd \"$vps_dir\" && $cmd"
   fi
+}
+
+# Smart pull on VPS: try ff-only first, fallback to rebase, show errors
+vps_smart_pull() {
+  local name="$1" vps_dir="$2" branch="$3"
+  local pull_out
+
+  # Try fast-forward first (cleanest)
+  pull_out=$(vps_git "$name" "$vps_dir" "git pull --ff-only origin $branch 2>&1")
+  if [ $? -eq 0 ]; then
+    ok "VPS pulled"
+    return 0
+  fi
+
+  # If ff-only failed, try rebase (handles simple divergence)
+  pull_out=$(vps_git "$name" "$vps_dir" "git pull --rebase origin $branch 2>&1")
+  if [ $? -eq 0 ]; then
+    ok "VPS pulled (rebased)"
+    return 0
+  fi
+
+  # Both failed — show the actual error
+  err "VPS pull failed:"
+  echo "$pull_out" | while read -r l; do echo "      $l"; done
+  return 1
 }
 
 count_changes() {
@@ -335,7 +381,7 @@ sync_repo() {
         step "Mac committed"
       fi
       git push origin "$branch" 2>/dev/null && step "Pushed to origin" || info "Already up to date"
-      vps_git "$name" "$vps_dir" "git pull --ff-only origin $branch 2>&1" >/dev/null && ok "VPS pulled" || err "VPS pull failed"
+      vps_smart_pull "$name" "$vps_dir" "$branch"
       ;;
     pull)
       local vps_msg="${COMMIT_MSG:-chore: sync VPS changes}"
@@ -382,7 +428,7 @@ sync_both() {
   # Step 3: pull both sides
   cd "$local_dir"
   git pull --ff-only origin "$branch" 2>/dev/null && ok "Mac synced" || err "Mac pull failed (merge needed?)"
-  vps_git "$name" "$vps_dir" "git pull --ff-only origin $branch 2>&1" >/dev/null && ok "VPS synced" || err "VPS pull failed"
+  vps_smart_pull "$name" "$vps_dir" "$branch"
 }
 
 # -- Sync all syncable repos bidirectionally --
@@ -660,6 +706,11 @@ elif [ "$DIRECTION" = "sync" ]; then
   echo -e "\n${C_BOLD}${C_CYAN}  Sync: Mac ⇄ VPS${C_RESET}"
 else
   echo -e "\n${C_BOLD}${C_YELLOW}  Pull: VPS → Mac${C_RESET}"
+fi
+
+# Ensure VPS host git config before any sync operations
+if [ -z "$STATUS_ONLY" ] && [ -z "$DRY_RUN" ]; then
+  ensure_vps_git_config
 fi
 
 for def in "${REPO_DEFS[@]}"; do

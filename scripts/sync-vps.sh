@@ -92,6 +92,7 @@ vps_host_exec() {
 # Repos with host-side VPS paths (bind-mounted rw, but git runs on host for simplicity)
 # Format: repo_name|host_vps_path
 HOST_REPOS=(
+  "dot-claude|/root/.claude"
   "shared-skills|/root/shared-skills"
   "openclaw-config|/root/openclaw-config"
 )

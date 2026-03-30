@@ -24,10 +24,10 @@
     "frontend-design@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/frontend-design/15268f03d2f5",
-        "version": "15268f03d2f5",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/frontend-design/ba1fec22e281",
+        "version": "ba1fec22e281",
         "installedAt": "2026-02-13T02:59:12.449Z",
-        "lastUpdated": "2026-03-24T02:38:20.417Z",
+        "lastUpdated": "2026-03-30T13:18:28.603Z",
         "gitCommitSha": "2cd88e7947b7382e045666abee790c7f55f669f3"
       }
     ],
@@ -54,20 +54,20 @@
     "code-review@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/code-review/15268f03d2f5",
-        "version": "15268f03d2f5",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/code-review/ba1fec22e281",
+        "version": "ba1fec22e281",
         "installedAt": "2026-02-13T03:09:16.560Z",
-        "lastUpdated": "2026-03-24T02:38:20.417Z",
+        "lastUpdated": "2026-03-30T13:18:28.601Z",
         "gitCommitSha": "2cd88e7947b7382e045666abee790c7f55f669f3"
       }
     ],
     "plugin-dev@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/plugin-dev/15268f03d2f5",
-        "version": "15268f03d2f5",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/plugin-dev/ba1fec22e281",
+        "version": "ba1fec22e281",
         "installedAt": "2026-02-13T03:15:28.482Z",
-        "lastUpdated": "2026-03-24T02:38:20.446Z",
+        "lastUpdated": "2026-03-30T13:18:28.602Z",
         "gitCommitSha": "2cd88e7947b7382e045666abee790c7f55f669f3"
       }
     ],
@@ -84,11 +84,21 @@
     "superpowers@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5",
-        "version": "5.0.5",
+        "installPath": "/Users/flo/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.6",
+        "version": "5.0.6",
         "installedAt": "2026-02-14T12:27:19.362Z",
-        "lastUpdated": "2026-03-19T06:17:01.558Z",
+        "lastUpdated": "2026-03-26T03:36:02.096Z",
         "gitCommitSha": "e16d611eee14ac4c3253b4bf4c55a98d905c2e64"
+      }
+    ],
+    "vercel-plugin@vercel-vercel-plugin": [
+      {
+        "scope": "user",
+        "installPath": "/Users/flo/.claude/plugins/cache/vercel-vercel-plugin/vercel-plugin/0.24.0",
+        "version": "0.24.0",
+        "installedAt": "2026-03-30T09:41:07.719Z",
+        "lastUpdated": "2026-03-30T09:41:07.719Z",
+        "gitCommitSha": "2e79fc9698b0f25253a238f4ac5ab6d3265d266d"
       }
     ]
   }

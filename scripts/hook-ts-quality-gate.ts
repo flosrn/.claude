@@ -10,8 +10,11 @@ if (process.env.NOTIFY_TMUX_SESSION) {
  * PostToolUse hook — Fast per-file quality gate
  * Runs after every Edit|Write|NotebookEdit on TypeScript files.
  *
- * Does: Prettier (format) + ESLint --fix + ESLint check
+ * Does: Format (oxfmt or prettier) + Lint --fix + Lint check (oxlint or eslint)
  * Does NOT: TypeScript compilation (too slow per-file → moved to Stop hook)
+ *
+ * Tool detection: uses whichever binaries exist in node_modules/.bin.
+ * Both can coexist (e.g. during migration) — each runs independently.
  */
 
 interface HookInput {
@@ -148,8 +151,14 @@ async function main() {
 
   const errors: string[] = [];
 
+  // ── Detect available tools ──────────────────────────────────────
+  const oxfmtBin = join(projectRoot, "node_modules", ".bin", "oxfmt");
+  const oxlintBin = join(projectRoot, "node_modules", ".bin", "oxlint");
   const prettierBin = join(projectRoot, "node_modules", ".bin", "prettier");
   const eslintBin = join(projectRoot, "node_modules", ".bin", "eslint");
+
+  const hasOxfmt = existsSync(oxfmtBin);
+  const hasOxlint = existsSync(oxlintBin);
   const hasPrettier = existsSync(prettierBin);
   const hasEslintBin = existsSync(eslintBin);
   const hasEslintConfig =
@@ -158,13 +167,35 @@ async function main() {
     existsSync(join(projectRoot, "eslint.config.cjs"));
   const hasEslint = hasEslintBin && hasEslintConfig;
 
-  // 1. Prettier — format in place
+  // ── Helper: detect broken native bindings (worktrees, incomplete installs) ──
+  const isNativeBindingError = (output: string) =>
+    output.includes("native binding") || output.includes("MODULE_NOT_FOUND");
+
+  // ── 1. Format in place ──────────────────────────────────────────
+  if (hasOxfmt) {
+    const result = await runCommand([oxfmtBin, filePath], projectRoot);
+    if (!result.success && !isNativeBindingError(result.stderr)) {
+      errors.push(`oxfmt failed: ${result.stderr}`);
+    }
+  }
   if (hasPrettier) {
     const result = await runCommand([prettierBin, "--write", filePath], projectRoot);
     if (!result.success) errors.push(`Prettier failed: ${result.stderr}`);
   }
 
-  // 2. ESLint --fix then check
+  // ── 2. Lint --fix then check ────────────────────────────────────
+  if (hasOxlint) {
+    const fixResult = await runCommand([oxlintBin, "--fix", filePath], projectRoot);
+    if (isNativeBindingError(fixResult.stderr)) {
+      log("oxlint native binding unavailable (worktree?), skipping");
+    } else {
+      const checkResult = await runCommand([oxlintBin, filePath], projectRoot);
+      const lintOutput = (checkResult.stdout + checkResult.stderr).trim();
+      if (!checkResult.success && lintOutput && !isNativeBindingError(lintOutput)) {
+        errors.push(`oxlint errors:\n${lintOutput}`);
+      }
+    }
+  }
   if (hasEslint) {
     await runCommand([eslintBin, "--fix", filePath], projectRoot);
     const checkResult = await runCommand([eslintBin, filePath], projectRoot);
@@ -191,13 +222,13 @@ async function main() {
     const eslintErrorCount = eslintMatches ? eslintMatches.length : 0;
 
     const prettyErrors = errors
-      .map((e) => e.replace(/ESLint errors:\n?/g, "").replace(new RegExp(projectRoot + "/", "g"), "").replace(/✖ \d+ problems?.*\n?/g, "").trim())
+      .map((e) => e.replace(/(?:ESLint|oxlint) errors:\n?/g, "").replace(new RegExp(projectRoot + "/", "g"), "").replace(/✖ \d+ problems?.*\n?/g, "").trim())
       .filter((e) => e.length > 0)
       .join("\n");
 
     const indentedErrors = prettyErrors.split("\n").map((l) => `│ ${l}`).join("\n");
     const header = eslintErrorCount > 0
-      ? `🔴 ${eslintErrorCount} ESLint error${eslintErrorCount > 1 ? "s" : ""} in ${fileName}`
+      ? `🔴 ${eslintErrorCount} lint error${eslintErrorCount > 1 ? "s" : ""} in ${fileName}`
       : `⚠️ Issues in ${fileName}`;
 
     const output: HookOutput = {

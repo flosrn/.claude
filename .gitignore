@@ -34,6 +34,9 @@ mcp-needs-auth-cache.json
 # Auto-generated data
 scripts/statusline/data/
 
+# Chrome extension binary
+chrome/
+
 # OS files
 .DS_Store
 

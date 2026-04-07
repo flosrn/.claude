@@ -83,9 +83,13 @@ vps_exec() {
   echo "$1" | ssh "$VPS" "docker exec -i -u node $CONTAINER bash" 2>/dev/null
 }
 
-# For repos that need git commands on the host instead of in-container
+# For repos that need git commands on the host instead of in-container.
+# Pipes the command through ssh stdin to bash -s instead of wrapping it in
+# bash -c '...' — that wrapping breaks when the command contains single
+# quotes or shell metachars like ( ) (e.g. "fix(cron): ..." commit messages
+# would be parsed as bash function definitions, causing silent push failures).
 vps_host_exec() {
-  ssh "$VPS" "bash -c '$1'" 2>&1
+  ssh "$VPS" 'bash -s' <<< "$1" 2>&1
 }
 
 # Ensure VPS host has git config (survives VPS recreation)
@@ -383,9 +387,16 @@ sync_repo() {
       vps_smart_pull "$name" "$vps_dir" "$branch"
       ;;
     pull)
+      local vps_pull_out vps_pull_rc
       local vps_msg="${COMMIT_MSG:-chore: sync VPS changes}"
-      vps_git "$name" "$vps_dir" "git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>/dev/null || true" >/dev/null
-      step "VPS committed & pushed"
+      vps_pull_out=$(vps_git "$name" "$vps_dir" "git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>&1; echo \"__RC__:\$?\"")
+      vps_pull_rc=$(echo "$vps_pull_out" | sed -n 's/^__RC__://p' | tail -1)
+      if [ "${vps_pull_rc:-1}" = "0" ]; then
+        step "VPS committed & pushed"
+      else
+        warn "VPS push failed (rc=$vps_pull_rc) — continuing with Mac pull anyway:"
+        echo "$vps_pull_out" | grep -v '^__RC__:' | tail -5 | while read -r l; do echo "      $l"; done
+      fi
       cd "$local_dir"
       git pull --ff-only origin "$branch" 2>/dev/null && ok "Mac pulled" || err "Mac pull failed"
       ;;
@@ -412,14 +423,20 @@ sync_both() {
   git push origin "$branch" 2>/dev/null && step "Mac pushed" || info "Mac already up to date"
 
   # Step 2: commit + push VPS
-  local vps_push_out
+  local vps_push_out vps_push_rc
   local vps_msg="${COMMIT_MSG:-chore: sync VPS changes}"
-  vps_push_out=$(vps_git "$name" "$vps_dir" "git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>&1 || echo 'PUSH_FAILED'")
-  if echo "$vps_push_out" | grep -q "PUSH_FAILED"; then
-    # VPS push failed -- likely behind origin. Pull first, then retry.
-    step "VPS behind origin, pulling first..."
-    vps_git "$name" "$vps_dir" "git pull --rebase origin $branch 2>/dev/null && git push origin $branch 2>/dev/null" >/dev/null \
-      && step "VPS rebased & pushed" || err "VPS push conflict -- resolve manually"
+  vps_push_out=$(vps_git "$name" "$vps_dir" "git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>&1; echo \"__RC__:\$?\"")
+  vps_push_rc=$(echo "$vps_push_out" | sed -n 's/^__RC__://p' | tail -1)
+  if [ "${vps_push_rc:-1}" != "0" ]; then
+    # VPS push failed -- could be: behind origin (fast-forward), syntax/auth
+    # error, or anything else. Pull-rebase + retry handles the common case.
+    step "VPS push failed (rc=$vps_push_rc), pulling first..."
+    if vps_git "$name" "$vps_dir" "git pull --rebase origin $branch && git push origin $branch" >/dev/null 2>&1; then
+      step "VPS rebased & pushed"
+    else
+      err "VPS push conflict — resolve manually. Last output:"
+      echo "$vps_push_out" | grep -v '^__RC__:' | tail -5 | while read -r l; do echo "      $l"; done
+    fi
   else
     step "VPS committed & pushed"
   fi
@@ -608,8 +625,15 @@ if [ -n "$INTERACTIVE" ]; then
         ;;
       *"Commit & push VPS"*)
         local vps_msg="${COMMIT_MSG:-chore: sync VPS changes}"
-        vps_exec "cd \"$vps_dir\" && git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>/dev/null || true" >/dev/null
-        ok "VPS committed & pushed"
+        local _interactive_out _interactive_rc
+        _interactive_out=$(vps_exec "cd \"$vps_dir\" && git add -A && git diff --cached --quiet || git commit -m '${vps_msg//\'/\'\\\'\'}' --no-verify 2>/dev/null; git push origin $branch 2>&1; echo \"__RC__:\$?\"")
+        _interactive_rc=$(echo "$_interactive_out" | sed -n 's/^__RC__://p' | tail -1)
+        if [ "${_interactive_rc:-1}" = "0" ]; then
+          ok "VPS committed & pushed"
+        else
+          err "VPS push failed (rc=$_interactive_rc):"
+          echo "$_interactive_out" | grep -v '^__RC__:' | tail -5 | while read -r l; do echo "      $l"; done
+        fi
         ;;
       *"Discard VPS"*)
         echo -e "  ${C_RED}Discard all VPS changes?${C_RESET}"

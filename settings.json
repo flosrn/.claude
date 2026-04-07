@@ -48,8 +48,10 @@
       "Bash(pnpm lint:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright-mobile__browser_navigate",
+      "mcp__playwright-mobile__browser_take_screenshot",
+      "mcp__playwright-desktop__browser_navigate",
+      "mcp__playwright-desktop__browser_take_screenshot",
       "mcp__exa__get_code_context_exa"
     ],
     "deny": [],

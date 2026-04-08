@@ -14,7 +14,7 @@
     "GIT_AUTHOR_NAME": "Claude Code",
     "GIT_COMMITTER_EMAIL": "flosrn@users.noreply.github.com",
     "GIT_COMMITTER_NAME": "Claude Code",
-    "MAX_MCP_OUTPUT_TOKENS": "50000",
+    "MAX_MCP_OUTPUT_TOKENS": "125000",
     "MAX_THINKING_TOKENS": "31999",
     "RIPGREP_CONFIG_PATH": "/Users/flo/.config/ripgrep/.emptyripgreprc"
   },

@@ -20,142 +20,38 @@
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
-      "Bash(npm run :*)",
-      "Bash(git :*)",
-      "Bash(pnpm :*)",
-      "Bash(gh :*)",
-      "Bash(cd :*)",
-      "Bash(ls :*)",
-      "Bash(node :*)",
-      "Bash(pnpm:*)",
+      "Bash(cd:*)",
+      "Bash(claude mcp:*)",
+      "Bash(find:*)",
       "Bash(gh:*)",
-      "Edit",
-      "Bash(ls:*)",
       "Bash(git:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(node:*)",
+      "Bash(npm run:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(pnpm:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:upstash.com)",
       "mcp__context7",
       "mcp__exa",
-      "Bash(claude mcp add:*)",
-      "Bash(pnpm ts:*)",
-      "Bash(mkdir:*)",
-      "WebFetch(domain:upstash.com)",
-      "Bash(npx prisma migrate dev:*)",
-      "Bash(pnpm run:*)",
-      "Bash(pnpm test:*)",
-      "Bash(rm:*)",
-      "Bash(claude mcp:*)",
-      "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs",
-      "Bash(pnpm lint:*)",
-      "Bash(find:*)",
-      "Bash(grep:*)",
       "mcp__playwright-mobile__browser_navigate",
       "mcp__playwright-mobile__browser_take_screenshot",
       "mcp__playwright-desktop__browser_navigate",
-      "mcp__playwright-desktop__browser_take_screenshot",
-      "mcp__exa__get_code_context_exa"
+      "mcp__playwright-desktop__browser_take_screenshot"
     ],
     "deny": [],
     "defaultMode": "bypassPermissions"
   },
   "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/ghostty-attention.sh",
-            "timeout": 60
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/apex-step-done.sh"
-          }
-        ]
-      },
       {
         "matcher": "Edit|Write|NotebookEdit",
         "hooks": [
           {
             "type": "command",
             "command": "$HOME/.claude/bin/run-hook hook-ts-quality-gate.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "manual",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/bin/run-hook command-validator/src/cli.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
           }
         ]
       }
@@ -171,10 +67,11 @@
         ]
       },
       {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
+            "command": "$HOME/.claude/hooks/sync-claude-credentials.sh"
           }
         ]
       }
@@ -190,30 +87,12 @@
         ]
       },
       {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
-          }
-        ]
-      },
-      {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/ghostty-attention.sh",
             "timeout": 60
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
           }
         ]
       }
@@ -225,16 +104,6 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/notify-openclaw.sh task-completed"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notchi-hook.sh"
           }
         ]
       }
@@ -267,6 +136,7 @@
   "effortLevel": "high",
   "spinnerTipsEnabled": false,
   "alwaysThinkingEnabled": true,
+  "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "worktree": {
     "symlinkDirectories": ["node_modules", ".next", "dist"]

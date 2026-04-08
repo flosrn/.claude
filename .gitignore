@@ -44,7 +44,7 @@ chrome/
 credentials.json
 *.key
 *.pem
-.credentials.json
+.credentials.json*
 .git-broken
-settings.json.bak
+settings.json.bak*
 *.env

@@ -208,13 +208,20 @@
     "plugin-dev@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
     "vercel-plugin@vercel-vercel-plugin": true,
-    "llm-wiki@alirezarezvani-claude-skills": true,
-    "karpathy-coder@alirezarezvani-claude-skills": true,
-    "agenthub@alirezarezvani-claude-skills": true,
-    "skill-security-auditor@alirezarezvani-claude-skills": true
+    "llm-wiki@claude-code-skills": true,
+    "karpathy-coder@claude-code-skills": true,
+    "agenthub@claude-code-skills": true,
+    "skill-security-auditor@claude-code-skills": true,
+    "engineering-skills@claude-code-skills": true,
+    "engineering-advanced-skills@claude-code-skills": true,
+    "product-skills@claude-code-skills": true,
+    "ra-qm-skills@claude-code-skills": true,
+    "pm-skills@claude-code-skills": true,
+    "business-growth-skills@claude-code-skills": true,
+    "finance-skills@claude-code-skills": true
   },
   "extraKnownMarketplaces": {
-    "alirezarezvani-claude-skills": {
+    "claude-code-skills": {
       "source": {
         "source": "github",
         "repo": "alirezarezvani/claude-skills"
@@ -232,5 +239,6 @@
   "spinnerTipsEnabled": false,
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
-  "showThinkingSummaries": true
+  "showThinkingSummaries": true,
+  "skipAutoPermissionPrompt": true
 }

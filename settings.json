@@ -62,72 +62,6 @@
     "defaultMode": "auto"
   },
   "hooks": {
-    "CwdChanged": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/cwd-env-loader.sh"
-          }
-        ]
-      }
-    ],
-    "FileChanged": [
-      {
-        "matcher": ".env",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-env-reload.sh"
-          }
-        ]
-      },
-      {
-        "matcher": ".env.local",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-env-reload.sh"
-          }
-        ]
-      },
-      {
-        "matcher": ".env.development",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-env-reload.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "AGENTS.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-agents-md-watcher.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "SOUL.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-agents-md-watcher.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "IDENTITY.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-agents-md-watcher.sh"
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "matcher": "*",
@@ -203,15 +137,6 @@
       }
     ],
     "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/sync-claude-credentials.sh"
-          }
-        ]
-      },
       {
         "hooks": [
           {

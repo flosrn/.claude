@@ -208,15 +208,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-git-context.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
             "command": "$HOME/.claude/hooks/sync-claude-credentials.sh"
           }
         ]
@@ -231,15 +222,6 @@
       }
     ],
     "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-typecheck-stop.ts"
-          }
-        ]
-      },
       {
         "hooks": [
           {
@@ -265,17 +247,6 @@
           {
             "type": "command",
             "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/notify-openclaw.sh task-completed"
           }
         ]
       }
@@ -333,25 +304,5 @@
   "spinnerTipsEnabled": false,
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
-  "showThinkingSummaries": true,
-  "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true,
-  "allowedDirectories": [
-    "/home/node",
-    "/home/node/.openclaw",
-    "/home/node/.openclaw/code-projects",
-    "/home/node/.openclaw/code-projects/plans-config-ssot",
-    "/home/node/.openclaw/workspace",
-    "/home/node/projects/gapila",
-    "/tmp"
-  ],
-  "trustedDirectories": [
-    "/home/node",
-    "/home/node/.openclaw",
-    "/home/node/.openclaw/code-projects",
-    "/home/node/.openclaw/code-projects/plans-config-ssot",
-    "/home/node/.openclaw/workspace",
-    "/home/node/projects/gapila",
-    "/tmp"
-  ]
+  "showThinkingSummaries": true
 }

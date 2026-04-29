@@ -5,10 +5,11 @@
     "BASH_DEFAULT_TIMEOUT_MS": "300000",
     "BASH_MAX_TIMEOUT_MS": "600000",
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70",
-    "CLAUDE_CODE_NO_FLICKER": "1",
-    "DISABLE_ERROR_REPORTING": "1",
+    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
+    "CLAUDE_CODE_NO_FLICKER": "1",
+    "DISABLE_ERROR_REPORTING": "1",
     "GIT_AUTHOR_EMAIL": "flosrn@users.noreply.github.com",
     "GIT_AUTHOR_NAME": "Claude Code",
     "GIT_COMMITTER_EMAIL": "flosrn@users.noreply.github.com",
@@ -39,75 +40,47 @@
       "mcp__playwright-mobile__browser_navigate",
       "mcp__playwright-mobile__browser_take_screenshot",
       "mcp__playwright-desktop__browser_navigate",
-      "mcp__playwright-desktop__browser_take_screenshot"
+      "mcp__playwright-desktop__browser_take_screenshot",
+      "mcp__gsc__get_capabilities",
+      "mcp__gsc__list_properties",
+      "mcp__gsc__get_site_details",
+      "mcp__gsc__get_search_analytics",
+      "mcp__gsc__get_performance_overview",
+      "mcp__gsc__compare_search_periods",
+      "mcp__gsc__get_search_by_page_query",
+      "mcp__gsc__get_advanced_search_analytics",
+      "mcp__gsc__inspect_url_enhanced",
+      "mcp__gsc__batch_url_inspection",
+      "mcp__gsc__check_indexing_issues",
+      "mcp__gsc__get_sitemaps",
+      "mcp__gsc__get_sitemap_details",
+      "mcp__gsc__list_sitemaps_enhanced",
+      "mcp__gsc__get_creator_info",
+      "mcp__gsc__reauthenticate"
     ],
     "deny": [],
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "auto"
   },
-  "model": "sonnet",
   "hooks": {
-    "CwdChanged": [
+    "Notification": [
       {
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/cwd-env-loader.sh"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
     ],
-    "FileChanged": [
+    "PermissionRequest": [
       {
-        "matcher": ".env",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/file-env-reload.sh"
-          }
-        ]
-      },
-      {
-        "matcher": ".env.local",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-env-reload.sh"
-          }
-        ]
-      },
-      {
-        "matcher": ".env.development",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-env-reload.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "AGENTS.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-agents-md-watcher.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "SOUL.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-agents-md-watcher.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "IDENTITY.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/file-agents-md-watcher.sh"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'",
+            "timeout": 86400
           }
         ]
       }
@@ -121,46 +94,104 @@
             "command": "$HOME/.claude/bin/run-hook hook-ts-quality-gate.ts"
           }
         ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
       }
     ],
     "SessionStart": [
       {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-git-context.ts"
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/sync-claude-credentials.sh"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
     ],
     "Stop": [
       {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-typecheck-stop.ts"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
     ],
-    "TaskCompleted": [
+    "StopFailure": [
       {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/notify-openclaw.sh task-completed"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -182,14 +213,27 @@
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
+    "compound-engineering@compound-engineering-plugin": true,
     "frontend-design@claude-plugins-official": true,
-    "marketing-skills@marketingskills": true,
     "plugin-dev@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
+    "ux-design@wondelai-skills": true,
     "vercel-plugin@vercel-vercel-plugin": true,
-    "claude-notifications-go@claude-notifications-go": true
+    "mattpocock@flosrn": true
   },
   "extraKnownMarketplaces": {
+    "compound-engineering-plugin": {
+      "source": {
+        "source": "github",
+        "repo": "EveryInc/compound-engineering-plugin"
+      }
+    },
+    "marketingskills": {
+      "source": {
+        "source": "github",
+        "repo": "coreyhaines31/marketingskills"
+      }
+    },
     "vercel-vercel-plugin": {
       "source": {
         "source": "directory",
@@ -197,35 +241,27 @@
       },
       "autoUpdate": true
     },
-    "claude-notifications-go": {
+    "wondelai-skills": {
       "source": {
         "source": "github",
-        "repo": "777genius/claude-notifications-go"
+        "repo": "wondelai/skills"
+      }
+    },
+    "flosrn": {
+      "source": {
+        "source": "github",
+        "repo": "flosrn/skills"
       }
     }
   },
   "feedbackSurveyRate": 0,
   "spinnerTipsEnabled": false,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "showThinkingSummaries": true,
-  "skipDangerousModePermissionPrompt": true,
-  "allowedDirectories": [
-    "/home/node",
-    "/home/node/.openclaw",
-    "/home/node/.openclaw/code-projects",
-    "/home/node/.openclaw/code-projects/plans-config-ssot",
-    "/home/node/.openclaw/workspace",
-    "/home/node/projects/gapila",
-    "/tmp"
-  ],
-  "trustedDirectories": [
-    "/home/node",
-    "/home/node/.openclaw",
-    "/home/node/.openclaw/code-projects",
-    "/home/node/.openclaw/code-projects/plans-config-ssot",
-    "/home/node/.openclaw/workspace",
-    "/home/node/projects/gapila",
-    "/tmp"
-  ]
+  "verbose": true,
+  "teammateMode": "auto",
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true
 }

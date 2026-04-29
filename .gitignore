@@ -47,4 +47,8 @@ credentials.json
 .credentials.json*
 .git-broken
 settings.json.bak*
+settings.json.backup*
 *.env
+
+# Local plugin runtime data
+claude-notifications-go/

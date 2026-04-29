@@ -68,7 +68,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -79,7 +79,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'",
             "timeout": 86400
           }
         ]
@@ -100,7 +100,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -110,7 +110,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -121,7 +121,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -131,7 +131,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -141,7 +141,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -151,7 +151,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -161,7 +171,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -171,7 +181,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -181,7 +191,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/flo/.vibe-island/bin/vibe-island-bridge --source claude"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -203,28 +213,25 @@
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
+    "compound-engineering@compound-engineering-plugin": true,
     "frontend-design@claude-plugins-official": true,
-    "marketing-skills@marketingskills": true,
     "plugin-dev@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
+    "ux-design@wondelai-skills": true,
     "vercel-plugin@vercel-vercel-plugin": true,
-    "llm-wiki@claude-code-skills": true,
-    "karpathy-coder@claude-code-skills": true,
-    "agenthub@claude-code-skills": true,
-    "skill-security-auditor@claude-code-skills": true,
-    "engineering-skills@claude-code-skills": true,
-    "engineering-advanced-skills@claude-code-skills": true,
-    "product-skills@claude-code-skills": true,
-    "ra-qm-skills@claude-code-skills": true,
-    "pm-skills@claude-code-skills": true,
-    "business-growth-skills@claude-code-skills": true,
-    "finance-skills@claude-code-skills": true
+    "mattpocock@flosrn": true
   },
   "extraKnownMarketplaces": {
-    "claude-code-skills": {
+    "compound-engineering-plugin": {
       "source": {
         "source": "github",
-        "repo": "alirezarezvani/claude-skills"
+        "repo": "EveryInc/compound-engineering-plugin"
+      }
+    },
+    "marketingskills": {
+      "source": {
+        "source": "github",
+        "repo": "coreyhaines31/marketingskills"
       }
     },
     "vercel-vercel-plugin": {
@@ -233,6 +240,18 @@
         "path": "/Users/flo/.cache/plugins/github.com-vercel-vercel-plugin"
       },
       "autoUpdate": true
+    },
+    "wondelai-skills": {
+      "source": {
+        "source": "github",
+        "repo": "wondelai/skills"
+      }
+    },
+    "flosrn": {
+      "source": {
+        "source": "github",
+        "repo": "flosrn/skills"
+      }
     }
   },
   "feedbackSurveyRate": 0,
@@ -240,5 +259,9 @@
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
   "showThinkingSummaries": true,
+  "verbose": true,
+  "teammateMode": "auto",
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
 }

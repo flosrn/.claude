@@ -25,6 +25,9 @@ export interface GitStatus {
 		deleted: number;
 		files: number;
 	};
+	isWorktree: boolean;
+	repo: string;
+	worktreeSlug: string;
 }
 
 export async function getGitStatus(): Promise<GitStatus> {
@@ -36,11 +39,19 @@ export async function getGitStatus(): Promise<GitStatus> {
 				hasChanges: false,
 				staged: { added: 0, deleted: 0, files: 0 },
 				unstaged: { added: 0, deleted: 0, files: 0 },
+				isWorktree: false,
+				repo: "",
+				worktreeSlug: "",
 			};
 		}
 
 		const branchResult = await $`git branch --show-current`.quiet().text();
 		const branch = branchResult.trim() || "detached";
+
+		const commonDir = (await $`git rev-parse --git-common-dir`.quiet().nothrow().text()).trim();
+		const gitDir = (await $`git rev-parse --git-dir`.quiet().nothrow().text()).trim();
+		const topLevel = (await $`git rev-parse --show-toplevel`.quiet().nothrow().text()).trim();
+		const wt = detectWorktree(gitDir, commonDir, topLevel);
 
 		const diffCheck = await $`git diff-index --quiet HEAD --`.quiet().nothrow();
 		const cachedCheck = await $`git diff-index --quiet --cached HEAD --`
@@ -92,6 +103,9 @@ export async function getGitStatus(): Promise<GitStatus> {
 					deleted: unstagedStats.deleted,
 					files: unstagedFilesCount,
 				},
+				isWorktree: wt.isWorktree,
+				repo: wt.repo,
+				worktreeSlug: wt.slug,
 			};
 		}
 
@@ -100,6 +114,9 @@ export async function getGitStatus(): Promise<GitStatus> {
 			hasChanges: false,
 			staged: { added: 0, deleted: 0, files: 0 },
 			unstaged: { added: 0, deleted: 0, files: 0 },
+			isWorktree: wt.isWorktree,
+			repo: wt.repo,
+			worktreeSlug: wt.slug,
 		};
 	} catch {
 		return {
@@ -107,6 +124,9 @@ export async function getGitStatus(): Promise<GitStatus> {
 			hasChanges: false,
 			staged: { added: 0, deleted: 0, files: 0 },
 			unstaged: { added: 0, deleted: 0, files: 0 },
+			isWorktree: false,
+			repo: "",
+			worktreeSlug: "",
 		};
 	}
 }

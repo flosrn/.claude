@@ -51,6 +51,7 @@ export interface StatuslineData {
 	};
 	periodCost: number;
 	todayCost: number;
+	worktree?: string;
 }
 
 function shouldShowWeekly(
@@ -72,13 +73,12 @@ export function renderStatusline(
 	const sep = colors.gray(config.separator);
 	const parts: string[] = [];
 
+	const lead = data.worktree ? `${data.worktree} ${sep} ` : "";
 	const isSonnet = data.modelName.toLowerCase().includes("sonnet");
 	if (isSonnet && !config.showSonnetModel) {
-		parts.push(`${data.branch} ${sep} ${colors.lightGray(data.dirPath)}`);
+		parts.push(`${lead}${data.branch} ${sep} ${colors.lightGray(data.dirPath)}`);
 	} else {
-		parts.push(
-			`${data.branch} ${sep} ${colors.lightGray(data.dirPath)} ${sep} ${colors.lightGray(data.modelName)}`,
-		);
+		parts.push(`${lead}${data.branch} ${sep} ${colors.lightGray(data.dirPath)} ${sep} ${colors.lightGray(data.modelName)}`);
 	}
 
 	const sessionPart = formatSession(
@@ -236,6 +236,10 @@ async function main() {
 			},
 			periodCost,
 			todayCost,
+			worktree:
+				git.isWorktree && config.git.showWorktree
+					? `${colors.cyan(git.repo)} ${colors.gray("⑂")} ${colors.lightGray(git.worktreeSlug)}`
+					: "",
 		};
 
 		const output = renderStatusline(data, config);

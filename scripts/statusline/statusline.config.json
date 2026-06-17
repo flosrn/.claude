@@ -8,7 +8,8 @@
     "showDirtyIndicator": true,
     "showChanges": true,
     "showStaged": true,
-    "showUnstaged": true
+    "showUnstaged": true,
+    "showWorktree": true
   },
   "separator": "•",
   "session": {

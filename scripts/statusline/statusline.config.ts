@@ -65,6 +65,8 @@ export interface StatuslineConfig {
 		showStaged: boolean;
 		// Show unstaged files count (yellow color)
 		showUnstaged: boolean;
+		// Show "repo ⑂ slug" when inside a git worktree
+		showWorktree: boolean;
 	};
 
 	// Separator character between sections
@@ -159,6 +161,7 @@ export const defaultConfig: StatuslineConfig = {
 		showChanges: false,
 		showStaged: true,
 		showUnstaged: true,
+		showWorktree: true,
 	},
 	separator: "•",
 	session: {

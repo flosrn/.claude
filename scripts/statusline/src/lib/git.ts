@@ -1,4 +1,16 @@
 import { $ } from "bun";
+import { basename, dirname, resolve } from "node:path";
+
+export function detectWorktree(
+	gitDir: string,
+	commonDir: string,
+	topLevel: string,
+): { isWorktree: boolean; repo: string; slug: string } {
+	const isWorktree = resolve(gitDir.trim()) !== resolve(commonDir.trim());
+	const repo = basename(dirname(resolve(commonDir.trim())));
+	const slug = basename(resolve(topLevel.trim()));
+	return { isWorktree, repo, slug };
+}
 
 export interface GitStatus {
 	branch: string;

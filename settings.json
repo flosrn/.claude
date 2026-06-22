@@ -37,10 +37,6 @@
       "WebFetch(domain:upstash.com)",
       "mcp__context7",
       "mcp__exa",
-      "mcp__playwright-mobile__browser_navigate",
-      "mcp__playwright-mobile__browser_take_screenshot",
-      "mcp__playwright-desktop__browser_navigate",
-      "mcp__playwright-desktop__browser_take_screenshot",
       "mcp__gsc__get_capabilities",
       "mcp__gsc__list_properties",
       "mcp__gsc__get_site_details",
@@ -68,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -79,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'",
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'",
             "timeout": 86400
           }
         ]
@@ -100,7 +96,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -110,7 +106,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -121,7 +117,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -131,7 +127,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -141,7 +137,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -151,7 +147,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -161,7 +157,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -171,7 +167,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -181,7 +177,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
       }
@@ -191,7 +187,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && exec \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+            "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/reader-first-docs.sh",
+            "timeout": 10,
+            "statusMessage": "reader-first-docs check"
           }
         ]
       }
@@ -210,6 +216,7 @@
     "padding": 0
   },
   "enabledPlugins": {
+    "agent-browser@agent-browser": true,
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
@@ -218,10 +225,20 @@
     "plugin-dev@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
     "ux-design@wondelai-skills": true,
-    "vercel-plugin@vercel-vercel-plugin": true,
-    "mattpocock@flosrn": true
+    "vercel@claude-plugins-official": false,
+    "security-guidance@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "repomix-explorer@repomix": true,
+    "gapiskills@gapiskills": true,
+    "improve@improve": true
   },
   "extraKnownMarketplaces": {
+    "agent-browser": {
+      "source": {
+        "source": "github",
+        "repo": "vercel-labs/agent-browser"
+      }
+    },
     "compound-engineering-plugin": {
       "source": {
         "source": "github",
@@ -247,10 +264,22 @@
         "repo": "wondelai/skills"
       }
     },
-    "flosrn": {
+    "repomix": {
       "source": {
         "source": "github",
-        "repo": "flosrn/skills"
+        "repo": "yamadashy/repomix"
+      }
+    },
+    "gapiskills": {
+      "source": {
+        "source": "github",
+        "repo": "gapilabs/gapiskills"
+      }
+    },
+    "improve": {
+      "source": {
+        "source": "github",
+        "repo": "shadcn/improve"
       }
     }
   },
@@ -259,6 +288,8 @@
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
   "showThinkingSummaries": true,
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "verbose": true,
   "teammateMode": "auto",
   "remoteControlAtStartup": true,

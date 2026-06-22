@@ -53,7 +53,7 @@ interface LogEntry {
 }
 
 import { dirname, join } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, appendFileSync, statSync, renameSync } from "node:fs";
 
 const DEBUG = process.env.CLAUDE_HOOK_DEBUG === "1";
 const LOG_FILE = "/Users/flo/.claude/tool-usage.log";
@@ -90,12 +90,15 @@ function log(message: string, ...args: unknown[]) {
   if (DEBUG) console.error(`[${new Date().toISOString()}] ${message}`, ...args);
 }
 
-async function logToolUsage(entry: LogEntry) {
+// Cap the log at ~5 MB, keeping one previous generation, so it never grows unbounded.
+const MAX_LOG_BYTES = 5_000_000;
+
+function logToolUsage(entry: LogEntry) {
   try {
-    const logLine = JSON.stringify(entry) + "\n";
-    const file = Bun.file(LOG_FILE);
-    const existingContent = (await file.exists()) ? await file.text() : "";
-    await Bun.write(LOG_FILE, existingContent + logLine);
+    if (existsSync(LOG_FILE) && statSync(LOG_FILE).size > MAX_LOG_BYTES) {
+      renameSync(LOG_FILE, `${LOG_FILE}.1`);
+    }
+    appendFileSync(LOG_FILE, JSON.stringify(entry) + "\n");
   } catch (error) {
     log("Failed to write log:", error);
   }
@@ -205,7 +208,7 @@ async function main() {
     }
   }
 
-  await logToolUsage({
+  logToolUsage({
     timestamp: new Date().toISOString(),
     session_id,
     tool_use_id,

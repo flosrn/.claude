@@ -20,6 +20,10 @@ tool-usage.log
 # Auto-managed by Claude Code
 plugins
 
+# Skills: live in ~/.agents (managed by the `skills` CLI / npx skills) and
+# symlinked in here, plus *-workspace scratch from skill-eval runs — not git's job
+/skills/
+
 # Backups
 backups/
 *.backup/

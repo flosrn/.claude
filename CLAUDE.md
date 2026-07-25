@@ -1,125 +1,77 @@
 # Global Claude Code Instructions
 
-Project-specific `CLAUDE.md` files override these global rules.
+Project `CLAUDE.md` / `AGENTS.md` override these.
 
-## 1. Think Before Coding
+## 1. How I want you to talk to me
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+Answer first, evidence always, scannable — I'm juggling several Claude Code sessions.
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+- Result before reason. No preamble, no restating the request, no recap of visible changes.
+- No tool-call narration.
+- Back "works" / "tested" / "fixed" with the command, output, or file that proves it.
+  Quote the shortest decisive line of an error, not the dump.
+- Scannable Markdown: headers, bullets, bold, generous line breaks, relevant emojis
+  (✅ ⚡ 📋 🔍 ⚠️ 🚀), tables to compare, Mermaid/ASCII when it clarifies a flow.
+- Full prose where nuance matters: security warnings, irreversible actions, ordered steps.
+- Anti-sycophantic: no flattery, never open with "you're right", don't fold under pushback.
+  When unsure, say "I don't know".
 
-## 2. Simplicity First
+## 2. Gotchas you can't infer
 
-**Minimum code that solves the problem. Nothing speculative.**
+- **Don't guess** an API, signature, or flag — read the source or `/gapidoc` it. Your
+  training data is not current on this stack.
+- Remove imports/variables/functions **your** changes orphaned. Leave pre-existing dead
+  code alone unless I ask.
+- No barrel/index files that only re-export.
+- Before adding a rule to any CLAUDE.md / AGENTS.md / doc, check whether one already
+  covers or contradicts it — then merge or replace it. Never add a parallel rule.
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
+## 3. Picking a model (workflows, subagents, delegation)
 
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+Hard gates — these bind before you even decide to load the detail:
 
-## 3. Surgical Changes
+- **Never Haiku.**
+- Anything user-facing (UI, copy, API design) goes to **opus-5, fable-5, or
+  gpt-5.6-sol** — never grok-4.5 or a cheaper tier. (Stated in model names, not
+  scores, so it stays evaluable when the table isn't loaded.)
+- When axes conflict on something that ships: **intelligence > taste > cost**.
+- **Opus 5 is the session default.** Load `/efficient-frontier` before routing
+  anything else — don't route from memory of these gates alone.
 
-**Touch only what you must. Clean up only your own mess.**
+The model table (prices, context, capability/taste scores, which CLI reaches what),
+escalation policy, and per-agent `model:` in Workflow scripts → `/efficient-frontier`.
+Those numbers move monthly; that skill is where they live, so they can't go stale here.
 
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
+## 4. End of work — checkpoint, then offer the next step
 
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+**Fires when:** a unit of work is done, it left VCS changes, and nothing remains in the
+request. Skip for discussion / research / Q&A with no edits, and whenever I said
+"just do X and stop" or "don't commit".
 
-The test: Every changed line should trace directly to the user's request.
+Then: `/ce-commit` to checkpoint, on a feature branch, **never pushing**. Then
+`AskUserQuestion`, right option for *this* change first:
 
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
-## 5. Response Communication & Readability Rules
-
-**Make responses clear, visually appealing, and easy to scan for a developer juggling multiple Claude Code sessions and constant context switching.**
-
-- Make all your responses clear, scannable, and easy to read quickly.
-- Use Markdown in a natural way: headers when they help organize information, bullet points, generous line breaks, and bold/italic for emphasis.
-- Add relevant and moderate emojis (e.g. ✅, ⚡, 📋, 🔍, ⚠️, 🚀) to improve visual readability, without overusing them.
-- When useful, use Markdown tables to compare options, summarize changes, or list points.
-- Use simple ASCII diagrams or Mermaid code blocks (```mermaid) for flows, architectures, or relationships when it clarifies things without adding clutter.
-- Get straight to the point: no unnecessary intros, no analogies, no fluff. Prioritize conciseness while staying complete.
-- These rules apply **only** to the presentation and communication style. They must never reduce the depth of reasoning, code quality, architecture, or technical best practices.
-- Be flexible: do not force the exact same rigid format on every response. Adapt the structure to the content (sometimes a simple list is enough, sometimes more sections are better).
-
-Examples of good practices to follow naturally:
-- For complex explanations → logical sections with emojis.
-- For code changes → clear summary + highlights (no full line-by-line dumps unless specifically asked).
-- For plans or options → tables or lists when relevant.
-
-## 6. Model & Cost Strategy (Claude Code)
-
-**Route by task weight — never default to the heaviest model.**
-
-- **Haiku 4.5** — boilerplate, small edits, formatting, summaries, mechanical search/renames.
-- **Sonnet 4.6** — standard coding, refactors, most day-to-day work.
-- **Opus 4.8 / Fable 5** — architecture, large or cross-cutting refactors, tricky debugging, high-stakes calls.
-
-In `Workflow` scripts, set per-agent `model:` so cheap stages run cheap and only the hard verify/judge
-stages reach Opus — never fan a whole pipeline out on Opus by default. When a task is mis-powered, say
-so instead of silently overspending: *"I'd switch to Sonnet/Haiku for this — run `/model`."*
-
-## 7. End of work — checkpoint, then offer the next step
-
-**Trigger:** a unit of work is done, it left VCS changes (unstaged, staged, or committed-but-unpushed),
-and nothing remains in the request. Skip entirely for discussion / research / reading / Q&A with no edits,
-and whenever I said "just do X and stop" or "don't commit."
-
-When it fires: first `/ce-commit` to checkpoint (feature branch — branch off main first if on the default
-branch; never push). Then `AskUserQuestion` with these options, the right one for *this* change first:
-
-- **Review first** — `/code-review --fix` + `/simplify` (`xhigh` for substantive code: logic, multiple
-  files, risky domains; `medium` for small-but-real). Re-show this menu after.
+- **Review first** — `/code-review --fix` + `/simplify` (`xhigh` for substantive code:
+  logic, multiple files, risky domains; `medium` for small-but-real). Re-show this menu after.
 - **Ship as PR** — `/ce-commit-push-pr`.
-- **Straight to main** — fast-forward the checkpoint into main + push, no PR; fall back to a PR if main
-  is protected.
+- **Straight to main** — fast-forward the checkpoint into main + push, no PR; fall back to
+  a PR if main is protected.
 - **Nothing yet** — keep the local checkpoint.
 
-Recommend first: substantive / small-but-real → *Review first*; trivial (docs, config, comments, renames,
-one-liners) → *Straight to main*. *Straight to main* is always offered, but for substantive code flag it
-⚠️ (skips both the review and human approval) and never pre-select it. A human reviews the diff before any
-PR — never open one before they approve. Don't skip review on substantive code; if I try, remind me once,
-then respect my call.
+Recommend first: substantive or small-but-real → *Review first*; trivial (docs, config,
+renames, one-liners) → *Straight to main*. Always offer *Straight to main*, but for
+substantive code flag it ⚠️ and never pre-select it — it skips review *and* human approval.
+A human reviews the diff before any PR. If I try to skip review on substantive code,
+remind me once, then respect my call.
 
-## 8. Safety
+Outside this flow, don't commit or push unless I ask.
 
-- Warn me clearly before any destructive or hard-to-reverse action (`rm -rf`, `git reset --hard`,
-  force-push, dropping data).
+**After any successful `gh pr merge` on gapila:** from the main checkout run
+`bash scripts/gapila-post-merge-cleanup.sh` — `gh pr merge` alone doesn't reap the Mac's
+worktrees, dev servers, or OrbStack Supabase stacks (local branches stay pinned by worktrees).
 
-## 9. Anti-Patterns (never do)
-
-- No over-commenting obvious code.
-- No barrel/index files that only re-export.
-- No refactoring untouched files unless asked (see §3).
-- No features outside the request (see §2).
-- No opening a PR before the quality gate (see §7).
-- Commits stay atomic and follow conventional-commit format.
+<!-- BEGIN @agent-native/skills -->
+When doing codebase-heavy or token-heavy work on a high-cost frontier model (incl. Fable), use the /efficient-frontier skill always.
+When writing final response status indicators, use the /quick-recap skill always.
+When long-running or parallel work needs usage-limit checks, use the /stay-within-limits skill always.
+<!-- END @agent-native/skills -->

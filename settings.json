@@ -16,7 +16,8 @@
     "GIT_COMMITTER_NAME": "Claude Code",
     "MAX_MCP_OUTPUT_TOKENS": "125000",
     "MAX_THINKING_TOKENS": "31999",
-    "RIPGREP_CONFIG_PATH": "/Users/flo/.config/ripgrep/.emptyripgreprc"
+    "RIPGREP_CONFIG_PATH": "/Users/flo/.config/ripgrep/.emptyripgreprc",
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -87,7 +88,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/bin/run-hook hook-ts-quality-gate.ts"
+            "command": "$HOME/.claude/bin/run-hook hook-ts-quality-gate.ts",
+            "timeout": 15
           }
         ]
       },
@@ -120,6 +122,26 @@
             "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
           }
         ]
+      },
+      {
+        "matcher": "Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cbm-code-discovery-gate",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/bin/gw-worktree-guard",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "SessionEnd": [
@@ -138,6 +160,42 @@
           {
             "type": "command",
             "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cbm-session-reminder"
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cbm-session-reminder"
+          }
+        ]
+      },
+      {
+        "matcher": "clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cbm-session-reminder"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cbm-session-reminder"
           }
         ]
       }
@@ -168,6 +226,15 @@
           {
             "type": "command",
             "command": "/bin/sh -c '[ -x \"$HOME/.vibe-island/bin/vibe-island-bridge\" ] && \"$HOME/.vibe-island/bin/vibe-island-bridge\" --source claude; exit 0'"
+          }
+        ]
+      },
+      {
+        "matcher": "tldraw-offline",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh '/Users/flo/skills/tldraw-offline/inject-server-context.sh' SubagentStart"
           }
         ]
       }
@@ -212,25 +279,27 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "$HOME/.claude/bin/run-hook statusline/src/index.ts",
+    "command": "/Users/flo/.vibe-island/bin/vibe-island-statusline-chain",
     "padding": 0
   },
   "enabledPlugins": {
     "agent-browser@agent-browser": true,
-    "claude-code-setup@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "code-review@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": false,
+    "claude-md-management@claude-plugins-official": false,
+    "code-review@claude-plugins-official": false,
     "compound-engineering@compound-engineering-plugin": true,
     "frontend-design@claude-plugins-official": true,
-    "plugin-dev@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
-    "ux-design@wondelai-skills": true,
-    "vercel@claude-plugins-official": false,
+    "improve@improve": true,
+    "marketing-skills@marketingskills": true,
+    "minimax-skills@minimax-skills": false,
+    "playwright@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": false,
+    "repomix-explorer@repomix": true,
     "security-guidance@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "repomix-explorer@repomix": true,
-    "gapiskills@gapiskills": true,
-    "improve@improve": true
+    "superpowers@claude-plugins-official": false,
+    "ux-design@wondelai-skills": false,
+    "vercel@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "agent-browser": {
@@ -243,12 +312,32 @@
       "source": {
         "source": "github",
         "repo": "EveryInc/compound-engineering-plugin"
-      }
+      },
+      "autoUpdate": true
+    },
+    "improve": {
+      "source": {
+        "source": "github",
+        "repo": "shadcn/improve"
+      },
+      "autoUpdate": true
     },
     "marketingskills": {
       "source": {
         "source": "github",
         "repo": "coreyhaines31/marketingskills"
+      }
+    },
+    "minimax-skills": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/MiniMax-AI/skills.git"
+      }
+    },
+    "repomix": {
+      "source": {
+        "source": "github",
+        "repo": "yamadashy/repomix"
       }
     },
     "vercel-vercel-plugin": {
@@ -263,30 +352,12 @@
         "source": "github",
         "repo": "wondelai/skills"
       }
-    },
-    "repomix": {
-      "source": {
-        "source": "github",
-        "repo": "yamadashy/repomix"
-      }
-    },
-    "gapiskills": {
-      "source": {
-        "source": "github",
-        "repo": "gapilabs/gapiskills"
-      }
-    },
-    "improve": {
-      "source": {
-        "source": "github",
-        "repo": "shadcn/improve"
-      }
     }
   },
   "feedbackSurveyRate": 0,
   "spinnerTipsEnabled": false,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
@@ -294,5 +365,91 @@
   "teammateMode": "auto",
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "autoMemoryEnabled": false,
+  "skillOverrides": {
+    "agent-watchdog": "off",
+    "analytics": "off",
+    "ask-matt": "off",
+    "baoyu-article-illustrator": "off",
+    "baoyu-comic": "off",
+    "baoyu-diagram": "off",
+    "baoyu-imagine": "off",
+    "baoyu-infographic": "off",
+    "baoyu-slide-deck": "off",
+    "brandkit": "off",
+    "build-wave": "off",
+    "codebase-explorer": "off",
+    "codebase-memory": "off",
+    "cold-email": "off",
+    "competitors": "off",
+    "content-production": "off",
+    "conventional-commits": "off",
+    "copy-editing": "off",
+    "database-schema-designer": "off",
+    "design-an-interface": "off",
+    "diagnosing-bugs": "off",
+    "diff-viewer": "off",
+    "dossier": "off",
+    "edit-article": "off",
+    "lifecycle-messaging": "off",
+    "end-of-work": "off",
+    "engine-maker": "off",
+    "framer-code-components": "off",
+    "framer": "off",
+    "gapila-glossary": "off",
+    "gapila-reference": "off",
+    "gapila-src": "off",
+    "gapila-worktree": "off",
+    "gapilabs-repos": "off",
+    "github-cli": "off",
+    "goal": "off",
+    "goose-ads": "off",
+    "goose-video": "off",
+    "gooseworks": "off",
+    "gpt-taste": "off",
+    "grok-brief": "off",
+    "grok-maker": "off",
+    "hermes-automation": "off",
+    "hermes-brain": "off",
+    "hermes-doctor": "off",
+    "hetzner-cloud": "off",
+    "high-end-visual-design": "off",
+    "image-to-code": "off",
+    "imagegen-frontend-mobile": "off",
+    "imagegen-frontend-web": "off",
+    "kanban-orchestrator": "off",
+    "make-interfaces-feel-better": "off",
+    "moshi-best-practices": "off",
+    "oklch-skill": "off",
+    "orbstack-cleanup": "off",
+    "plow-ahead": "off",
+    "prospecting": "off",
+    "prospection": "off",
+    "proton-pass": "off",
+    "playwright-pro": "off",
+    "read-the-damn-docs": "off",
+    "redesign-existing-projects": "off",
+    "research": "off",
+    "resolving-merge-conflicts": "off",
+    "review-animations": "off",
+    "review-capture-inbox": "off",
+    "saas-metrics-coach": "off",
+    "scope-change": "off",
+    "self-improving-agent": "off",
+    "setup-pre-commit": "off",
+    "ship-gate": "off",
+    "statistical-analyst": "off",
+    "stripe-integration-expert": "off",
+    "summarize": "off",
+    "supabase-debug": "off",
+    "teach": "off",
+    "tldraw-offline": "off",
+    "upscayl-assets": "off",
+    "usage-preflight": "off",
+    "visual-plan": "off",
+    "visual-recap": "off",
+    "wayfinder-maps": "off",
+    "writing-great-skills": "off"
+  }
 }

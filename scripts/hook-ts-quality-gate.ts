@@ -111,16 +111,28 @@ async function runCommand(
   cwd?: string,
   timeoutMs: number = COMMAND_TIMEOUT_MS,
 ): Promise<{ stdout: string; stderr: string; success: boolean }> {
+  // The timeout timer MUST be cleared once the command settles. Bun keeps the
+  // process alive until every pending timer fires, so an uncleared 10s timer
+  // makes the hook idle for 10s after finishing ~300ms of real work — which
+  // Claude Code experiences as a 10s stall on every edit.
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const proc = Bun.spawn(command, { stdout: "pipe", stderr: "pipe", cwd });
 
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => { proc.kill(); reject(new Error(`Timed out after ${timeoutMs}ms`)); }, timeoutMs),
-    );
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        proc.kill();
+        reject(new Error(`Timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+    });
 
     const resultPromise = (async () => {
-      const stdout = await new Response(proc.stdout).text();
-      const stderr = await new Response(proc.stderr).text();
+      // Drain both pipes concurrently: draining stdout to completion first can
+      // deadlock when the child fills the stderr pipe buffer and blocks.
+      const [stdout, stderr] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+      ]);
       const success = (await proc.exited) === 0;
       return { stdout, stderr, success };
     })();
@@ -128,6 +140,8 @@ async function runCommand(
     return await Promise.race([resultPromise, timeoutPromise]);
   } catch (error) {
     return { stdout: "", stderr: String(error), success: false };
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
   }
 }
 
@@ -188,22 +202,26 @@ async function main() {
 
   // ── 2. Lint --fix then check ────────────────────────────────────
   if (hasOxlint) {
+    // One spawn, not two: `oxlint --fix` already reports what it could NOT fix
+    // (exit 1 + diagnostics on stdout) and stays silent when the file ends up
+    // clean (exit 0), so it never re-reports an issue it just fixed.
     const fixResult = await runCommand([oxlintBin, "--fix", filePath], projectRoot);
-    if (isNativeBindingError(fixResult.stderr)) {
+    const lintOutput = (fixResult.stdout + fixResult.stderr).trim();
+    if (isNativeBindingError(lintOutput)) {
       log("oxlint native binding unavailable (worktree?), skipping");
-    } else {
-      const checkResult = await runCommand([oxlintBin, filePath], projectRoot);
-      const lintOutput = (checkResult.stdout + checkResult.stderr).trim();
-      if (!checkResult.success && lintOutput && !isNativeBindingError(lintOutput)) {
-        errors.push(`oxlint errors:\n${lintOutput}`);
-      }
+    } else if (!fixResult.success && lintOutput) {
+      errors.push(`oxlint errors:\n${lintOutput}`);
     }
   }
   if (hasEslint) {
-    await runCommand([eslintBin, "--fix", filePath], projectRoot);
-    const checkResult = await runCommand([eslintBin, filePath], projectRoot);
-    const eslintErrors = (checkResult.stdout + checkResult.stderr).trim();
-    if (eslintErrors && !eslintErrors.includes("0 problems")) {
+    // Same single-spawn shape as oxlint above: `eslint --fix` reports only what
+    // it could NOT fix (non-zero exit + diagnostics) and is silent when the file
+    // ends up clean, so the old second full ESLint run was a wasted cold start.
+    const fixResult = await runCommand([eslintBin, "--fix", filePath], projectRoot);
+    const eslintErrors = (fixResult.stdout + fixResult.stderr).trim();
+    if (isNativeBindingError(eslintErrors)) {
+      log("eslint native binding unavailable (worktree?), skipping");
+    } else if (eslintErrors && !eslintErrors.includes("0 problems")) {
       errors.push(`ESLint errors:\n${eslintErrors}`);
     }
   }
@@ -221,8 +239,15 @@ async function main() {
   if (errors.length > 0) {
     const fileName = filePath.split("/").pop();
     const allErrorsText = errors.join("\n");
-    const eslintMatches = allErrorsText.match(/\d+:\d+\s+(error|warning)/g);
-    const eslintErrorCount = eslintMatches ? eslintMatches.length : 0;
+    // Count severities across BOTH reporter formats, keeping them distinct so a
+    // warning is never announced as an error (which would push Claude to "fix"
+    // rules the project deliberately set to warn):
+    //   ESLint stylish  "  2:9  error  '...'"       → digits:digits WS severity
+    //   oxlint          "f.tsx:2:9: error eslint(…)" → digits:digits ':' WS severity
+    const severityMatches = allErrorsText.match(/\d+:\d+:?\s+(error|warning)\b/g) ?? [];
+    const errorCount = severityMatches.filter((m) => m.endsWith("error")).length;
+    const warningCount = severityMatches.length - errorCount;
+    const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
 
     const prettyErrors = errors
       .map((e) => e.replace(/(?:ESLint|oxlint) errors:\n?/g, "").replace(new RegExp(projectRoot + "/", "g"), "").replace(/✖ \d+ problems?.*\n?/g, "").trim())
@@ -230,15 +255,19 @@ async function main() {
       .join("\n");
 
     const indentedErrors = prettyErrors.split("\n").map((l) => `│ ${l}`).join("\n");
-    const header = eslintErrorCount > 0
-      ? `🔴 ${eslintErrorCount} lint error${eslintErrorCount > 1 ? "s" : ""} in ${fileName}`
+    const counted = [
+      errorCount > 0 ? plural(errorCount, "lint error") : "",
+      warningCount > 0 ? plural(warningCount, "warning") : "",
+    ].filter(Boolean);
+    const header = counted.length > 0
+      ? `${errorCount > 0 ? "🔴" : "⚠️"} ${counted.join(" + ")} in ${fileName}`
       : `⚠️ Issues in ${fileName}`;
 
     const output: HookOutput = {
       systemMessage: `\n${header}\n${indentedErrors}`,
       hookSpecificOutput: {
         hookEventName: "PostToolUse",
-        additionalContext: `Fix NOW the following errors in ${fileName}:\n\n${errors.join("\n\n")}`,
+        additionalContext: `Fix NOW the following ${counted.length > 0 ? counted.join(" + ") : "issues"} in ${fileName}:\n\n${errors.join("\n\n")}`,
       },
     };
 

@@ -21,8 +21,14 @@ tool-usage.log
 plugins
 
 # Skills: live in ~/.agents (managed by the `skills` CLI / npx skills) and
-# symlinked in here, plus *-workspace scratch from skill-eval runs — not git's job
-/skills/
+# symlinked in here, plus *-workspace scratch from skill-eval runs — not git's job.
+# `/skills/*` (not `/skills/`) so individual hand-authored skills can be re-included
+# below; git will not descend into a directory excluded as a whole.
+/skills/*
+
+# Exception: hand-authored, not npx-managed. Owns the model-routing table that
+# CLAUDE.md §3 delegates to, so it needs version history and VPS sync.
+!/skills/efficient-frontier/
 
 # Backups
 backups/

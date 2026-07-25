@@ -1,0 +1,206 @@
+# Retired from the global CLAUDE.md
+
+Not loaded — no `@` import anywhere. This is the restore shelf.
+
+Cut 2026-07-25, applying Anthropic's "The new rules of context engineering for Claude 5
+models" (Thariq, 2026-07-24). Each block below says what killed it and, where the rule
+moved rather than died, where it lives now.
+
+**When you restore something, add a dated line under RESTORE LOG saying what broke.**
+After a month that log is the empirical answer about which of these were real.
+
+---
+
+## RESTORE LOG
+
+<!-- 2026-08-xx — restored "<rule>" because <what visibly broke>. -->
+
+---
+
+## §1 Communication
+
+```markdown
+## 1. How I want you to talk to me
+
+Answer first, evidence always, scannable — I'm juggling several Claude Code sessions.
+
+- Result before reason. No preamble, no restating the request, no recap of visible changes.
+- No tool-call narration.
+- Back "works" / "tested" / "fixed" with the command, output, or file that proves it.
+  Quote the shortest decisive line of an error, not the dump.
+- Scannable Markdown: headers, bullets, bold, generous line breaks, relevant emojis
+  (✅ ⚡ 📋 🔍 ⚠️ 🚀), tables to compare, Mermaid/ASCII when it clarifies a flow.
+- Full prose where nuance matters: security warnings, irreversible actions, ordered steps.
+- Anti-sycophantic: no flattery, never open with "you're right", don't fold under pushback.
+  When unsure, say "I don't know".
+```
+
+- "Back 'works'/'tested' with proof" → duplicate. Harness: *"Report outcomes faithfully:
+  if tests fail, say so with the output; if a step was skipped, say that; when something
+  is done and verified, state it plainly without hedging."*
+- "no flattery / never open with 'you're right'" → near-duplicate of the harness
+  Corrections section; Opus 5 doesn't do this unprompted.
+- "Full prose where nuance matters" → existed only to counterweight the
+  bullets-and-emoji push above it. Cause removed, counterweight removed.
+- Answer-first / no narration / shortest-decisive-error-line / scannable+emojis+tables →
+  **not** in the harness, genuinely uninferrable taste. Deleted anyway because the
+  failure is instantly visible in the next response and the restore is one paste. This is
+  the most likely block to come back.
+- "don't fold under pushback" + "I don't know" → cut last, on Flo's call: follow the
+  harness. It was the file's final content for about ten minutes:
+
+  ```markdown
+  ## Scope is mine to concede. Facts are not.
+
+  Your harness tells you that when I reaffirm a request you've flagged, that's my decision
+  and you proceed. Right for scope — wrong for facts.
+
+  If you read the source and I push back without new evidence, hold your position and say
+  why. "I don't know" is an acceptable answer; a confident guess to end the disagreement
+  is not.
+  ```
+
+  The harness rule it counterweighted: *"If you raise a concern about a request and the
+  user repeats or reaffirms it, treat that as their decision, communicate this, and
+  proceed with the full request."* That is correct about scope and silent about facts.
+  **Restore signal:** you catch the agent abandoning something it had verified — a file
+  it read, a line it quoted — because you pushed back without new evidence. Or it answers
+  a factual question confidently right after saying it wasn't sure.
+
+## §2 Gotchas
+
+```markdown
+## 2. Gotchas you can't infer
+
+- **Don't guess** an API, signature, or flag — read the source or `/gapidoc` it. Your
+  training data is not current on this stack.
+- Remove imports/variables/functions **your** changes orphaned. Leave pre-existing dead
+  code alone unless I ask.
+- No barrel/index files that only re-export.
+- Before adding a rule to any CLAUDE.md / AGENTS.md / doc, check whether one already
+  covers or contradicts it — then merge or replace it. Never add a parallel rule.
+```
+
+- "Don't guess an API" → covered by `gapidoc`'s own always-in-context description:
+  *"PREFER this over guessing or trusting stale memory about any library API."* Also by
+  `claude-api` and `read-the-damn-docs`. **If that description ever loses that sentence,
+  restore this line.**
+- "Remove orphaned imports" → the `PostToolUse` hook on `Edit|Write` runs
+  `scripts/hook-ts-quality-gate.ts` → `eslint --fix` + check on every write.
+  ⚠️ Unverified whether gapila's flat config enables `no-unused-vars` (no root
+  `eslint.config.*` — turborepo). Verify before trusting the hook.
+- "Leave pre-existing dead code alone" → duplicate. Harness: *"Stop short of actions or
+  changes clearly beyond what the user's ask implies."*
+- "No barrel/index files" → **contradicted by the codebase.**
+  `gapila/packages/i18n/src/index.ts` is literally `export * from './routing';`, plus
+  `policies`, `analytics`, `audit`, `mcp-server`, `email-templates`,
+  `database-webhooks`. Meanwhile the harness says *"Write code that reads like the
+  surrounding code."* If you want this rule back, it belongs in `gapila/AGENTS.md`
+  scoped to app code, with an explicit exception for `packages/*`.
+- "Never add a parallel rule" → moved to `~/.claude/skills/reader-first-docs/SKILL.md`,
+  whose `UserPromptSubmit` hook already fires on doc prompts.
+
+## §3 Model routing gates
+
+```markdown
+## 3. Picking a model (workflows, subagents, delegation)
+
+Hard gates — these bind before you even decide to load the detail:
+
+- **Never Haiku.**
+- Anything user-facing (UI, copy, API design) goes to **opus-5, fable-5, or
+  gpt-5.6-sol** — never grok-4.5 or a cheaper tier. (Stated in model names, not
+  scores, so it stays evaluable when the table isn't loaded.)
+- When axes conflict on something that ships: **intelligence > taste > cost**.
+- **Opus 5 is the session default.** Load `/efficient-frontier` before routing
+  anything else — don't route from memory of these gates alone.
+
+The model table (prices, context, capability/taste scores, which CLI reaches what),
+escalation policy, and per-agent `model:` in Workflow scripts → `/efficient-frontier`.
+Those numbers move monthly; that skill is where they live, so they can't go stale here.
+```
+
+Moved into `efficient-frontier`'s `description:` frontmatter. Skill descriptions are
+always in context, so the gates stay always-visible at the same token cost — and the
+recursion where CLAUDE.md had to tell the agent to load the skill is gone.
+
+Also: the gates only fire when delegation happens, and the harness disables it by
+default (*"Do not call the AgentTool unless the user requested it"*, *"Do not use
+workflows or deep-research unless the user requested it"*) — a minority of sessions.
+
+**Silent failure.** A subagent on Haiku returns plausible-but-shallow work and you see
+output, never the tier. Detector: `npx ccusage@latest --breakdown`, looking for Haiku
+rows on a day you didn't ask for a cheap tier.
+
+## §4 End of work
+
+```markdown
+## 4. End of work — checkpoint, then offer the next step
+
+**Fires when:** a unit of work is done, it left VCS changes, and nothing remains in the
+request. Skip for discussion / research / Q&A with no edits, and whenever I said
+"just do X and stop" or "don't commit".
+
+Then: `/ce-commit` to checkpoint, on a feature branch, **never pushing**. Then
+`AskUserQuestion`, right option for *this* change first:
+
+- **Review first** — `/code-review --fix` + `/simplify` (`xhigh` for substantive code:
+  logic, multiple files, risky domains; `medium` for small-but-real). Re-show this menu after.
+- **Ship as PR** — `/ce-commit-push-pr`.
+- **Straight to main** — fast-forward the checkpoint into main + push, no PR; fall back to
+  a PR if main is protected.
+- **Nothing yet** — keep the local checkpoint.
+
+Recommend first: substantive or small-but-real → *Review first*; trivial (docs, config,
+renames, one-liners) → *Straight to main*. Always offer *Straight to main*, but for
+substantive code flag it ⚠️ and never pre-select it — it skips review *and* human approval.
+A human reviews the diff before any PR. If I try to skip review on substantive code,
+remind me once, then respect my call.
+
+Outside this flow, don't commit or push unless I ask.
+
+**After any successful `gh pr merge` on gapila:** from the main checkout run
+`bash scripts/gapila-post-merge-cleanup.sh` — `gh pr merge` alone doesn't reap the Mac's
+worktrees, dev servers, or OrbStack Supabase stacks (local branches stay pinned by worktrees).
+```
+
+- The menu → moved verbatim to `~/.claude/skills/end-of-work/SKILL.md`, triggered by its
+  own description. No CLAUDE.md pointer: `superpowers` was disabled 2026-07-25, so no
+  competing end-of-work skill exists to declare precedence over. **If you re-enable
+  superpowers, `finishing-a-development-branch` will compete with a different menu
+  (`Merge back locally` / `Push and create a PR` / `Keep the branch as-is`) — restore a
+  one-line "supersedes" declaration then.**
+- "don't commit or push unless I ask" → duplicate. Harness: *"Commit or push only when
+  the user asks. If on the default branch, branch first."*
+- post-merge cleanup → already at `gapila/AGENTS.md:95` under
+  `### After gh pr merge (mandatory for agents)`, with more detail. Duplicate in the
+  wrong file, gated to one repo.
+
+⚠️ Unresolved in the moved skill: `/code-review --fix` is ambiguous. The installed
+official plugin command (`plugins/marketplaces/claude-plugins-official/plugins/code-review/commands/code-review.md`)
+is PR-only, ignores `--fix`, and fans out to Haiku agents. The harness-native
+`/code-review` is the plausible target — its `ReportFindings` tool exposes exactly
+`low|medium|high|xhigh|max` plus an apply-fixes mode — but the plugin shadows the name.
+
+## @agent-native/skills block
+
+```markdown
+<!-- BEGIN @agent-native/skills -->
+When doing codebase-heavy or token-heavy work on a high-cost frontier model (incl. Fable), use the /efficient-frontier skill always.
+When writing final response status indicators, use the /quick-recap skill always.
+When long-running or parallel work needs usage-limit checks, use the /stay-within-limits skill always.
+<!-- END @agent-native/skills -->
+```
+
+- efficient-frontier line → said what §3 already said.
+- quick-recap line → **circular**: it fires only once the agent has already decided to
+  write a status indicator, and `quick-recap/SKILL.md` admits *"This convention is only
+  automatic when it is present in project or user instructions"* — so the skill cannot
+  self-trigger. Deleted as a preference, not a gotcha. If you want the 🟢 footer back,
+  don't point at the skill, state the rule:
+  `- End a response that completed work with one line: 🟢 done · 🟡 <named follow-up> · 🔴 blocked on me.`
+- stay-within-limits line → its own description is a complete trigger.
+
+This block was written by the `skills` installer. There is no `agent-native-skill.json`
+in those three skill dirs, so the deletion sticks — but a future `npx skills add` on any
+of them can re-inject it. If it reappears, that's the installer, not drift.

@@ -1,6 +1,14 @@
 ---
 name: efficient-frontier
-description: Orchestrate any high-cost frontier model (Fable, Opus) on codebase-heavy or token-heavy work - delegate research, coding, and testing to cheaper subagents, write self-contained handoffs, pick and escalate delegate models, and vet delegated output before relying on it.
+description: >
+  Orchestrate any high-cost frontier model (Fable, Opus) on codebase-heavy or token-heavy
+  work - delegate research, coding, and testing to cheaper subagents, write self-contained
+  handoffs, pick and escalate delegate models, and vet delegated output before relying on
+  it. Hard routing gates, binding whether or not this skill is loaded: never Haiku;
+  anything user-facing (UI, copy, API design) goes to opus-5, fable-5, or gpt-5.6-sol,
+  never grok-4.5 or a cheaper tier; when axes conflict on something that ships,
+  intelligence > taste > cost; opus-5 is the session default. Load this skill for the
+  model table and escalation policy before routing anything else.
 ---
 
 # Efficient Frontier
@@ -31,11 +39,11 @@ repeatable, bounded, or token-heavy work to cheaper/faster subagents.
 
 ## Choosing the Delegate Model
 
-**This section is the single source of truth for the model table.** The global
-CLAUDE.md keeps only the hard gates (Never Haiku, taste >= 7 for anything
-user-facing, intelligence > taste > cost, Opus 5 as default) and points here for
-everything else — those gates bind even if this skill never loads. Keep the
-numbers below; never copy them back into CLAUDE.md.
+**This section is the single source of truth for the model table.** The hard gates
+(never Haiku, opus-5/fable-5/gpt-5.6-sol for anything user-facing,
+intelligence > taste > cost, opus-5 as default) live in this skill's `description:`
+frontmatter, which is always in context — so they bind even when this file never loads.
+Keep the numbers below here; never copy them into a CLAUDE.md.
 
 Higher = better on every axis, including **cheapness** (`cheapness 9` = cheapest).
 Intelligence = how hard a problem you can hand it unsupervised.

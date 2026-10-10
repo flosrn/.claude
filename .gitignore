@@ -30,6 +30,10 @@ plugins
 # CLAUDE.md §3 delegates to, so it needs version history and VPS sync.
 !/skills/efficient-frontier/
 
+# Exception: hand-authored and Claude-only. Drives T3 Code's t3-code MCP, so OMP's
+# sync-harness-parity never adopts it (CLAUDE_ONLY_SKILLS); this repo is its home.
+!/skills/orchestrate/
+
 # Backups
 backups/
 *.backup/

@@ -1,5 +1,5 @@
 ---
-name: orchestrate
+name: t3-orchestrate
 description: Run this T3 Code thread as an orchestrator that dispatches each piece of a task to the Claude model that fits it.
 disable-model-invocation: true
 argument-hint: "[task]"

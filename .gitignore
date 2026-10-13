@@ -32,7 +32,7 @@ plugins
 
 # Exception: hand-authored and Claude-only. Drives T3 Code's t3-code MCP, so OMP's
 # sync-harness-parity never adopts it (CLAUDE_ONLY_SKILLS); this repo is its home.
-!/skills/orchestrate/
+!/skills/t3-orchestrate/
 
 # Backups
 backups/
